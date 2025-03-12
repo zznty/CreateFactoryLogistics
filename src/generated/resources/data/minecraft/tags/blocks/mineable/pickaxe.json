@@ -1,0 +1,6 @@
+{
+  "values": [
+    "create_factory_logistics:jar_packager",
+    "create_factory_logistics:factory_fluid_gauge"
+  ]
+}

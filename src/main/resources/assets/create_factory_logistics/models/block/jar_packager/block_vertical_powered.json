@@ -1,0 +1,6 @@
+{
+	"parent": "create_factory_logistics:block/jar_packager/block_vertical",
+	"textures": {
+		"5": "create_factory_logistics:block/jar_packager_vertical_powered"
+	}
+}
