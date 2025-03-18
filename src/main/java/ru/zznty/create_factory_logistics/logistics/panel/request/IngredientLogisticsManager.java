@@ -15,12 +15,12 @@ public final class IngredientLogisticsManager {
     private static final Random r = new Random();
 
     public static boolean broadcastPackageRequest(UUID freqId, LogisticallyLinkedBehaviour.RequestType type, IngredientOrder order,
-                                                  @Nullable IdentifiedInventory ignoredHandler, String address, @Nullable IngredientOrder orderContext) {
+                                                  @Nullable IdentifiedInventory ignoredHandler, String address) {
         if (order.isEmpty())
             return false;
 
         Multimap<PackagerBlockEntity, IngredientRequest> requests =
-                findPackagersForRequest(freqId, order, orderContext, ignoredHandler, address);
+                findPackagersForRequest(freqId, order, ignoredHandler, address);
 
         // Check if packagers have accumulated too many packages already
         for (PackagerBlockEntity packager : requests.keySet())
@@ -34,7 +34,6 @@ public final class IngredientLogisticsManager {
 
     public static Multimap<PackagerBlockEntity, IngredientRequest> findPackagersForRequest(UUID freqId,
                                                                                            IngredientOrder order,
-                                                                                           @Nullable IngredientOrder customContext,
                                                                                            @Nullable IdentifiedInventory ignoredHandler,
                                                                                            String address) {
         List<BigIngredientStack> stacks = order.stacks();
@@ -48,8 +47,6 @@ public final class IngredientLogisticsManager {
 
         // First box needs to carry the order specifics for successful defrag
         IngredientOrder contextToSend = order;
-        if (customContext != null)
-            contextToSend = customContext;
 
         // Packages from future orders should not be merged in the packager queue
         int orderId = r.nextInt();

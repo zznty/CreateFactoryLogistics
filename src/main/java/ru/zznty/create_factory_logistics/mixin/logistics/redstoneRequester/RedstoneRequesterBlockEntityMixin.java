@@ -7,7 +7,7 @@ import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterBlockEntity;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterEffectPacket;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.content.logistics.stockTicker.StockCheckingBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -28,8 +28,6 @@ import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
 public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlockEntity implements IngredientRedstoneRequester {
     @Unique
     public IngredientOrder createFactoryLogistics$encodedRequest = IngredientOrder.empty();
-    @Unique
-    public IngredientOrder createFactoryLogistics$encodedRequestContext = IngredientOrder.empty();
 
     @Shadow(remap = false)
     public boolean allowPartialRequests, lastRequestSucceeded;
@@ -68,8 +66,7 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
                 LogisticallyLinkedBehaviour.RequestType.REDSTONE,
                 createFactoryLogistics$encodedRequest,
                 null,
-                encodedTargetAdress,
-                createFactoryLogistics$encodedRequestContext.isEmpty() ? null : createFactoryLogistics$encodedRequestContext);
+                encodedTargetAdress);
 
         AllPackets.sendToNear(level, worldPosition, 32, new RedstoneRequesterEffectPacket(worldPosition, anySucceeded));
         lastRequestSucceeded = true;
@@ -79,68 +76,27 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
             method = "read",
             at = @At(
                     value = "INVOKE",
-                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrder;read(Lnet/minecraft/nbt/CompoundTag;)Lcom/simibubi/create/content/logistics/stockTicker/PackageOrder;",
+                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;read(Lnet/minecraft/nbt/CompoundTag;)Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;",
                     ordinal = 0
             ),
             remap = false
     )
-    private PackageOrder readRequest(CompoundTag tag, Operation<PackageOrder> original) {
+    private PackageOrderWithCrafts readRequest(CompoundTag tag, Operation<PackageOrderWithCrafts> original) {
         createFactoryLogistics$encodedRequest = IngredientOrder.read(tag);
 
-        return PackageOrder.empty();
-    }
-
-    @WrapOperation(
-            method = "read",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrder;read(Lnet/minecraft/nbt/CompoundTag;)Lcom/simibubi/create/content/logistics/stockTicker/PackageOrder;",
-                    ordinal = 1
-            ),
-            remap = false
-    )
-    private PackageOrder readRequestContext(CompoundTag tag, Operation<PackageOrder> original) {
-        createFactoryLogistics$encodedRequestContext = IngredientOrder.read(tag);
-
-        return PackageOrder.empty();
+        return PackageOrderWithCrafts.empty();
     }
 
     @WrapOperation(
             method = "write",
             at = @At(
                     value = "INVOKE",
-                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrder;write()Lnet/minecraft/nbt/CompoundTag;",
+                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;write()Lnet/minecraft/nbt/CompoundTag;",
                     ordinal = 0
             ),
             remap = false
     )
-    private CompoundTag writeRequest(PackageOrder instance, Operation<CompoundTag> original) {
-        return createFactoryLogistics$encodedRequest.write();
-    }
-
-    @WrapOperation(
-            method = "write",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrder;write()Lnet/minecraft/nbt/CompoundTag;",
-                    ordinal = 1
-            ),
-            remap = false
-    )
-    private CompoundTag writeRequestContext(PackageOrder instance, Operation<CompoundTag> original) {
-        return createFactoryLogistics$encodedRequestContext.write();
-    }
-
-    @WrapOperation(
-            method = "writeSafe",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrder;write()Lnet/minecraft/nbt/CompoundTag;",
-                    ordinal = 0
-            ),
-            remap = false
-    )
-    private CompoundTag writeSafeRequest(PackageOrder instance, Operation<CompoundTag> original) {
+    private CompoundTag writeRequest(PackageOrderWithCrafts instance, Operation<CompoundTag> original) {
         return createFactoryLogistics$encodedRequest.write();
     }
 
@@ -148,13 +104,13 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
             method = "writeSafe",
             at = @At(
                     value = "INVOKE",
-                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrder;write()Lnet/minecraft/nbt/CompoundTag;",
-                    ordinal = 1
+                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;write()Lnet/minecraft/nbt/CompoundTag;",
+                    ordinal = 0
             ),
             remap = false
     )
-    private CompoundTag writeSafeRequestContext(PackageOrder instance, Operation<CompoundTag> original) {
-        return createFactoryLogistics$encodedRequestContext.write();
+    private CompoundTag writeSafeRequest(PackageOrderWithCrafts instance, Operation<CompoundTag> original) {
+        return createFactoryLogistics$encodedRequest.write();
     }
 
     @Override
@@ -163,17 +119,7 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
     }
 
     @Override
-    public IngredientOrder getOrderContext() {
-        return createFactoryLogistics$encodedRequestContext;
-    }
-
-    @Override
     public void setOrder(IngredientOrder order) {
         createFactoryLogistics$encodedRequest = order;
-    }
-
-    @Override
-    public void setOrderContext(IngredientOrder orderContext) {
-        createFactoryLogistics$encodedRequestContext = orderContext;
     }
 }

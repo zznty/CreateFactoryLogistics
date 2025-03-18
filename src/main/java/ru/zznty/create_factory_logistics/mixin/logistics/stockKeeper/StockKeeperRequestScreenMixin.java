@@ -7,9 +7,13 @@ import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
+import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.gui.element.GuiGameElement;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
@@ -20,6 +24,8 @@ import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehavi
 import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientStack;
 import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.ItemBoardIngredient;
+
+import java.util.List;
 
 @Mixin(StockKeeperRequestScreen.class)
 public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContainerScreen<StockKeeperRequestMenu> {
@@ -36,11 +42,25 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private void renderTooltip(GuiGraphics instance, Font p_282308_, ItemStack p_282781_, int p_282687_, int p_282292_, Operation<Void> original, @Local BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
+        List<Component> component;
         if (stack.getIngredient() instanceof FluidBoardIngredient fluidIngredient) {
-            instance.renderTooltip(p_282308_, fluidIngredient.stack().getDisplayName(), p_282687_, p_282292_);
+            component = List.of(
+                    fluidIngredient.stack().getDisplayName(),
+                    Component.empty(),
+                    FactoryFluidPanelBehaviour.formatLevel(fluidIngredient.amount(), false)
+                            .style(ChatFormatting.GRAY)
+                            .component()
+            );
         } else {
-            original.call(instance, p_282308_, p_282781_, p_282687_, p_282292_);
+            component = Screen.getTooltipFromItem(Minecraft.getInstance(), p_282781_);
+            component.add(Component.empty());
+            component.add(CreateLang.text("x")
+                    .add(CreateLang.number(stack.getCount()))
+                    .style(ChatFormatting.GRAY)
+                    .component());
         }
+
+        instance.renderComponentTooltip(p_282308_, component, p_282687_, p_282292_);
     }
 
     // todo make that as proper search
@@ -93,7 +113,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         if (stack.isInfinite())
             text = "+";
         else if (stack.getIngredient() instanceof FluidBoardIngredient)
-            text = FactoryFluidPanelBehaviour.formatLevel(count).string();
+            text = FactoryFluidPanelBehaviour.formatLevelShort(count).string();
         else if (stack.getIngredient() instanceof ItemBoardIngredient itemIngredient) {
             if (count > 1000) {
                 text = count >= 1000000 ? count / 1000000 + "m"

@@ -10,7 +10,7 @@ import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterConfigurationPacket;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterMenu;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterScreen;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
@@ -61,11 +61,11 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             method = "<init>",
             at = @At(
                     value = "INVOKE",
-                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrder;stacks()Ljava/util/List;"
+                    target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;stacks()Ljava/util/List;"
             ),
             remap = false
     )
-    private List<BigIngredientStack> getOrderAmounts(PackageOrder instance, Operation<List<BigItemStack>> original) {
+    private List<BigIngredientStack> getOrderAmounts(PackageOrderWithCrafts instance, Operation<List<BigItemStack>> original) {
         IngredientRedstoneRequester requester = (IngredientRedstoneRequester) menu.contentHolder;
         return requester.getOrder().stacks();
     }

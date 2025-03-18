@@ -105,7 +105,7 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
             plbe.behaviour.deductFromAccurateSummary(extractedItems);*/
 
         if (!heldBox.isEmpty() || animationTicks != 0) {
-            queuedExitingPackages.add(createdBox);
+            queuedExitingPackages.add(new BigItemStack(createdBox));
             return;
         }
 

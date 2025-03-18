@@ -199,10 +199,24 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
     }
 
     public static LangBuilder formatLevel(int level) {
+        return formatLevel(level, true);
+    }
+
+    public static LangBuilder formatLevelShort(int level) {
         if (level >= BigItemStack.INF)
             return CreateLang.text("\u221e");
-        
-        if (level < 1000 || level % 1000 != 0) {
+
+        if (level < 100)
+            return CreateLang.number(level).add(CreateLang.translate("generic.unit.millibuckets"));
+
+        return CreateLang.number(Math.round((float) level / 100) / 10.).add(CreateLang.translate("generic.unit.buckets"));
+    }
+
+    public static LangBuilder formatLevel(int level, boolean round) {
+        if (level >= BigItemStack.INF)
+            return CreateLang.text("\u221e");
+
+        if (!round || level < 1000 || level % 1000 != 0) {
             return CreateLang.number(level).add(CreateLang.translate("generic.unit.millibuckets"));
         }
 

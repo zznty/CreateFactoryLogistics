@@ -127,20 +127,20 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 
         // Input items may come from differing networks
         Map<UUID, Collection<BigIngredientStack>> asMap = toRequest.asMap();
-        IngredientOrder requestContext = new IngredientOrder(toRequestAsList);
         List<Multimap<PackagerBlockEntity, IngredientRequest>> requests = new ArrayList<>();
 
         // Panel may enforce item arrangement
-        if (!activeCraftingArrangement.isEmpty())
-            requestContext = new IngredientOrder(activeCraftingArrangement.stream()
-                    .map(stack -> BigIngredientStack.of(new ItemBoardIngredient(stack)))
-                    .toList());
+        // todo support for crafting context
+//        if (!activeCraftingArrangement.isEmpty())
+//            requestContext = new IngredientOrder(activeCraftingArrangement.stream()
+//                    .map(stack -> BigIngredientStack.of(new ItemBoardIngredient(stack)))
+//                    .toList());
 
         // Collect request distributions
         for (Map.Entry<UUID, Collection<BigIngredientStack>> entry : asMap.entrySet()) {
             IngredientOrder order = new IngredientOrder(new ArrayList<>(entry.getValue()));
             Multimap<PackagerBlockEntity, IngredientRequest> request =
-                    IngredientLogisticsManager.findPackagersForRequest(entry.getKey(), order, requestContext, null, recipeAddress);
+                    IngredientLogisticsManager.findPackagersForRequest(entry.getKey(), order, null, recipeAddress);
             requests.add(request);
         }
 
