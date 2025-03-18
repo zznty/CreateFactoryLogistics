@@ -83,15 +83,16 @@ public interface BoardIngredient {
     }
 
     static BoardIngredient of(FactoryPanelBehaviour behaviour) {
-        if (behaviour.count == 0) return EMPTY;
+        int count = behaviour.upTo ? behaviour.recipeOutput : behaviour.count;
+        if (count == 0) return EMPTY;
         if (behaviour instanceof FactoryFluidPanelBehaviour fluidBehaviour) {
             if (fluidBehaviour.getFluid() == FluidStack.EMPTY) return EMPTY;
 
-            return new FluidBoardIngredient(fluidBehaviour.getFluid()).withAmount(behaviour.count);
+            return new FluidBoardIngredient(fluidBehaviour.getFluid()).withAmount(count);
         }
 
         if (behaviour.getFilter() == ItemStack.EMPTY) return EMPTY;
 
-        return new ItemBoardIngredient(behaviour.getFilter().copyWithCount(behaviour.count));
+        return new ItemBoardIngredient(behaviour.getFilter().copyWithCount(count));
     }
 }

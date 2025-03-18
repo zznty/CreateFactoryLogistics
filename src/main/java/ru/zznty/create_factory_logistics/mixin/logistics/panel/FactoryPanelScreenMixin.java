@@ -100,7 +100,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
         original.call(instance, p_281978_, p_282647_, p_281944_);
     }
 
-    @Definition(id = "behaviour", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelScreen;behaviour:Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;")
+    /*@Definition(id = "behaviour", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelScreen;behaviour:Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;")
     @Definition(id = "getFilter", method = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;getFilter()Lnet/minecraft/world/item/ItemStack;")
     @Definition(id = "getHoverName", method = "Lnet/minecraft/world/item/ItemStack;getHoverName()Lnet/minecraft/network/chat/Component;")
     @Definition(id = "getString", method = "Lnet/minecraft/network/chat/Component;getString()Ljava/lang/String;")
@@ -110,15 +110,24 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             method = "renderWindow",
             at = @At("MIXINEXTRAS:EXPRESSION"),
             remap = false
+    )*/
+    @WrapOperation(
+            method = "renderWindow",
+            at = @At(
+                    value = "CONSTANT",
+                    args = "stringValue=gui.factory_panel.left_click_reset",
+                    shift = At.Shift.BY, by = -4
+            ),
+            remap = false
     )
-    private LangBuilder promiseTipValueFormat(LangBuilder original) {
+    private LangBuilder promiseTipValueFormat(String text, Operation<LangBuilder> original) {
         if (behaviour instanceof FactoryFluidPanelBehaviour fluidBehaviour) {
             return CreateLang.builder()
                     .add(fluidBehaviour.getFluid().getDisplayName())
                     .add(FactoryFluidPanelBehaviour.formatLevel(fluidBehaviour.getLevelInStorage()));
         }
 
-        return original;
+        return original.call(text);
     }
 
     @Definition(id = "itemName", method = "Lcom/simibubi/create/foundation/utility/CreateLang;itemName(Lnet/minecraft/world/item/ItemStack;)Lnet/createmod/catnip/lang/LangBuilder;")
