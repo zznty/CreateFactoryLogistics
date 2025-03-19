@@ -22,7 +22,8 @@
     "logistics.redstoneRequester.RedstoneRequesterBlockEntityMixin",
     "logistics.redstoneRequester.RedstoneRequesterConfigurationPacketMixin",
     "logistics.redstoneRequester.RedstoneRequesterMenuMixin",
-    "logistics.stock.InventorySummaryMixin"
+    "logistics.stock.InventorySummaryMixin",
+    "render.ChainConveyorRendererMixin"
   ],
   "client": [
     "logistics.panel.FactoryPanelScreenMixin",

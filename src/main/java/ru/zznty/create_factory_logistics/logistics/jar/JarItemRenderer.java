@@ -10,9 +10,10 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
+import net.minecraftforge.fluids.FluidUtil;
+
+import java.util.Optional;
 
 public class JarItemRenderer extends CustomRenderedItemModelRenderer {
     public void render(ItemStack box, CustomRenderedItemModel model, PartialItemModelRenderer renderer, ItemDisplayContext displayContext, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
@@ -23,49 +24,45 @@ public class JarItemRenderer extends CustomRenderedItemModelRenderer {
     }
 
     public static void renderFluidContents(ItemStack box, float fluidLevel, PoseStack ms, MultiBufferSource buffer, int light) {
-        IFluidHandlerItem fluidHandlerItem = box.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).orElse(null);
+        Optional<FluidStack> containedFluid = FluidUtil.getFluidContained(box);
 
-        if (fluidHandlerItem != null) {
-            FluidStack fluidStack = fluidHandlerItem.getFluidInTank(0);
+        if (containedFluid.isEmpty() || containedFluid.get().isEmpty()) return;
 
-            if (fluidStack.isEmpty()) return;
+        if (fluidLevel < 0)
+            fluidLevel = containedFluid.get().getAmount();
 
-            if (fluidLevel < 0)
-                fluidLevel = fluidStack.getAmount();
+        float capHeight = 1 / 16f;
+        float tankHullWidth = 1 / 128f;
+        float minPuddleHeight = -(1 / 32f);
+        float totalHeight = 8f * capHeight - minPuddleHeight;
+        float tankWidth = .5f;
 
-            float capHeight = 1 / 16f;
-            float tankHullWidth = 1 / 128f;
-            float minPuddleHeight = -(1 / 32f);
-            float totalHeight = 8f * capHeight - minPuddleHeight;
-            float tankWidth = .5f;
+        float level = fluidLevel / JarPackageItem.JAR_CAPACITY * totalHeight;
 
-            float level = fluidLevel / JarPackageItem.JAR_CAPACITY * totalHeight;
+        if (level == 0) return;
 
-            if (level == 0) return;
+        boolean top = containedFluid.get().getFluid()
+                .getFluidType()
+                .isLighterThanAir();
 
-            boolean top = fluidStack.getFluid()
-                    .getFluidType()
-                    .isLighterThanAir();
+        float xMin = 0;
+        float xMax = xMin + tankWidth - 2 * tankHullWidth;
+        float yMin = capHeight + minPuddleHeight - level;
+        float yMax = yMin + level;
 
-            float xMin = 0;
-            float xMax = xMin + tankWidth - 2 * tankHullWidth;
-            float yMin = capHeight + minPuddleHeight - level;
-            float yMax = yMin + level;
-
-            if (top) {
-                yMin += totalHeight - level;
-                yMax += totalHeight - level;
-            }
-
-            float zMin = 0;
-            float zMax = zMin + tankWidth - 2 * tankHullWidth;
-
-            ms.pushPose();
-            TransformStack.of(ms).rotate(Direction.UP.getRotation());
-            ms.translate(-xMax / 2, level - totalHeight, -zMax / 2);
-            FluidRenderer.renderFluidBox(fluidStack.getFluid(), fluidStack.getAmount(), xMin, yMin, zMin, xMax, yMax, zMax,
-                    buffer, ms, light, false, true, fluidStack.getTag());
-            ms.popPose();
+        if (top) {
+            yMin += totalHeight - level;
+            yMax += totalHeight - level;
         }
+
+        float zMin = 0;
+        float zMax = zMin + tankWidth - 2 * tankHullWidth;
+
+        ms.pushPose();
+        TransformStack.of(ms).rotate(Direction.UP.getRotation());
+        ms.translate(-xMax / 2, level - totalHeight, -zMax / 2);
+        FluidRenderer.renderFluidBox(containedFluid.get().getFluid(), containedFluid.get().getAmount(), xMin, yMin, zMin, xMax, yMax, zMax,
+                buffer, ms, light, false, true, containedFluid.get().getTag());
+        ms.popPose();
     }
 }
