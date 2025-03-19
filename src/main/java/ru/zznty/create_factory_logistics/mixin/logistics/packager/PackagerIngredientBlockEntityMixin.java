@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_logistics.mixin.logistics.packager;
 
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
+import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
@@ -37,7 +38,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
     @Shadow(remap = false)
     public String signBasedAddress;
     @Shadow(remap = false)
-    public List<ItemStack> queuedExitingPackages;
+    public List<BigItemStack> queuedExitingPackages;
     @Shadow(remap = false)
     public ItemStack heldBox;
     @Shadow(remap = false)
@@ -73,7 +74,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
             createFactoryLogistics$deductFromAccurateSummary(plbe.behaviour, createdBox);
 
         if (!heldBox.isEmpty() || animationTicks != 0) {
-            queuedExitingPackages.add(createdBox);
+            queuedExitingPackages.add(new BigItemStack(createdBox));
             return;
         }
 
