@@ -10,6 +10,7 @@
     "accessor.FactoryPanelBehaviourAccessor",
     "logistics.jar.JarDrainMixin",
     "logistics.packager.IngredientPromiseQueueMixin",
+    "logistics.packager.PackagerBlockEntityMixin",
     "logistics.packager.PackagerIngredientBlockEntityMixin",
     "logistics.packager.PackagerIngredientLinkBlockEntityMixin",
     "logistics.panel.BigItemStackMixin",
