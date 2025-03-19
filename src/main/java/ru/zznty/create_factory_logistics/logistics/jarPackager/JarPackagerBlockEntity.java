@@ -5,17 +5,22 @@ import com.simibubi.create.content.fluids.tank.CreativeFluidTankBlockEntity;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
+import com.simibubi.create.content.logistics.packager.PackagerBlock;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packager.PackagingRequest;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.CapManipulationBehaviourBase;
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.TankManipulationBehaviour;
+import com.simibubi.create.foundation.fluid.FluidHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
@@ -24,6 +29,7 @@ import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class JarPackagerBlockEntity extends PackagerBlockEntity {
     private TankManipulationBehaviour drainInventory;
@@ -115,5 +121,41 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
 
         triggerStockCheck();
         notifyUpdate();
+    }
+
+    @Override
+    public boolean unwrapBox(ItemStack box, boolean simulate) {
+        if (animationTicks > 0)
+            return false;
+
+        Objects.requireNonNull(this.level);
+
+        if (!(box.getItem() instanceof JarPackageItem))
+            return false;
+
+        Optional<FluidStack> containedFluid = FluidUtil.getFluidContained(box);
+
+        if (containedFluid.isEmpty())
+            return false;
+
+        Direction facing = getBlockState().getOptionalValue(PackagerBlock.FACING).orElse(Direction.UP);
+        BlockPos target = worldPosition.relative(facing.getOpposite());
+
+        ItemStack originalBox = box.copy();
+
+        boolean unpacked = FluidUtil.getFluidHandler(level, target, facing).map(fluidHandler ->
+                        !FluidUtil.tryFluidTransfer(fluidHandler, FluidUtil.getFluidHandler(box).resolve().get(), containedFluid.get(), !simulate).isEmpty())
+                .orElse(false);
+
+        if (unpacked && !simulate) {
+            level.playSound(null, worldPosition, FluidHelper.getEmptySound(containedFluid.get()), SoundSource.BLOCKS, .5f, 1);
+
+            previouslyUnwrapped = originalBox;
+            animationInward = true;
+            animationTicks = CYCLE;
+            notifyUpdate();
+        }
+
+        return unpacked;
     }
 }
