@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.logistics.BigItemStack;
+import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
 import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientStack;
 import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
@@ -134,5 +136,80 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         }
 
         graphics.drawString(font, text, 19 - 2 - font.width(text), 6 + 3, 16777215, true);
+    }
+
+    @Redirect(
+            method = "mouseClicked",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
+                    ordinal = 1
+            ),
+            remap = false
+    )
+    private void decreaseOrderCount(BigItemStack instance, int count) {
+        BigIngredientStack stack = (BigIngredientStack) instance;
+
+        stack.setCount(count);
+    }
+
+    @Redirect(
+            method = "mouseClicked",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
+                    ordinal = 4
+            ),
+            remap = false
+    )
+    private void increaseOrderCount(BigItemStack instance, int count) {
+        BigIngredientStack stack = (BigIngredientStack) instance;
+
+        stack.setCount(count);
+    }
+
+    @Redirect(
+            method = "requestCraftable",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lcom/simibubi/create/content/logistics/stockTicker/CraftableBigItemStack;count:I",
+                    ordinal = 2
+            ),
+            remap = false
+    )
+    private void updateOrderCountCraftable(CraftableBigItemStack instance, int count) {
+        BigIngredientStack stack = (BigIngredientStack) instance;
+
+        stack.setCount(count);
+    }
+
+    @Redirect(
+            method = "requestCraftable",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
+                    ordinal = 3
+            ),
+            remap = false
+    )
+    private void decreaseOrderCountCraftable(BigItemStack instance, int count) {
+        BigIngredientStack stack = (BigIngredientStack) instance;
+
+        stack.setCount(count);
+    }
+
+    @Redirect(
+            method = "requestCraftable",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
+                    ordinal = 6
+            ),
+            remap = false
+    )
+    private void increaseOrderCountCraftable(BigItemStack instance, int count) {
+        BigIngredientStack stack = (BigIngredientStack) instance;
+
+        stack.setCount(count);
     }
 }
