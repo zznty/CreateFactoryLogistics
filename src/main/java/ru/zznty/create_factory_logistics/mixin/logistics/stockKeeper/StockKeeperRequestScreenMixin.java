@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.logistics.BigItemStack;
+import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
@@ -20,6 +21,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
@@ -27,6 +29,7 @@ import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientSt
 import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.ItemBoardIngredient;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Mixin(StockKeeperRequestScreen.class)
@@ -34,6 +37,15 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     public StockKeeperRequestScreenMixin(StockKeeperRequestMenu container, Inventory inv, Component title) {
         super(container, inv, title);
     }
+
+    @Nullable
+    @Shadow(remap = false)
+    private BigItemStack getOrderForItem(ItemStack stack) {
+        return null;
+    }
+
+    @Shadow(remap = false)
+    private InventorySummary forcedEntries;
 
     @WrapOperation(
             method = "renderForeground",
@@ -43,13 +55,25 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             )
     )
     private void renderTooltip(GuiGraphics instance, Font p_282308_, ItemStack p_282781_, int p_282687_, int p_282292_, Operation<Void> original, @Local BigItemStack itemStack) {
+        // todo support for ordering fluids via stock keeper
         BigIngredientStack stack = (BigIngredientStack) itemStack;
+        BigItemStack order = getOrderForItem(itemStack.stack);
+        int customCount = stack.getCount();
+        if (stack.getCount() < BigItemStack.INF) {
+            int forcedCount = forcedEntries.getCountOf(itemStack.stack);
+            if (forcedCount != 0)
+                customCount = Math.min(customCount, -forcedCount - 1);
+            if (order != null)
+                customCount -= order.count;
+            customCount = Math.max(0, customCount);
+        }
+
         List<Component> component;
         if (stack.getIngredient() instanceof FluidBoardIngredient fluidIngredient) {
             component = List.of(
                     fluidIngredient.stack().getDisplayName(),
                     Component.empty(),
-                    FactoryFluidPanelBehaviour.formatLevel(fluidIngredient.amount(), false)
+                    FactoryFluidPanelBehaviour.formatLevel(customCount, false)
                             .style(ChatFormatting.GRAY)
                             .component()
             );
@@ -57,7 +81,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             component = Screen.getTooltipFromItem(Minecraft.getInstance(), p_282781_);
             component.add(Component.empty());
             component.add(CreateLang.text("x")
-                    .add(CreateLang.number(stack.getCount()))
+                    .add(CreateLang.number(customCount))
                     .style(ChatFormatting.GRAY)
                     .component());
         }
@@ -144,8 +168,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
                     ordinal = 1
-            ),
-            remap = false
+            )
     )
     private void decreaseOrderCount(BigItemStack instance, int count) {
         BigIngredientStack stack = (BigIngredientStack) instance;
@@ -159,8 +182,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
                     ordinal = 4
-            ),
-            remap = false
+            )
     )
     private void increaseOrderCount(BigItemStack instance, int count) {
         BigIngredientStack stack = (BigIngredientStack) instance;
