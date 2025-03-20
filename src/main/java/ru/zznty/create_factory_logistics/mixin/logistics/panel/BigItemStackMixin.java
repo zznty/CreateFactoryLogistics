@@ -66,7 +66,7 @@ public class BigItemStackMixin implements BigIngredientStack {
             remap = false
     )
     private void addIngredient(ItemStack stack, int count, CallbackInfo ci) {
-        ingredient = stack == ItemStack.EMPTY ? BoardIngredient.EMPTY : new ItemBoardIngredient(stack.copyWithCount(count));
+        ingredient = stack == ItemStack.EMPTY ? BoardIngredient.EMPTY : new ItemBoardIngredient(stack, count);
     }
 
     @Overwrite(remap = false)

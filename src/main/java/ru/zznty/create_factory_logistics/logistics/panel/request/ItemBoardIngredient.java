@@ -7,12 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public record ItemBoardIngredient(ItemStack stack) implements BoardIngredient {
-    @Override
-    public int amount() {
-        return stack.getCount();
-    }
-
+public record ItemBoardIngredient(ItemStack stack, int amount) implements BoardIngredient {
     @Override
     public boolean hasEnough(InventorySummary summary) {
         return summary.getCountOf(stack) >= stack.getCount();
@@ -25,7 +20,7 @@ public record ItemBoardIngredient(ItemStack stack) implements BoardIngredient {
 
     @Override
     public BoardIngredient withAmount(int amount) {
-        return new ItemBoardIngredient(stack.copyWithCount(amount));
+        return new ItemBoardIngredient(stack, amount);
     }
 
     @Override
@@ -38,6 +33,7 @@ public record ItemBoardIngredient(ItemStack stack) implements BoardIngredient {
     public void write(FriendlyByteBuf buf) {
         buf.writeByte(1);
         buf.writeItem(stack);
+        buf.writeVarInt(amount);
     }
 
     @Override

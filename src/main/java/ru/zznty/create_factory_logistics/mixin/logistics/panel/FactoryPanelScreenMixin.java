@@ -124,7 +124,8 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
         if (behaviour instanceof FactoryFluidPanelBehaviour fluidBehaviour) {
             return CreateLang.builder()
                     .add(fluidBehaviour.getFluid().getDisplayName())
-                    .add(FactoryFluidPanelBehaviour.formatLevel(fluidBehaviour.getLevelInStorage()));
+                    .space()
+                    .add(FactoryFluidPanelBehaviour.formatLevel(fluidBehaviour.getPromised()));
         }
 
         return original.call(text);
@@ -147,6 +148,26 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
         }
 
         return original;
+    }
+
+    @WrapOperation(
+            method = "renderWindow",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/GuiGraphics;renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V",
+                    ordinal = 1
+            ),
+            remap = false
+    )
+    private void renderPromised(GuiGraphics instance, Font l, ItemStack i, int j, int k, String i1, Operation<Void> original) {
+        if (behaviour instanceof FactoryFluidPanelBehaviour fluidBehaviour) {
+            int promised = fluidBehaviour.getPromised();
+            if (promised > 0) {
+                i1 = FactoryFluidPanelBehaviour.formatLevel(promised).string();
+            }
+        }
+
+        original.call(instance, l, i, j, k, i1);
     }
 
     @WrapOperation(

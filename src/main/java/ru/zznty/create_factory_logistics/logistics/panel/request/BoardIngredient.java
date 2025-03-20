@@ -62,24 +62,26 @@ public interface BoardIngredient {
     static BoardIngredient read(FriendlyByteBuf buf) {
         int mode = buf.readByte();
         if (mode == 0) return EMPTY;
-        if (mode == 1) return new ItemBoardIngredient(buf.readItem());
-        if (mode == 2) return new FluidBoardIngredient(buf.readFluidStack());
+        if (mode == 1) return new ItemBoardIngredient(buf.readItem(), buf.readVarInt());
+        if (mode == 2) return new FluidBoardIngredient(buf.readFluidStack(), buf.readVarInt());
 
         throw new IllegalStateException("Unknown mode: " + mode);
     }
 
     static BoardIngredient readFromNBT(CompoundTag tag) {
+        int amount = tag.getInt("Amount");
+
         if (tag.contains("Item")) {
             ItemStack stack = ItemStack.of(tag.getCompound("Item"));
-            int amount = tag.getInt("Amount");
-            return new ItemBoardIngredient(stack.copyWithCount(amount));
+            if (stack.isEmpty()) return EMPTY;
+            return new ItemBoardIngredient(stack, amount);
         }
 
         FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(tag);
 
         if (fluidStack == FluidStack.EMPTY) return EMPTY;
 
-        return new FluidBoardIngredient(fluidStack);
+        return new FluidBoardIngredient(fluidStack, amount);
     }
 
     static BoardIngredient of(FactoryPanelBehaviour behaviour) {
@@ -88,11 +90,11 @@ public interface BoardIngredient {
         if (behaviour instanceof FactoryFluidPanelBehaviour fluidBehaviour) {
             if (fluidBehaviour.getFluid() == FluidStack.EMPTY) return EMPTY;
 
-            return new FluidBoardIngredient(fluidBehaviour.getFluid()).withAmount(count);
+            return new FluidBoardIngredient(fluidBehaviour.getFluid(), count);
         }
 
         if (behaviour.getFilter() == ItemStack.EMPTY) return EMPTY;
 
-        return new ItemBoardIngredient(behaviour.getFilter().copyWithCount(count));
+        return new ItemBoardIngredient(behaviour.getFilter(), count);
     }
 }

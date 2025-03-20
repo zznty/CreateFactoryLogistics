@@ -115,7 +115,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
                 continue;
             }
 
-            BigIngredientStack stack = BigIngredientStack.of(ingredient);
+            BigIngredientStack stack = BigIngredientStack.of(ingredient, connection.amount);
 
             toRequest.put(source.network, stack);
             toRequestAsList.add(stack);
@@ -157,7 +157,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         // Keep the output promise
         RequestPromiseQueue promises = Create.LOGISTICS.getQueuedPromises(network);
         if (promises != null)
-            promises.add(new RequestPromise(BigIngredientStack.of(BoardIngredient.of((FactoryPanelBehaviour) (Object) this)).asStack()));
+            promises.add(new RequestPromise(BigIngredientStack.of(BoardIngredient.of((FactoryPanelBehaviour) (Object) this), recipeOutput).asStack()));
 
         panelBE.advancements.awardPlayer(AllAdvancements.FACTORY_GAUGE);
     }

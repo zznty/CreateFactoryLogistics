@@ -229,10 +229,10 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             if (!this.menu.getCarried().isEmpty()) {
                 FluidStack stack = FluidUtil.getFluidContained(this.menu.getCarried()).orElse(FluidStack.EMPTY);
                 if (!stack.isEmpty() && hasAltDown()) {
-                    ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new FluidBoardIngredient(stack).withAmount(1));
+                    ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new FluidBoardIngredient(stack, 1));
                     return;
                 } else {
-                    ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new ItemBoardIngredient(this.menu.getCarried()).withAmount(1));
+                    ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new ItemBoardIngredient(this.menu.getCarried(), 1));
                 }
             } else {
                 ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), BoardIngredient.EMPTY);

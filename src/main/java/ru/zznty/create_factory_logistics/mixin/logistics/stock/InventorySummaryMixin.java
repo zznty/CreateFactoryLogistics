@@ -8,6 +8,7 @@ import com.simibubi.create.content.logistics.packager.InventorySummary;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.material.Fluid;
@@ -18,9 +19,9 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.ItemBoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
@@ -32,7 +33,10 @@ import java.util.*;
 @Mixin(InventorySummary.class)
 public class InventorySummaryMixin implements IFluidInventorySummary {
     @Unique
-    private final Map<Fluid, FluidStack> createFactoryLogistics$fluids = new IdentityHashMap<>();
+    private final Map<Fluid, FluidBoardIngredient> createFactoryLogistics$fluids = new IdentityHashMap<>();
+
+    @Shadow(remap = false)
+    private Map<Item, List<BigItemStack>> items = new IdentityHashMap<>();
 
     @Shadow(remap = false)
     private int totalCount;
@@ -41,7 +45,10 @@ public class InventorySummaryMixin implements IFluidInventorySummary {
     private List<BigItemStack> stacksByCount;
 
     @Shadow(remap = false)
-    public void add(ItemStack stack) {
+    public int contributingLinks;
+
+    @Shadow(remap = false)
+    public void add(ItemStack stack, int count) {
     }
 
     @Shadow(remap = false)
@@ -54,17 +61,13 @@ public class InventorySummaryMixin implements IFluidInventorySummary {
         return List.of();
     }
 
-    @Inject(
-            method = "add(Lcom/simibubi/create/content/logistics/packager/InventorySummary;)V",
-            at = @At("RETURN"),
-            remap = false
-    )
-    private void createFactoryLogistics$add(InventorySummary summary, CallbackInfo ci) {
+    @Overwrite(remap = false)
+    public void add(InventorySummary summary) {
         IFluidInventorySummary otherSummary = (IFluidInventorySummary) summary;
-        for (FluidStack stack : otherSummary.getFluids()) {
-            if (stack.isEmpty()) continue;
+        for (BigIngredientStack stack : otherSummary.get()) {
             add(stack);
         }
+        contributingLinks += summary.contributingLinks;
     }
 
     @Inject(
@@ -74,9 +77,9 @@ public class InventorySummaryMixin implements IFluidInventorySummary {
     )
     private void createFactoryLogistics$copy(CallbackInfoReturnable<InventorySummary> cir) {
         IFluidInventorySummary otherSummary = (IFluidInventorySummary) cir.getReturnValue();
-        for (FluidStack stack : createFactoryLogistics$fluids.values()) {
-            if (stack.isEmpty()) continue;
-            otherSummary.add(stack);
+        for (FluidBoardIngredient ingredient : createFactoryLogistics$fluids.values()) {
+            if (ingredient.amount() == 0) continue;
+            otherSummary.add(BigIngredientStack.of(ingredient));
         }
     }
 
@@ -124,9 +127,7 @@ public class InventorySummaryMixin implements IFluidInventorySummary {
     )
     private void createFactoryLogistics$getCountOf(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
         if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof LiquidBlock liquidBlock && cir.getReturnValueI() == 0) {
-            int amount = createFactoryLogistics$fluids.getOrDefault(liquidBlock.getFluid(), FluidStack.EMPTY).getAmount();
-
-            cir.setReturnValue(amount);
+            cir.setReturnValue(getCountOf(liquidBlock.getFluid()));
         }
     }
 
@@ -139,8 +140,8 @@ public class InventorySummaryMixin implements IFluidInventorySummary {
             remap = false
     )
     private void getStacksByCount(List<BigItemStack> list, Comparator<BigItemStack> c, Operation<Void> original) {
-        for (FluidStack stack : createFactoryLogistics$fluids.values()) {
-            stacksByCount.add(BigIngredientStack.of(new FluidBoardIngredient(stack)).asStack());
+        for (FluidBoardIngredient ingredient : createFactoryLogistics$fluids.values()) {
+            stacksByCount.add(BigIngredientStack.of(ingredient).asStack());
         }
     }
 
@@ -153,8 +154,8 @@ public class InventorySummaryMixin implements IFluidInventorySummary {
             remap = false
     )
     private ArrayList<BigIngredientStack> getFluidStacks(ArrayList<BigIngredientStack> original) {
-        for (FluidStack stack : createFactoryLogistics$fluids.values()) {
-            original.add(BigIngredientStack.of(new FluidBoardIngredient(stack)));
+        for (FluidBoardIngredient ingredient : createFactoryLogistics$fluids.values()) {
+            original.add(BigIngredientStack.of(ingredient));
         }
         return original;
     }
@@ -166,33 +167,41 @@ public class InventorySummaryMixin implements IFluidInventorySummary {
 
     @Override
     public void add(BigIngredientStack stack) {
-        if (stack.getIngredient() instanceof FluidBoardIngredient fluidIngredient)
-            add(fluidIngredient.stack());
-        else if (stack.getIngredient() instanceof ItemBoardIngredient itemIngredient)
-            add(itemIngredient.stack());
+        add(stack.getIngredient(), stack.getCount());
+    }
+
+    @Override
+    public void add(BoardIngredient ingredient, int count) {
+        if (ingredient instanceof FluidBoardIngredient fluidIngredient)
+            add(fluidIngredient.stack(), count);
+        else if (ingredient instanceof ItemBoardIngredient itemIngredient)
+            add(itemIngredient.stack(), count);
     }
 
     @Override
     public void add(FluidStack stack) {
-        if (stack.isEmpty()) return;
+        add(stack, stack.getAmount());
+    }
+
+    @Override
+    public void add(FluidStack stack, int amount) {
+        if (stack.isEmpty() || amount == 0) return;
         boolean existed = createFactoryLogistics$fluids.containsKey(stack.getFluid());
-        createFactoryLogistics$fluids.merge(stack.getFluid(), stack, (a, b) -> {
-            a = a.copy();
-            a.grow(b.getAmount());
-            return a;
-        });
+        createFactoryLogistics$fluids.merge(stack.getFluid(), new FluidBoardIngredient(stack, amount),
+                (a, b) -> (FluidBoardIngredient) a.withAmount(a.amount() + b.amount()));
         if (!existed)
             totalCount++;
     }
 
     @Override
-    public Collection<FluidStack> getFluids() {
+    public Collection<FluidBoardIngredient> getFluids() {
         return createFactoryLogistics$fluids.values();
     }
 
     @Override
     public int getCountOf(Fluid fluid) {
-        return createFactoryLogistics$fluids.getOrDefault(fluid, FluidStack.EMPTY).getAmount();
+        FluidBoardIngredient ingredient = createFactoryLogistics$fluids.get(fluid);
+        return ingredient == null ? 0 : ingredient.amount();
     }
 
     @Override
@@ -208,5 +217,10 @@ public class InventorySummaryMixin implements IFluidInventorySummary {
     @Override
     public List<BigIngredientStack> get() {
         return (List<BigIngredientStack>) (Object) getStacks();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return items.isEmpty() && createFactoryLogistics$fluids.isEmpty();
     }
 }

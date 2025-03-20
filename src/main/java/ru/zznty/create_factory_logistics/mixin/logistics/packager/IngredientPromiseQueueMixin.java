@@ -32,6 +32,15 @@ public class IngredientPromiseQueueMixin implements IngredientPromiseQueue {
     public void forceClear(ItemStack stack) {
     }
 
+    @Shadow(remap = false)
+    public int getTotalPromisedAndRemoveExpired(ItemStack stack, int expiryTime) {
+        return 0;
+    }
+
+    @Shadow(remap = false)
+    public void itemEnteredSystem(ItemStack stack, int amount) {
+    }
+
     @Override
     public void add(BigIngredientStack stack) {
         add(new RequestPromise(stack.asStack()));
@@ -64,7 +73,64 @@ public class IngredientPromiseQueueMixin implements IngredientPromiseQueue {
 
     @Override
     public int getTotalPromisedAndRemoveExpired(BoardIngredient ingredient, int expiryTime) {
+        if (ingredient instanceof ItemBoardIngredient itemIngredient) {
+            return getTotalPromisedAndRemoveExpired(itemIngredient.stack(), expiryTime);
+        } else if (ingredient instanceof FluidBoardIngredient fluidIngredient) {
+            int promised = 0;
+            List<RequestPromise> list = createFactoryLogistics$promiseByFluid.get(fluidIngredient.stack().getFluid());
+            if (list == null)
+                return promised;
+
+            for (Iterator<RequestPromise> iterator = list.iterator(); iterator.hasNext(); ) {
+                RequestPromise promise = iterator.next();
+                BigIngredientStack stack = (BigIngredientStack) promise.promisedStack;
+                if (!fluidIngredient.canStack(stack.getIngredient()))
+                    continue;
+                if (expiryTime != -1 && promise.ticksExisted >= expiryTime) {
+                    iterator.remove();
+                    onChanged.run();
+                    continue;
+                }
+
+                promised += promise.promisedStack.count;
+            }
+            return promised;
+        }
         return 0;
+    }
+
+    @Override
+    public void ingredientEnteredSystem(BoardIngredient ingredient) {
+        if (ingredient instanceof ItemBoardIngredient itemIngredient) {
+            itemEnteredSystem(itemIngredient.stack(), itemIngredient.amount());
+        } else if (ingredient instanceof FluidBoardIngredient fluidIngredient) {
+            List<RequestPromise> list = createFactoryLogistics$promiseByFluid.get(fluidIngredient.stack().getFluid());
+            if (list == null)
+                return;
+
+            int amount = fluidIngredient.amount();
+
+            for (Iterator<RequestPromise> iterator = list.iterator(); iterator.hasNext(); ) {
+                RequestPromise requestPromise = iterator.next();
+                BigIngredientStack stack = (BigIngredientStack) requestPromise.promisedStack;
+                if (!fluidIngredient.canStack(stack.getIngredient()))
+                    continue;
+
+                int toSubtract = Math.min(amount, stack.getCount());
+                amount -= toSubtract;
+                stack.setCount(stack.getCount() - toSubtract);
+
+                if (stack.getCount() <= 0) {
+                    iterator.remove();
+                    onChanged.run();
+                }
+                if (amount <= 0)
+                    break;
+            }
+
+            if (list.isEmpty())
+                createFactoryLogistics$promiseByFluid.remove(fluidIngredient.stack().getFluid());
+        }
     }
 
     @Overwrite(remap = false)

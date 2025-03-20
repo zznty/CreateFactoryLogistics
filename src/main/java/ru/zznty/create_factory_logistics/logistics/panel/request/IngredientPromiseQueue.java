@@ -6,4 +6,6 @@ public interface IngredientPromiseQueue {
     void forceClear(BoardIngredient ingredient);
 
     int getTotalPromisedAndRemoveExpired(BoardIngredient ingredient, int expiryTime);
+
+    void ingredientEnteredSystem(BoardIngredient ingredient);
 }

@@ -6,15 +6,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fluids.FluidStack;
 import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
 
-public record FluidBoardIngredient(FluidStack stack) implements BoardIngredient {
-    @Override
-    public int amount() {
-        return stack.getAmount();
-    }
-
+public record FluidBoardIngredient(FluidStack stack, int amount) implements BoardIngredient {
     @Override
     public boolean hasEnough(InventorySummary summary) {
-        return getCountIn(summary) >= stack.getAmount();
+        return getCountIn(summary) >= amount;
     }
 
     @Override
@@ -25,20 +20,20 @@ public record FluidBoardIngredient(FluidStack stack) implements BoardIngredient 
 
     @Override
     public BoardIngredient withAmount(int amount) {
-        FluidStack stackCopy = stack.copy();
-        stackCopy.setAmount(amount);
-        return new FluidBoardIngredient(stackCopy);
+        return new FluidBoardIngredient(stack, amount);
     }
 
     @Override
     public void writeToNBT(CompoundTag tag) {
         stack.writeToNBT(tag);
+        tag.putInt("Amount", amount);
     }
 
     @Override
     public void write(FriendlyByteBuf buf) {
         buf.writeByte(2);
         buf.writeFluidStack(stack);
+        buf.writeVarInt(amount);
     }
 
     @Override
