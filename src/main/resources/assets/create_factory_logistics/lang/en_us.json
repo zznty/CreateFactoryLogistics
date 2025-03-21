@@ -4,6 +4,6 @@
   "entity.create_factory_logistics.jar": "Jar",
   "item.create_factory_logistics.fluid_mechanism": "Fluid Mechanism",
   "item.create_factory_logistics.incomplete_fluid_mechanism": "Incomplete Fluid Mechanism",
-  "item.create_factory_logistics.jar": "Copper_jar",
+  "item.create_factory_logistics.jar": "Copper jar",
   "itemGroup.create_factory_logistics.create_factory_logistics_tab": "Create: Factory Logistics"
 }
