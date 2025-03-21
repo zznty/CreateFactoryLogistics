@@ -4,6 +4,6 @@
   "entity.create_factory_logistics.jar": "Банка",
   "item.create_factory_logistics.fluid_mechanism": "Жидкостный механизм",
   "item.create_factory_logistics.incomplete_fluid_mechanism": "Незаконченный жидкостный механизм",
-  "item.create_factory_logistics.jar": "Медная_банка",
+  "item.create_factory_logistics.jar": "Медная банка",
   "itemGroup.create_factory_logistics.create_factory_logistics_tab": "Create: Factory Logistics"
 }
