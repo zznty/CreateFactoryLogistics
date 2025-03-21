@@ -160,7 +160,7 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
         if (extractedFluid == FluidStack.EMPTY ||
                 (ingredient instanceof FluidBoardIngredient fluidIngredient &&
                         (extractedFluid.getFluid() != fluidIngredient.stack().getFluid() ||
-                                extractedFluid.getAmount() < fluidIngredient.stack().getAmount())))
+                                extractedFluid.getAmount() < fluidIngredient.amount())))
             return ItemStack.EMPTY;
 
         return JarPackageItem.slurp(getLevel(), getBlockPos(), Objects.requireNonNull(drainInventory.getInventory()), ingredient.amount());

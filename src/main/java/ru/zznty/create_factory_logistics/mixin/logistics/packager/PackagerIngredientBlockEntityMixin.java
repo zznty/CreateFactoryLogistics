@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
@@ -30,6 +31,7 @@ import ru.zznty.create_factory_logistics.logistics.panel.request.*;
 import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mixin(PackagerBlockEntity.class)
 public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntity implements PackagerIngredientBlockEntity {
@@ -133,6 +135,13 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
 
                 IngredientRequest request = queuedRequests.remove(0);
                 box = jarPackagerBE.extractJar(request.ingredient().withAmount(request.getCount()));
+
+                Optional<FluidStack> fluidContained = FluidUtil.getFluidContained(box);
+
+                if (fluidContained.isPresent() && fluidContained.get().getAmount() < request.getCount()) {
+                    request.subtract(fluidContained.get().getAmount());
+                    queuedRequests.add(request);
+                }
 
                 finalLinkInOrder = true;
                 finalPackageAtLink = true;

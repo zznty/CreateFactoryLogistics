@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_logistics.logistics.panel.request;
 
 import com.simibubi.create.content.logistics.BigItemStack;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -61,5 +62,10 @@ public record IngredientOrder(List<BigIngredientStack> stacks) {
             tag.put("OrderContext", orderContext.write());
         box.getOrCreateTag()
                 .put("Fragment", tag);
+    }
+
+    public static IngredientOrder of(PackageOrderWithCrafts orderWithCrafts) {
+        // todo carry crafting information too
+        return new IngredientOrder(orderWithCrafts.stacks().stream().map(it -> (BigIngredientStack) it).toList());
     }
 }

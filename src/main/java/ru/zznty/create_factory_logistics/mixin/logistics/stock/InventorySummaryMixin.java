@@ -61,6 +61,11 @@ public class InventorySummaryMixin implements IFluidInventorySummary {
         return List.of();
     }
 
+    @Shadow(remap = false)
+    public boolean erase(ItemStack stack) {
+        return false;
+    }
+
     @Overwrite(remap = false)
     public void add(InventorySummary summary) {
         IFluidInventorySummary otherSummary = (IFluidInventorySummary) summary;
@@ -222,5 +227,19 @@ public class InventorySummaryMixin implements IFluidInventorySummary {
     @Override
     public boolean isEmpty() {
         return items.isEmpty() && createFactoryLogistics$fluids.isEmpty();
+    }
+
+    @Override
+    public boolean erase(BoardIngredient ingredient) {
+        if (ingredient instanceof FluidBoardIngredient fluidIngredient) {
+            FluidBoardIngredient stack = createFactoryLogistics$fluids.get(fluidIngredient.stack().getFluid());
+            if (stack == null || stack.amount() == 0 || !stack.canStack(ingredient))
+                return false;
+            createFactoryLogistics$fluids.remove(fluidIngredient.stack().getFluid());
+            totalCount--;
+            return true;
+        } else if (ingredient instanceof ItemBoardIngredient itemIngredient)
+            return erase(itemIngredient.stack());
+        return false;
     }
 }

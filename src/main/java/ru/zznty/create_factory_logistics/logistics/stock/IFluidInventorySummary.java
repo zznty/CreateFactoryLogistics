@@ -27,4 +27,6 @@ public interface IFluidInventorySummary {
     List<BigIngredientStack> get();
 
     boolean isEmpty();
+
+    boolean erase(BoardIngredient ingredient);
 }
