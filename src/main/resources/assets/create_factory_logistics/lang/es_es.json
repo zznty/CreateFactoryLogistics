@@ -1,0 +1,9 @@
+{
+  "block.create_factory_logistics.factory_fluid_gauge": "Medidor industrial de fluidos",
+  "block.create_factory_logistics.jar_packager": "Empaquetador de jarras",
+  "entity.create_factory_logistics.jar": "Jarra",
+  "item.create_factory_logistics.fluid_mechanism": "Mecanismo de fluidos",
+  "item.create_factory_logistics.incomplete_fluid_mechanism": "Mecanismo de fluidos incompleto",
+  "item.create_factory_logistics.jar": "Jarra_de_cobre",
+  "itemGroup.create_factory_logistics.create_factory_logistics_tab": "Create: Factory Logistics"
+}
