@@ -1,0 +1,9 @@
+{
+  "block.create_factory_logistics.factory_fluid_gauge": "Фабричный жидкостный контроллер",
+  "block.create_factory_logistics.jar_packager": "Разливочная машина",
+  "entity.create_factory_logistics.jar": "Банка",
+  "item.create_factory_logistics.fluid_mechanism": "Жидкостный механизм",
+  "item.create_factory_logistics.incomplete_fluid_mechanism": "Незаконченный жидкостный механизм",
+  "item.create_factory_logistics.jar": "Медная_банка",
+  "itemGroup.create_factory_logistics.create_factory_logistics_tab": "Create: Factory Logistics"
+}
