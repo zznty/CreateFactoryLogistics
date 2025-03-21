@@ -117,8 +117,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     private GuiGameElement.GuiRenderBuilder renderIngredientEntry(ItemStack itemStack, Operation<GuiGameElement.GuiRenderBuilder> original, @Local(argsOnly = true) BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
         if (stack.getIngredient() instanceof FluidBoardIngredient fluidIngredient) {
-            return GuiGameElement.of(fluidIngredient.stack().getFluid())
-                    .scale(15)
+            // todo correct mixin to render actual fluid texture instead
+            return GuiGameElement.of(fluidIngredient.stack().getFluid().getBucket())
                     .atLocal(1 / 32f, 1 + 1 / 32f, 2);
         }
         return original.call(itemStack);

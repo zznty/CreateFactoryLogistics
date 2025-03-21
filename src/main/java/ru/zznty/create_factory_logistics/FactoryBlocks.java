@@ -1,7 +1,6 @@
 package ru.zznty.create_factory_logistics;
 
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllDisplaySources;
 import com.simibubi.create.foundation.data.AssetLookup;
 import com.simibubi.create.foundation.data.BuilderTransformers;
 import com.simibubi.create.foundation.data.CreateRegistrate;
@@ -18,7 +17,6 @@ import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlock;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlockItem;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelModel;
 
-import static com.simibubi.create.api.behaviour.display.DisplaySource.displaySource;
 import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
 import static ru.zznty.create_factory_logistics.CreateFactoryLogistics.REGISTRATE;
 
@@ -49,7 +47,8 @@ public class FactoryBlocks {
                     .transform(pickaxeOnly())
                     .blockstate((c, p) -> p.horizontalFaceBlock(c.get(), AssetLookup.partialBaseModel(c, p)))
                     .onRegister(CreateRegistrate.blockModel(() -> FactoryFluidPanelModel::new))
-                    .transform(displaySource(AllDisplaySources.GAUGE_STATUS))
+                    // todo fuck create display cringe, god its awful
+//                    .transform(displaySource(FactoryDisplaySources.FLUID_GAUGE_STATUS))
                     .item(FactoryFluidPanelBlockItem::new)
                     .model(AssetLookup::customItemModel)
                     .recipe((c, b) ->
