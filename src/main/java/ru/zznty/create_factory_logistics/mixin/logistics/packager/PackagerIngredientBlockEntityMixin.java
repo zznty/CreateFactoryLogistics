@@ -266,4 +266,9 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
 
         return box;
     }
+
+    @Override
+    public BlockPos getLink() {
+        return getLinkPos();
+    }
 }

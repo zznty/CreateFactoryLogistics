@@ -3,6 +3,7 @@ package ru.zznty.create_factory_logistics.mixin.logistics.panel;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.simibubi.create.Create;
+import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntity;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConnection;
@@ -130,15 +131,17 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         List<Multimap<PackagerBlockEntity, IngredientRequest>> requests = new ArrayList<>();
 
         // Panel may enforce item arrangement
-        // todo support for crafting context
-//        if (!activeCraftingArrangement.isEmpty())
-//            requestContext = new IngredientOrder(activeCraftingArrangement.stream()
-//                    .map(stack -> BigIngredientStack.of(new ItemBoardIngredient(stack)))
-//                    .toList());
+        List<BigItemStack> craftingContext = List.of();
+        if (!activeCraftingArrangement.isEmpty())
+            craftingContext = activeCraftingArrangement.stream()
+                    .map(stack -> new BigItemStack(stack.copyWithCount(1)))
+                    .toList();
+
 
         // Collect request distributions
         for (Map.Entry<UUID, Collection<BigIngredientStack>> entry : asMap.entrySet()) {
-            IngredientOrder order = new IngredientOrder(new ArrayList<>(entry.getValue()));
+            IngredientOrder order = craftingContext.isEmpty() ? IngredientOrder.order(new ArrayList<>(entry.getValue())) :
+                    IngredientOrder.craftingOrder(new ArrayList<>(entry.getValue()), craftingContext);
             Multimap<PackagerBlockEntity, IngredientRequest> request =
                     IngredientLogisticsManager.findPackagersForRequest(entry.getKey(), order, null, recipeAddress);
             requests.add(request);

@@ -218,7 +218,6 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             )
     )
     private void renderTooltip(GuiGraphics instance, Font p_282308_, ItemStack p_282781_, int p_282687_, int p_282292_, @Local BigItemStack itemStack) {
-        // todo support for ordering fluids via stock keeper
         BigIngredientStack stack = (BigIngredientStack) itemStack;
         BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.getIngredient());
         int customCount = stack.getCount();

@@ -53,7 +53,7 @@ public class RedstoneRequesterConfigurationPacketMixin implements IngredientReds
         be.allowPartialRequests = allowPartial;
 
         IngredientRedstoneRequester requester = (IngredientRedstoneRequester) be;
-        requester.setOrder(new IngredientOrder(createFactoryLogistics$stacks));
+        requester.setOrder(IngredientOrder.order(createFactoryLogistics$stacks));
     }
 
     @Override

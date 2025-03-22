@@ -33,10 +33,7 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientStack;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientPromiseQueue;
+import ru.zznty.create_factory_logistics.logistics.panel.request.*;
 import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
 
 import java.util.*;
@@ -156,19 +153,26 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
     }
 
     public ItemStack extractJar(BoardIngredient ingredient) {
-        if (ingredient != BoardIngredient.EMPTY && !(ingredient instanceof FluidBoardIngredient))
+        if (!drainInventory.hasInventory()) return ItemStack.EMPTY;
+
+        FluidBoardIngredient fluidIngredient;
+        if (ingredient == BoardIngredient.EMPTY) {
+            FluidStack containedFluid = drainInventory.getInventory().drain(JarPackageItem.JAR_CAPACITY, IFluidHandler.FluidAction.SIMULATE);
+            if (containedFluid.isEmpty())
+                return ItemStack.EMPTY;
+            fluidIngredient = new FluidBoardIngredient(containedFluid, containedFluid.getAmount());
+        } else if (ingredient instanceof FluidBoardIngredient) {
+            fluidIngredient = (FluidBoardIngredient) ingredient;
+        } else {
             throw new IllegalStateException("Unsupported board ingredient: " + ingredient);
+        }
 
-        // todo replace with fluid handler call to support multi-tank blocks
-        FluidStack extractedFluid = drainInventory.simulate().extractAny();
+        FluidStack extractedFluid = drainInventory.getInventory().drain(FluidHelper.copyStackWithAmount(fluidIngredient.stack(), fluidIngredient.amount()), IFluidHandler.FluidAction.SIMULATE);
 
-        if (extractedFluid == FluidStack.EMPTY ||
-                (ingredient instanceof FluidBoardIngredient fluidIngredient &&
-                        (extractedFluid.getFluid() != fluidIngredient.stack().getFluid() ||
-                                extractedFluid.getAmount() < fluidIngredient.amount())))
+        if (extractedFluid == FluidStack.EMPTY || extractedFluid.getAmount() < fluidIngredient.amount())
             return ItemStack.EMPTY;
 
-        return JarPackageItem.slurp(getLevel(), getBlockPos(), Objects.requireNonNull(drainInventory.getInventory()), ingredient.amount());
+        return JarPackageItem.slurp(getLevel(), getBlockPos(), Objects.requireNonNull(drainInventory.getInventory()), extractedFluid, ingredient.amount());
     }
 
     @Override
@@ -186,11 +190,10 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
         if (!signBasedAddress.isBlank())
             PackageItem.addAddress(createdBox, signBasedAddress);
 
-        // todo package links support for jars
-        /*BlockPos linkPos = getLinkPos();
+        BlockPos linkPos = ((PackagerIngredientBlockEntity) this).getLink();
         if (linkPos != null
                 && level.getBlockEntity(linkPos) instanceof PackagerLinkBlockEntity plbe)
-            plbe.behaviour.deductFromAccurateSummary(extractedItems);*/
+            ((LogisticallyLinkedIngredientBehaviour) plbe.behaviour).deductFromAccurateSummary(FluidUtil.getFluidContained(createdBox).orElse(FluidStack.EMPTY));
 
         if (!heldBox.isEmpty() || animationTicks != 0) {
             queuedExitingPackages.add(new BigItemStack(createdBox));

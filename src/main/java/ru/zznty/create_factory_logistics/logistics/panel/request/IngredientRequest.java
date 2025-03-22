@@ -1,6 +1,5 @@
 package ru.zznty.create_factory_logistics.logistics.panel.request;
 
-import net.minecraft.nbt.CompoundTag;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 
@@ -26,30 +25,5 @@ public record IngredientRequest(BoardIngredient ingredient, MutableInt count, St
 
     public boolean isEmpty() {
         return getCount() == 0;
-    }
-
-    public static IngredientRequest fromNBT(CompoundTag tag) {
-        BoardIngredient ingredient = BoardIngredient.readFromNBT(tag);
-        int count = tag.getInt("Count");
-        String address = tag.getString("Address");
-        int linkIndex = tag.getInt("LinkIndex");
-        MutableBoolean finalLink = new MutableBoolean(tag.getBoolean("FinalLink"));
-        int packageCount = tag.getInt("PackageCount");
-        int orderId = tag.getInt("OrderId");
-        IngredientOrder orderContext =
-                tag.contains("OrderContext") ? IngredientOrder.read(tag.getCompound("OrderContext")) : null;
-        return create(ingredient, count, address, linkIndex, finalLink, packageCount, orderId, orderContext);
-    }
-
-    public CompoundTag toNBT() {
-        CompoundTag tag = new CompoundTag();
-        tag.putInt("Count", count.intValue());
-        ingredient.writeToNBT(tag);
-        tag.putString("Address", address);
-        tag.putInt("LinkIndex", linkIndex);
-        tag.putBoolean("FinalLink", finalLink.booleanValue());
-        tag.putInt("PackageCount", packageCounter.intValue());
-        tag.putInt("OrderId", orderId);
-        return tag;
     }
 }
