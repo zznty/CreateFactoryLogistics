@@ -63,7 +63,12 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
 
     @Override
     public InventorySummary getAvailableItems(boolean scanInputSlots) {
-        if (!drainInventory.hasInventory()) return InventorySummary.EMPTY;
+        if (!drainInventory.hasInventory()) {
+            // in case inventory didn't load in the first tick
+            drainInventory.findNewCapability();
+            if (!drainInventory.hasInventory())
+                return InventorySummary.EMPTY;
+        }
 
         IFluidHandler fluidHandler = drainInventory.getInventory();
 
