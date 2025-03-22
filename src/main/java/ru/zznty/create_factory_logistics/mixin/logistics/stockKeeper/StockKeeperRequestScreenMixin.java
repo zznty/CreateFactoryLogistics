@@ -20,6 +20,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,6 +33,7 @@ import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient
 import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.ItemBoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
+import ru.zznty.create_factory_logistics.render.FluidSlotRenderer;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -67,8 +69,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/content/logistics/packager/InventorySummary;getCountOf(Lnet/minecraft/world/item/ItemStack;)I"
-            ),
-            remap = false
+            )
     )
     private int getCountInForced(InventorySummary instance, ItemStack $, @Local BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
@@ -80,8 +81,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/content/logistics/packager/InventorySummary;erase(Lnet/minecraft/world/item/ItemStack;)Z"
-            ),
-            remap = false
+            )
     )
     private boolean eraseFromForced(InventorySummary instance, ItemStack $, @Local BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
@@ -279,12 +279,18 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             ),
             remap = false
     )
-    private GuiGameElement.GuiRenderBuilder renderIngredientEntry(ItemStack itemStack, Operation<GuiGameElement.GuiRenderBuilder> original, @Local(argsOnly = true) BigItemStack entry) {
+    private GuiGameElement.GuiRenderBuilder renderIngredientEntry(ItemStack itemStack,
+                                                                  Operation<GuiGameElement.GuiRenderBuilder> original,
+                                                                  @Local(argsOnly = true) BigItemStack entry,
+                                                                  @Local(argsOnly = true) GuiGraphics graphics) {
         BigIngredientStack stack = (BigIngredientStack) entry;
         if (stack.getIngredient() instanceof FluidBoardIngredient fluidIngredient) {
-            // todo correct mixin to render actual fluid texture instead
-            return GuiGameElement.of(fluidIngredient.stack().getFluid().getBucket())
-                    .atLocal(1 / 32f, 1 + 1 / 32f, 2);
+//            return GuiGameElement.of(fluidIngredient.stack().getFluid().getBucket())
+//                    .atLocal(1 / 32f, 1 + 1 / 32f, 2);
+
+            FluidSlotRenderer.renderFluidSlot(graphics, 0, 0, fluidIngredient.stack());
+
+            return GuiGameElement.of(Blocks.AIR);
         }
         return original.call(itemStack);
     }
