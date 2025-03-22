@@ -103,12 +103,12 @@ public class ChainConveyorVisualMixin {
         var atlas = Minecraft.getInstance()
                 .getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
 
-        TransformedInstance[] buffers = new TransformedInstance[original.length + Iterate.horizontalDirections.length];
+        TransformedInstance[] buffers = new TransformedInstance[original.length + Iterate.horizontalDirections.length + 1];
         System.arraycopy(original, 0, buffers, 0, original.length);
 
-        for (int i = 0; i < Iterate.horizontalDirections.length; i++) {
-            TextureAtlasSprite stillTexture = atlas.apply(clientFluid.getStillTexture(fluidStack));
+        TextureAtlasSprite stillTexture = atlas.apply(clientFluid.getStillTexture(fluidStack));
 
+        for (int i = 0; i < Iterate.horizontalDirections.length + 1; i++) {
             buffers[original.length + i] = createFactoryLogistics$fluidSurface.get(stillTexture);
             buffers[original.length + i].colorArgb(clientFluid.getTintColor(fluidStack));
         }
@@ -133,7 +133,7 @@ public class ChainConveyorVisualMixin {
                                        @Share("fluidAmount") LocalIntRef fluidAmount) {
         if (buf == rigBuffer || buf == boxBuffer) return original.call(instance);
 
-        var side = Iterate.horizontalDirections[fluidBufferIndex.get()];
+        var side = fluidBufferIndex.get() >= Iterate.horizontalDirections.length ? Direction.UP : Iterate.horizontalDirections[fluidBufferIndex.get()];
         fluidBufferIndex.set(fluidBufferIndex.get() + 1);
 
         buf.rotateTo(Direction.UP, side);
@@ -143,19 +143,29 @@ public class ChainConveyorVisualMixin {
 
         float mult = side.getAxis() == Direction.Axis.X ? 1 : -1;
 
-        float scaleFactor = (float) fluidAmount.get() / JarPackageItem.JAR_CAPACITY * 4 / 16f / JarStyles.JAR_WINDOW_WIDTH;
+        float fillFactor = (float) fluidAmount.get() / JarPackageItem.JAR_CAPACITY;
+        float scaleFactor = fillFactor * 4 / 16f / JarStyles.JAR_WINDOW_WIDTH;
 
         float height = 8 / 16f;
 
         float center = 5 / 16f / 2f * scaleFactor / 2;
 
-        buf.center()
-                .translate(mult * height, 8 / 16f - 1 / 128f, -mult * height);
+        if (side.getAxis().isHorizontal()) {
+            buf.center();
+            buf.translateY(8 / 16f - 1 / 128f);
+        } else {
+            mult = 0;
+            buf.translateY(3 / 128f + -4 / 16f * fillFactor);
+            buf.scaleZ(1.3f);
+            buf.scaleX(1.3f);
+        }
+
+        buf.translate(mult * height, 0, -mult * height);
 
         if (side.getAxis() == Direction.Axis.X)
-            buf.translateX(-center).scaleX(scaleFactor);
-        else
-            buf.translateZ(-center).scaleZ(scaleFactor);
+            buf.scaleX(scaleFactor);
+        else if (side.getAxis() == Direction.Axis.Z)
+            buf.scaleZ(scaleFactor);
 
         return instance;
     }
