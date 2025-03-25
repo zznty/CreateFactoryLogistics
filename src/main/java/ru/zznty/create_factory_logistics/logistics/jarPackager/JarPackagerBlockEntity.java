@@ -34,13 +34,13 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 import ru.zznty.create_factory_logistics.logistics.panel.request.*;
-import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
 
 import java.util.*;
 
 public class JarPackagerBlockEntity extends PackagerBlockEntity {
     private TankManipulationBehaviour drainInventory;
-    private IFluidInventorySummary available;
+    private IIngredientInventorySummary available;
 
     public JarPackagerBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -71,7 +71,7 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
 
         InventorySummary summary = new InventorySummary();
 
-        IFluidInventorySummary fluidSummary = (IFluidInventorySummary) summary;
+        IIngredientInventorySummary fluidSummary = (IIngredientInventorySummary) summary;
 
         for (int i = 0; i < fluidHandler.getTanks(); i++) {
             FluidStack stack = fluidHandler.getFluidInTank(i);
@@ -92,7 +92,7 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
         return summary;
     }
 
-    private void submitNewArrivals(IFluidInventorySummary before, IFluidInventorySummary after) {
+    private void submitNewArrivals(IIngredientInventorySummary before, IIngredientInventorySummary after) {
         if (before == null || after.isEmpty())
             return;
 
@@ -101,12 +101,12 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
         if (promiseQueues.isEmpty())
             return;
 
-        for (BigIngredientStack stack : after.get()) {
+        for (BigIngredientStack stack : after.getStacks()) {
             before.add(stack.getIngredient(), -stack.getCount());
         }
 
         for (IngredientPromiseQueue queue : promiseQueues) {
-            for (BigIngredientStack stack : before.get()) {
+            for (BigIngredientStack stack : before.getStacks()) {
                 if (stack.getCount() < 0)
                     queue.ingredientEnteredSystem(stack.getIngredient().withAmount(-stack.getCount()));
             }
@@ -248,7 +248,7 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         if (!clientPacket && compound.contains("LastSummary"))
-            available = (IFluidInventorySummary) InventorySummary.read(compound.getCompound("LastSummary"));
+            available = (IIngredientInventorySummary) InventorySummary.read(compound.getCompound("LastSummary"));
     }
 
     @Override

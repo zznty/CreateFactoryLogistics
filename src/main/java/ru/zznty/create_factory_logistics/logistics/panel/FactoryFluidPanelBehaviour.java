@@ -22,8 +22,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.fluids.FluidStack;
 import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientPromiseQueue;
-import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
 import ru.zznty.create_factory_logistics.mixin.accessor.FactoryPanelBehaviourAccessor;
 
 import java.util.List;
@@ -69,8 +70,8 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
         if (getFilter().isEmpty())
             return 0;
 
-        IFluidInventorySummary summary = getRelevantSummary();
-        return summary.getCountOf(filter.fluid(blockEntity.getLevel()).getFluid());
+        IIngredientInventorySummary summary = getRelevantSummary();
+        return summary.getCountOf(new FluidBoardIngredient(filter.fluid(blockEntity.getLevel()), 1));
     }
 
     @Override
@@ -233,8 +234,8 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
                 .add(CreateLang.translate("generic.unit.buckets"));
     }
 
-    private IFluidInventorySummary getRelevantSummary() {
-        return (IFluidInventorySummary) ((FactoryPanelBehaviourAccessor) this).callGetRelevantSummary();
+    private IIngredientInventorySummary getRelevantSummary() {
+        return (IIngredientInventorySummary) ((FactoryPanelBehaviourAccessor) this).callGetRelevantSummary();
     }
 
     private int getPromiseExpiryTimeInTicks() {

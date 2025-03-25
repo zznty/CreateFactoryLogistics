@@ -32,7 +32,7 @@ import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientSt
 import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.ItemBoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
 import ru.zznty.create_factory_logistics.render.FluidSlotRenderer;
 
 import javax.annotation.Nullable;
@@ -85,7 +85,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private boolean eraseFromForced(InventorySummary instance, ItemStack $, @Local BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
-        IFluidInventorySummary summary = (IFluidInventorySummary) instance;
+        IIngredientInventorySummary summary = (IIngredientInventorySummary) instance;
         return summary.erase(stack.getIngredient());
     }
 

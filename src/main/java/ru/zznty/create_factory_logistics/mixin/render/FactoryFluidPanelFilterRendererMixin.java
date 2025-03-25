@@ -30,7 +30,7 @@ public class FactoryFluidPanelFilterRendererMixin {
             FluidStack fluid = fluidBehaviour.getFluid();
             if (fluid.isEmpty()) return;
 
-            FluidRenderer.renderFluidBox(fluid.getFluid(), fluid.getAmount(), -1 / 5f, -1 / 5f, -1 / 32f, 1 / 5f, 1 / 5f, 0, buffer, ms, light, true, false);
+            FluidRenderer.renderFluidBox(fluid.getFluid(), fluid.getAmount(), -1 / 5f, -1 / 5f, -1 / 32f, 1 / 5f, 1 / 5f, 0, buffer, ms, light, true, false, fluid.getTag());
 
             return;
         }

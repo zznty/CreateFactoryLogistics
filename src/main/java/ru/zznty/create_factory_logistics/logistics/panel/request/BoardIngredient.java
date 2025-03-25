@@ -43,6 +43,11 @@ public interface BoardIngredient {
         public boolean canStack(BoardIngredient ingredient) {
             return ingredient == EMPTY;
         }
+
+        @Override
+        public IngredientKey key() {
+            return IngredientKey.of();
+        }
     };
 
     int amount();
@@ -58,6 +63,8 @@ public interface BoardIngredient {
     void write(FriendlyByteBuf buf);
 
     boolean canStack(BoardIngredient ingredient);
+
+    IngredientKey key();
 
     static BoardIngredient read(FriendlyByteBuf buf) {
         int mode = buf.readByte();

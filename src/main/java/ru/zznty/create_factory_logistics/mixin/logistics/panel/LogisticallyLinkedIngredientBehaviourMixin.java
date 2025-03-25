@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import ru.zznty.create_factory_logistics.logistics.panel.request.*;
-import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
 
 import java.util.UUID;
 
@@ -37,10 +37,10 @@ public abstract class LogisticallyLinkedIngredientBehaviourMixin extends BlockEn
 
     @Override
     public void deductFromAccurateSummary(FluidStack packageContents) {
-        IFluidInventorySummary summary = (IFluidInventorySummary) LogisticsManager.ACCURATE_SUMMARIES.getIfPresent(freqId);
+        IIngredientInventorySummary summary = (IIngredientInventorySummary) LogisticsManager.ACCURATE_SUMMARIES.getIfPresent(freqId);
         if (summary == null || packageContents.isEmpty())
             return;
 
-        summary.add(packageContents, -Math.min(summary.getCountOf(packageContents.getFluid()), packageContents.getAmount()));
+        summary.add(packageContents, -Math.min(summary.getCountOf(new FluidBoardIngredient(packageContents, 1)), packageContents.getAmount()));
     }
 }
