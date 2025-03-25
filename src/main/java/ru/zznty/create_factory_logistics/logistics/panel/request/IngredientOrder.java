@@ -34,6 +34,12 @@ public record IngredientOrder(List<BigIngredientStack> stacks, List<PackageOrder
         return new IngredientOrder(stacks, List.of(new PackageOrderWithCrafts.CraftingEntry(new PackageOrder(craftPattern), 1)));
     }
 
+    public static IngredientOrder of(PanelRequestedIngredients ingredients) {
+        return ingredients.hasCraftingContext() ?
+                craftingOrder(ingredients.ingredients(), ingredients.craftingContext()) :
+                order(ingredients.ingredients());
+    }
+
     public boolean isEmpty() {
         return stacks.isEmpty();
     }
