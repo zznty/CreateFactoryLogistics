@@ -32,6 +32,7 @@ public class InventorySummaryMixin implements IIngredientInventorySummary {
 
     @Overwrite(remap = false)
     public void add(ItemStack stack, int count) {
+        if (stack.isEmpty() || count == 0) return;
         add(new ItemBoardIngredient(stack, count), count);
     }
 
@@ -42,7 +43,8 @@ public class InventorySummaryMixin implements IIngredientInventorySummary {
 
     @Overwrite(remap = false)
     public List<BigIngredientStack> getStacks() {
-        return List.copyOf(createFactoryLogistics$ingredients.values());
+        // note: resulting list must be mutable
+        return new ArrayList<>(createFactoryLogistics$ingredients.values());
     }
 
     @Overwrite(remap = false)
