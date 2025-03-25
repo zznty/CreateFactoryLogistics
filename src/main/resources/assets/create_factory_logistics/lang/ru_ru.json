@@ -5,5 +5,6 @@
   "item.create_factory_logistics.fluid_mechanism": "Жидкостный механизм",
   "item.create_factory_logistics.incomplete_fluid_mechanism": "Незаконченный жидкостный механизм",
   "item.create_factory_logistics.jar": "Медная банка",
-  "itemGroup.create_factory_logistics.create_factory_logistics_tab": "Create: Factory Logistics"
+  "itemGroup.create_factory_logistics.create_factory_logistics_tab": "Create: Factory Logistics",
+  "gui.create_factory_logistics.redstone_requester.fluid_slot_mode": "Удерживайте Alt, чтобы поместить жидкость"
 }
