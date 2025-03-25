@@ -19,6 +19,7 @@
     "logistics.panel.FactoryPanelConnectionHandlerMixin",
     "logistics.panel.FactoryPanelRequestMixin",
     "logistics.panel.LogisticallyLinkedIngredientBehaviourMixin",
+    "logistics.redstoneRequester.JeiCompatMixin",
     "logistics.redstoneRequester.RedstoneRequesterBlockEntityMixin",
     "logistics.redstoneRequester.RedstoneRequesterConfigurationPacketMixin",
     "logistics.redstoneRequester.RedstoneRequesterMenuMixin",
