@@ -1,5 +1,6 @@
 package ru.zznty.create_factory_logistics.render;
 
+import net.createmod.catnip.theme.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -19,6 +20,8 @@ public class FluidSlotRenderer {
                 .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
                 .apply(attributes.getStillTexture(stack));
 
-        instance.blit(x + 1, y + 1, 2, 14, 14, sprite);
+        Color tint = new Color(attributes.getTintColor(stack), true);
+
+        instance.blit(x + 1, y + 1, 2, 14, 14, sprite, tint.getRedAsFloat(), tint.getGreenAsFloat(), tint.getBlueAsFloat(), tint.getAlphaAsFloat());
     }
 }
