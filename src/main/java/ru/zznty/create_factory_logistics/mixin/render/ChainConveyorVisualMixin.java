@@ -8,23 +8,14 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
-import com.simibubi.create.content.fluids.FluidMesh;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorBlockEntity;
 import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorPackage;
 import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorVisual;
 import dev.engine_room.flywheel.api.visual.DynamicVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
-import dev.engine_room.flywheel.lib.instance.InstanceTypes;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import dev.engine_room.flywheel.lib.transform.Translate;
-import dev.engine_room.flywheel.lib.visual.util.SmartRecycler;
-import net.createmod.catnip.data.Iterate;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.Direction;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,23 +24,20 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
-import ru.zznty.create_factory_logistics.logistics.jar.JarStyles;
+import ru.zznty.create_factory_logistics.render.FluidVisual;
 
 @Mixin(ChainConveyorVisual.class)
 public class ChainConveyorVisualMixin {
 
     @Unique
-    private SmartRecycler<TextureAtlasSprite, TransformedInstance> createFactoryLogistics$fluidSurface;
+    private FluidVisual createFactoryLogistics$fluidVisual;
 
     @Inject(
             method = "<init>",
             at = @At("RETURN")
     )
     private void ctor(VisualizationContext context, ChainConveyorBlockEntity blockEntity, float partialTick, CallbackInfo ci) {
-        createFactoryLogistics$fluidSurface = new SmartRecycler<>(key ->
-                context.instancerProvider()
-                        .instancer(InstanceTypes.TRANSFORMED, FluidMesh.surface(key, JarStyles.JAR_WINDOW_WIDTH))
-                        .createInstance());
+        createFactoryLogistics$fluidVisual = new FluidVisual(context, false, true);
     }
 
     @Inject(
@@ -57,8 +45,8 @@ public class ChainConveyorVisualMixin {
             at = @At("HEAD"),
             remap = false
     )
-    private void resetCount(DynamicVisual.Context ctx, CallbackInfo ci) {
-        createFactoryLogistics$fluidSurface.resetCount();
+    private void begin(DynamicVisual.Context ctx, CallbackInfo ci) {
+        createFactoryLogistics$fluidVisual.begin();
     }
 
     @Inject(
@@ -67,7 +55,7 @@ public class ChainConveyorVisualMixin {
             remap = false
     )
     private void delete(CallbackInfo ci) {
-        createFactoryLogistics$fluidSurface.delete();
+        createFactoryLogistics$fluidVisual.delete();
     }
 
     @Inject(
@@ -75,8 +63,8 @@ public class ChainConveyorVisualMixin {
             at = @At("RETURN"),
             remap = false
     )
-    private void discardExtra(DynamicVisual.Context ctx, CallbackInfo ci) {
-        createFactoryLogistics$fluidSurface.discardExtra();
+    private void end(DynamicVisual.Context ctx, CallbackInfo ci) {
+        createFactoryLogistics$fluidVisual.end();
     }
 
     @Definition(id = "TransformedInstance", type = TransformedInstance.class)
@@ -88,30 +76,15 @@ public class ChainConveyorVisualMixin {
     )
     private TransformedInstance[] setupFluidBuffers(TransformedInstance[] original,
                                                     @Local(argsOnly = true) ChainConveyorPackage box,
-                                                    @Share("fluidAmount") LocalIntRef fluidAmount) {
+                                                    @Share("fluid") LocalRef<FluidStack> fluid) {
         if (!(box.item.getItem() instanceof JarPackageItem)) return original;
 
-        FluidStack fluidStack = FluidUtil.getFluidContained(box.item).orElse(FluidStack.EMPTY);
+        fluid.set(FluidUtil.getFluidContained(box.item).orElse(FluidStack.EMPTY));
 
-        if (fluidStack == FluidStack.EMPTY) return original;
+        if (fluid.get().isEmpty()) return original;
 
-        fluidAmount.set(fluidStack.getAmount());
-
-        Fluid fluid = fluidStack.getFluid();
-        IClientFluidTypeExtensions clientFluid = IClientFluidTypeExtensions.of(fluid);
-
-        var atlas = Minecraft.getInstance()
-                .getTextureAtlas(InventoryMenu.BLOCK_ATLAS);
-
-        TransformedInstance[] buffers = new TransformedInstance[original.length + Iterate.horizontalDirections.length];
+        TransformedInstance[] buffers = createFactoryLogistics$fluidVisual.setupBuffers(fluid.get(), original.length);
         System.arraycopy(original, 0, buffers, 0, original.length);
-
-        for (int i = 0; i < Iterate.horizontalDirections.length; i++) {
-            TextureAtlasSprite stillTexture = atlas.apply(clientFluid.getStillTexture(fluidStack));
-
-            buffers[original.length + i] = createFactoryLogistics$fluidSurface.get(stillTexture);
-            buffers[original.length + i].colorArgb(clientFluid.getTintColor(fluidStack));
-        }
 
         return buffers;
     }
@@ -130,10 +103,13 @@ public class ChainConveyorVisualMixin {
                                        @Local(ordinal = 1) TransformedInstance boxBuffer,
                                        @Local(ordinal = 2) TransformedInstance buf,
                                        @Share("fluidBufferIndex") LocalIntRef fluidBufferIndex,
-                                       @Share("fluidAmount") LocalIntRef fluidAmount) {
+                                       @Share("fluid") LocalRef<FluidStack> fluid) {
         if (buf == rigBuffer || buf == boxBuffer) return original.call(instance);
 
-        var side = Iterate.horizontalDirections[fluidBufferIndex.get()];
+        createFactoryLogistics$fluidVisual.setupBuffer(fluid.get(), JarPackageItem.JAR_CAPACITY, buf, fluidBufferIndex.get(), 8f / 16, 8f / 16);
+        fluidBufferIndex.set(fluidBufferIndex.get() + 1);
+
+        /*var side = fluidBufferIndex.get() >= Iterate.horizontalDirections.length ? Direction.UP : Iterate.horizontalDirections[fluidBufferIndex.get()];
         fluidBufferIndex.set(fluidBufferIndex.get() + 1);
 
         buf.rotateTo(Direction.UP, side);
@@ -143,19 +119,29 @@ public class ChainConveyorVisualMixin {
 
         float mult = side.getAxis() == Direction.Axis.X ? 1 : -1;
 
-        float scaleFactor = (float) fluidAmount.get() / JarPackageItem.JAR_CAPACITY * 4 / 16f / JarStyles.JAR_WINDOW_WIDTH;
+        float fillFactor = (float) fluidAmount.get() / JarPackageItem.JAR_CAPACITY;
+        float scaleFactor = fillFactor * 4 / 16f / JarStyles.JAR_WINDOW_WIDTH;
 
         float height = 8 / 16f;
 
         float center = 5 / 16f / 2f * scaleFactor / 2;
 
-        buf.center()
-                .translate(mult * height, 8 / 16f - 1 / 128f, -mult * height);
+        if (side.getAxis().isHorizontal()) {
+            buf.center();
+            buf.translateY(8 / 16f - 1 / 128f);
+        } else {
+            mult = 0;
+            buf.translateY(3 / 128f + -4 / 16f * fillFactor);
+            buf.scaleZ(1.3f);
+            buf.scaleX(1.3f);
+        }
+
+        buf.translate(mult * height, 0, -mult * height);
 
         if (side.getAxis() == Direction.Axis.X)
-            buf.translateX(-center).scaleX(scaleFactor);
-        else
-            buf.translateZ(-center).scaleZ(scaleFactor);
+            buf.scaleX(scaleFactor);
+        else if (side.getAxis() == Direction.Axis.Z)
+            buf.scaleZ(scaleFactor);*/
 
         return instance;
     }

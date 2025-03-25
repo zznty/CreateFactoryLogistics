@@ -22,7 +22,7 @@ import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientSt
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientLogisticsManager;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequester;
-import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
 
 @Mixin(RedstoneRequesterBlockEntity.class)
 public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlockEntity implements IngredientRedstoneRequester {
@@ -45,12 +45,12 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
 
         boolean anySucceeded = false;
 
-        IFluidInventorySummary summaryOfOrder = (IFluidInventorySummary) new InventorySummary();
+        IIngredientInventorySummary summaryOfOrder = (IIngredientInventorySummary) new InventorySummary();
         createFactoryLogistics$encodedRequest.stacks()
                 .forEach(summaryOfOrder::add);
 
-        IFluidInventorySummary summary = (IFluidInventorySummary) getAccurateSummary();
-        for (BigIngredientStack entry : summaryOfOrder.get()) {
+        IIngredientInventorySummary summary = (IIngredientInventorySummary) getAccurateSummary();
+        for (BigIngredientStack entry : summaryOfOrder.getStacks()) {
             if (summary.getCountOf(entry) >= entry.getCount()) {
                 anySucceeded = true;
                 continue;

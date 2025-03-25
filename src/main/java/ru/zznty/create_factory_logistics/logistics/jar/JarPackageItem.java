@@ -34,11 +34,10 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.FluidActionResult;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -191,33 +190,19 @@ public class JarPackageItem extends PackageItem {
         super.initializeClient(consumer);
     }
 
-    public static ItemStack slurp(Level world, BlockPos pos, IFluidHandler tank, int amount) {
+    public static ItemStack slurp(Level world, BlockPos pos, IFluidHandler tank, FluidStack extractedFluid, int amount) {
         if (amount < 1) amount = JAR_CAPACITY;
-        FluidStack fluid = tank.drain(amount, IFluidHandler.FluidAction.SIMULATE);
-
-        if (fluid.isEmpty())
-            return ItemStack.EMPTY;
 
         ItemStack jar = new ItemStack(JarStyles.getRandomJar());
 
-        LazyOptional<IFluidHandlerItem> fluidHandlerLazy = jar.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM);
+        FluidActionResult result = FluidUtil.tryFillContainer(jar, tank, amount, null, true);
 
-        if (!fluidHandlerLazy.isPresent())
+        if (!result.isSuccess())
             return ItemStack.EMPTY;
 
-        IFluidHandlerItem fluidHandler = fluidHandlerLazy.orElse(null);
+        world.playSound(null, pos, FluidHelper.getFillSound(extractedFluid), SoundSource.BLOCKS, .5f, 1);
 
-        FluidHelper.FluidExchange exchange = FluidHelper.exchange(tank, fluidHandler, null, amount);
-
-        if (exchange == FluidHelper.FluidExchange.ITEM_TO_TANK) {
-            world.playSound(null, pos, FluidHelper.getEmptySound(fluidHandler.getFluidInTank(0)), SoundSource.BLOCKS, .5f, 1);
-        } else if (exchange == FluidHelper.FluidExchange.TANK_TO_ITEM) {
-            world.playSound(null, pos, FluidHelper.getFillSound(fluidHandler.getFluidInTank(0)), SoundSource.BLOCKS, .5f, 1);
-        } else {
-            return ItemStack.EMPTY;
-        }
-
-        return jar;
+        return result.getResult();
     }
 
     public static ItemStack getDefaultJar() {

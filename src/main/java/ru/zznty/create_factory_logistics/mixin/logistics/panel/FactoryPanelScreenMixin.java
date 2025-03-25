@@ -16,20 +16,13 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import net.createmod.catnip.gui.AbstractSimiScreen;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.lang.LangBuilder;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.fluids.FluidStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
@@ -37,6 +30,7 @@ import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehavi
 import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientStack;
 import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
+import ru.zznty.create_factory_logistics.render.FluidSlotRenderer;
 
 @Mixin(FactoryPanelScreen.class)
 public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
@@ -96,25 +90,11 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
     )
     private void renderOutputConfig(GuiGraphics instance, ItemStack p_281978_, int p_282647_, int p_281944_, Operation<Void> original) {
         if (behaviour instanceof FactoryFluidPanelBehaviour fluidBehaviour) {
-            createFactoryLogistics$renderFluidSlot(instance, p_282647_, p_281944_, fluidBehaviour.getFluid());
+            FluidSlotRenderer.renderFluidSlot(instance, p_282647_, p_281944_, fluidBehaviour.getFluid());
             return;
         }
 
         original.call(instance, p_281978_, p_282647_, p_281944_);
-    }
-
-    @Unique
-    private static void createFactoryLogistics$renderFluidSlot(GuiGraphics instance, int x, int y, FluidStack stack) {
-        if (stack.isEmpty() && stack.getRawFluid() != Fluids.EMPTY) {
-            stack = new FluidStack(stack.getRawFluid(), 1, stack.getTag());
-        }
-
-        var attributes = IClientFluidTypeExtensions.of(stack.getFluid());
-        TextureAtlasSprite sprite = Minecraft.getInstance()
-                .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-                .apply(attributes.getStillTexture(stack));
-
-        instance.blit(x + 1, y + 1, 2, 14, 14, sprite);
     }
 
     /*@Definition(id = "behaviour", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelScreen;behaviour:Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;")
@@ -270,7 +250,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
 
         if (stack.getIngredient() instanceof FluidBoardIngredient fluidIngredient) {
-            createFactoryLogistics$renderFluidSlot(instance, p_282647_, p_281944_, fluidIngredient.stack());
+            FluidSlotRenderer.renderFluidSlot(instance, p_282647_, p_281944_, fluidIngredient.stack());
         } else {
             original.call(instance, p_281978_, p_282647_, p_281944_);
         }

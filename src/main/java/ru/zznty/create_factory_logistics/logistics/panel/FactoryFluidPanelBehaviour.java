@@ -1,12 +1,14 @@
 package ru.zznty.create_factory_logistics.logistics.panel;
 
 import com.simibubi.create.Create;
+import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.utility.CreateLang;
+import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -14,15 +16,15 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.fluids.FluidStack;
-import ru.zznty.create_factory_logistics.logistics.FluidItemStackHandler;
 import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientPromiseQueue;
-import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
 import ru.zznty.create_factory_logistics.mixin.accessor.FactoryPanelBehaviourAccessor;
 
 import java.util.List;
@@ -39,14 +41,17 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
 
     @Override
     public boolean setFilter(ItemStack stack) {
-        Fluid fluidFromStack = FluidItemStackHandler.getFluidFromStack(stack, filter.fluid(blockEntity.getLevel()).getFluid());
-
-        if (fluidFromStack == Fluids.EMPTY)
+        if (!GenericItemEmptying.canItemBeEmptied(blockEntity.getLevel(), stack))
             return false;
 
-        stack = new ItemStack(fluidFromStack.getBucket());
+        Pair<FluidStack, ItemStack> emptyResult = GenericItemEmptying.emptyItem(blockEntity.getLevel(), stack, true);
 
-        this.filter = FilterItemStack.of(stack);
+        if (emptyResult.getFirst().isEmpty())
+            return false;
+
+        Item bucket = emptyResult.getFirst().getFluid().getBucket();
+
+        this.filter = FilterItemStack.of(bucket == Items.AIR ? stack : new ItemStack(bucket));
         blockEntity.setChanged();
         blockEntity.sendData();
         return true;
@@ -65,8 +70,8 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
         if (getFilter().isEmpty())
             return 0;
 
-        IFluidInventorySummary summary = getRelevantSummary();
-        return summary.getCountOf(filter.fluid(blockEntity.getLevel()).getFluid());
+        IIngredientInventorySummary summary = getRelevantSummary();
+        return summary.getCountOf(new FluidBoardIngredient(filter.fluid(blockEntity.getLevel()), 1));
     }
 
     @Override
@@ -229,8 +234,8 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
                 .add(CreateLang.translate("generic.unit.buckets"));
     }
 
-    private IFluidInventorySummary getRelevantSummary() {
-        return (IFluidInventorySummary) ((FactoryPanelBehaviourAccessor) this).callGetRelevantSummary();
+    private IIngredientInventorySummary getRelevantSummary() {
+        return (IIngredientInventorySummary) ((FactoryPanelBehaviourAccessor) this).callGetRelevantSummary();
     }
 
     private int getPromiseExpiryTimeInTicks() {

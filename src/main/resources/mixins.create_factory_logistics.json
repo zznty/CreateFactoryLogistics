@@ -19,11 +19,14 @@
     "logistics.panel.FactoryPanelConnectionHandlerMixin",
     "logistics.panel.FactoryPanelRequestMixin",
     "logistics.panel.LogisticallyLinkedIngredientBehaviourMixin",
+    "logistics.redstoneRequester.JeiCompatMixin",
     "logistics.redstoneRequester.RedstoneRequesterBlockEntityMixin",
     "logistics.redstoneRequester.RedstoneRequesterConfigurationPacketMixin",
     "logistics.redstoneRequester.RedstoneRequesterMenuMixin",
     "logistics.stock.InventorySummaryMixin",
-    "render.ChainConveyorRendererMixin"
+    "logistics.stock.StockCheckingBlockEntityMixin",
+    "render.ChainConveyorRendererMixin",
+    "render.FactoryFluidPanelFilterRendererMixin"
   ],
   "client": [
     "logistics.panel.FactoryPanelScreenMixin",

@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterConfigurationPacket;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterMenu;
@@ -14,7 +15,6 @@ import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
-import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
@@ -39,6 +39,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
 import ru.zznty.create_factory_logistics.logistics.panel.request.*;
+import ru.zznty.create_factory_logistics.render.FluidSlotRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,10 +113,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             i = fluidIngredient.stack().getFluid().getBucket().getDefaultInstance();
             i1 = FactoryFluidPanelBehaviour.formatLevel(amounts.get(index)).string();
 
-            GuiGameElement.of(fluidIngredient.stack().getFluid())
-                    .scale(15)
-                    .atLocal(1 / 32f, 1 + 1 / 32f, 2)
-                    .render(instance, x, y);
+            FluidSlotRenderer.renderFluidSlot(instance, x, y, fluidIngredient.stack());
         } else if (ingredient.get() instanceof ItemBoardIngredient itemIngredient) {
             i = itemIngredient.stack();
         }
@@ -195,6 +193,15 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
                 return;
             }
 
+            if (this.hoveredSlot instanceof SlotItemHandler && menu.getCarried().isEmpty()) {
+                List<Component> components = List.of(
+                        Component.translatable("gui.create_factory_logistics.redstone_requester.fluid_slot_mode")
+                                .withStyle(ChatFormatting.GRAY)
+                );
+                graphics.renderTooltip(this.font, components, Optional.empty(), x, y);
+                return;
+            }
+
             super.renderTooltip(graphics, x, y);
         }
     }
@@ -226,16 +233,17 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
     protected void slotClicked(@Nullable Slot p_97778_, int p_97779_, int p_97780_, ClickType p_97781_) {
         if (p_97778_ != null && p_97778_ instanceof SlotItemHandler) {
             IngredientGhostMenu ghostMenu = (IngredientGhostMenu) menu;
-            if (!this.menu.getCarried().isEmpty()) {
-                FluidStack stack = FluidUtil.getFluidContained(this.menu.getCarried()).orElse(FluidStack.EMPTY);
-                if (!stack.isEmpty() && hasAltDown()) {
-                    ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new FluidBoardIngredient(stack, 1));
-                    return;
-                } else {
-                    ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new ItemBoardIngredient(this.menu.getCarried(), 1));
-                }
-            } else {
+            if (this.menu.getCarried().isEmpty()) {
                 ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), BoardIngredient.EMPTY);
+            } else {
+                if (hasAltDown() && GenericItemEmptying.canItemBeEmptied(this.menu.contentHolder.getLevel(), this.menu.getCarried())) {
+                    FluidStack stack = GenericItemEmptying.emptyItem(this.menu.contentHolder.getLevel(), this.menu.getCarried(), true).getFirst();
+                    if (!stack.isEmpty())
+                        ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new FluidBoardIngredient(stack, 1));
+                    return;
+                }
+
+                ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new ItemBoardIngredient(this.menu.getCarried().copy(), 1));
             }
         }
         super.slotClicked(p_97778_, p_97779_, p_97780_, p_97781_);

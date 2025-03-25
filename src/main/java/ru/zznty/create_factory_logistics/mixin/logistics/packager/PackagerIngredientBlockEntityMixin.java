@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
@@ -27,9 +28,10 @@ import org.spongepowered.asm.mixin.Unique;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlockEntity;
 import ru.zznty.create_factory_logistics.logistics.panel.request.*;
-import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mixin(PackagerBlockEntity.class)
 public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntity implements PackagerIngredientBlockEntity {
@@ -93,12 +95,12 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
         if (summary == null)
             return;
         if (box.getItem() instanceof JarPackageItem) {
-            IFluidInventorySummary fluidInventorySummary = (IFluidInventorySummary) summary;
+            IIngredientInventorySummary fluidInventorySummary = (IIngredientInventorySummary) summary;
 
             FluidStack contents = GenericItemEmptying.emptyItem(level, box, true).getFirst();
             if (contents == FluidStack.EMPTY) return;
             contents = contents.copy();
-            contents.setAmount(-Math.min(fluidInventorySummary.getCountOf(contents.getFluid()), contents.getAmount()));
+            contents.setAmount(-Math.min(fluidInventorySummary.getCountOf(new FluidBoardIngredient(contents, 1)), contents.getAmount()));
 
             fluidInventorySummary.add(contents);
         } else {
@@ -133,6 +135,13 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
 
                 IngredientRequest request = queuedRequests.remove(0);
                 box = jarPackagerBE.extractJar(request.ingredient().withAmount(request.getCount()));
+
+                Optional<FluidStack> fluidContained = FluidUtil.getFluidContained(box);
+
+                if (fluidContained.isPresent() && fluidContained.get().getAmount() < request.getCount()) {
+                    request.subtract(fluidContained.get().getAmount());
+                    queuedRequests.add(request);
+                }
 
                 finalLinkInOrder = true;
                 finalPackageAtLink = true;
@@ -256,5 +265,10 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
             PackageItem.addAddress(box, signBasedAddress);
 
         return box;
+    }
+
+    @Override
+    public BlockPos getLink() {
+        return getLinkPos();
     }
 }

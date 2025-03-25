@@ -46,6 +46,11 @@ public record ItemBoardIngredient(ItemStack stack, int amount) implements BoardI
     }
 
     @Override
+    public IngredientKey key() {
+        return IngredientKey.of(stack.getItem());
+    }
+
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof ItemBoardIngredient fluidBoardIngredient && fluidBoardIngredient.stack.equals(stack, true);
     }

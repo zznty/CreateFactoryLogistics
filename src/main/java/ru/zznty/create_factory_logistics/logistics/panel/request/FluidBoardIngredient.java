@@ -4,7 +4,7 @@ import com.simibubi.create.content.logistics.packager.InventorySummary;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fluids.FluidStack;
-import ru.zznty.create_factory_logistics.logistics.stock.IFluidInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
 
 public record FluidBoardIngredient(FluidStack stack, int amount) implements BoardIngredient {
     @Override
@@ -14,8 +14,8 @@ public record FluidBoardIngredient(FluidStack stack, int amount) implements Boar
 
     @Override
     public int getCountIn(InventorySummary summary) {
-        IFluidInventorySummary fluidInventorySummary = (IFluidInventorySummary) summary;
-        return fluidInventorySummary.getCountOf(stack.getFluid());
+        IIngredientInventorySummary fluidInventorySummary = (IIngredientInventorySummary) summary;
+        return fluidInventorySummary.getCountOf(this);
     }
 
     @Override
@@ -43,6 +43,11 @@ public record FluidBoardIngredient(FluidStack stack, int amount) implements Boar
         }
 
         return false;
+    }
+
+    @Override
+    public IngredientKey key() {
+        return IngredientKey.of(stack.getFluid());
     }
 
     @Override

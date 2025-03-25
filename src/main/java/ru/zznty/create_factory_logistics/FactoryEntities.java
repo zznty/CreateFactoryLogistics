@@ -14,11 +14,12 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageEntity;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageRenderer;
+import ru.zznty.create_factory_logistics.logistics.jar.JarVisual;
 
 public class FactoryEntities {
     public static final EntityEntry<JarPackageEntity> JAR = register("jar", JarPackageEntity::new, () -> JarPackageRenderer::new,
             MobCategory.MISC, 10, 3, true, false, JarPackageEntity::build)
-//            .visual(() -> JarVisual::new, true)
+            .visual(() -> JarVisual::new, true)
             .register();
 
     private static <T extends Entity> CreateEntityBuilder<T, ?> register(String name, EntityType.EntityFactory<T> factory,
