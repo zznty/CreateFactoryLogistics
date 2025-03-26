@@ -110,7 +110,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
                                   @Local(index = 7) int index,
                                   @Share("ingredient") LocalRef<BoardIngredient> ingredient) {
         if (ingredient.get() instanceof FluidBoardIngredient fluidIngredient) {
-            i = fluidIngredient.stack().getFluid().getBucket().getDefaultInstance();
+            i = JarPackageItem.getDefaultJar();
             i1 = FactoryFluidPanelBehaviour.formatLevel(amounts.get(index)).string();
 
             FluidSlotRenderer.renderFluidSlot(instance, x, y, fluidIngredient.stack());
