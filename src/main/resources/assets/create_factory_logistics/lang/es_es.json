@@ -6,5 +6,6 @@
   "item.create_factory_logistics.incomplete_fluid_mechanism": "Mecanismo de fluidos incompleto",
   "item.create_factory_logistics.jar": "Jarra de cobre",
   "itemGroup.create_factory_logistics.create_factory_logistics_tab": "Create: Factory Logistics",
-  "gui.create_factory_logistics.redstone_requester.fluid_slot_mode": "Hold Alt to place containing fluid"
+  "gui.create_factory_logistics.redstone_requester.fluid_slot_mode": "Hold Alt to place containing fluid",
+  "itemGroup.create_factory_logistics.base": "Create Factory Logistics"
 }
