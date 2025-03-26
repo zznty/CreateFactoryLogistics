@@ -25,6 +25,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
 import ru.zznty.create_factory_logistics.logistics.panel.request.*;
 
@@ -72,6 +73,9 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         return 0;
     }
 
+    @Shadow
+    protected abstract void sendEffect(FactoryPanelPosition fromPos, boolean success);
+
     @Unique
     private void createFactoryLogistics$sendEffect(FactoryPanelPosition fromPos, FactoryPanelPosition toPos, boolean success) {
         AllPackets.sendToNear(getWorld(), getPos(), 64,
@@ -105,9 +109,13 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         }
 
         // request lower level ingredients recursively
-        for (FactoryPanelConnection connection : source.targetedBy.values()) {
-            if (!requestDependent(toRequest, connection, source, visited))
-                return false;
+        if (Config.factoryGaugeCascadeRequest) {
+            for (FactoryPanelConnection connection : source.targetedBy.values()) {
+                if (!requestDependent(toRequest, connection, source, visited))
+                    return false;
+            }
+        } else {
+            return false;
         }
 
         toRequest.put(source.network, PanelRequestedIngredients.of(getWorld(), sourceConnection.amount, source, source.recipeAddress));
@@ -148,8 +156,10 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         Set<FactoryPanelPosition> visited = new HashSet<>();
 
         for (FactoryPanelConnection connection : source.targetedBy.values()) {
-            if (!requestDependent(toRequest, connection, source, visited))
+            if (!requestDependent(toRequest, connection, source, visited)) {
+                sendEffect(connection.from, false);
                 return;
+            }
         }
 
         // If all ingredients are present, request main one

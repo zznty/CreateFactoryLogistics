@@ -5,6 +5,7 @@ import com.simibubi.create.foundation.data.CreateRegistrate;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import ru.zznty.create_factory_logistics.data.FactoryDataGen;
@@ -35,8 +36,7 @@ public class CreateFactoryLogistics {
         FactoryBlocks.register();
         FactoryMenus.register();
 
-        // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
-        // context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        context.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
     }
 
     public static ResourceLocation resource(String path) {
