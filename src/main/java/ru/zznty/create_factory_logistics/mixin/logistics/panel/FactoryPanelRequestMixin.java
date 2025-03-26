@@ -2,6 +2,7 @@ package ru.zznty.create_factory_logistics.mixin.logistics.panel;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.AllPackets;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.factoryBoard.*;
@@ -22,6 +23,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import ru.zznty.create_factory_logistics.logistics.panel.request.*;
 
 import java.util.*;
@@ -49,10 +52,6 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
     }
 
     @Shadow(remap = false)
-    private void sendEffect(FactoryPanelPosition fromPos, boolean success) {
-    }
-
-    @Shadow(remap = false)
     public boolean satisfied, promisedSatisfied, waitingForNetwork, redstonePowered;
 
     @Shadow(remap = false)
@@ -70,11 +69,6 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
     @Shadow(remap = false)
     private int getConfigRequestIntervalInTicks() {
         return 0;
-    }
-
-    @Shadow(remap = false)
-    public FactoryPanelPosition getPanelPosition() {
-        return null;
     }
 
     @Unique
@@ -204,5 +198,15 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         }
 
         panelBE.advancements.awardPlayer(AllAdvancements.FACTORY_GAUGE);
+    }
+
+    @ModifyVariable(
+            method = "tickStorageMonitor",
+            at = @At("STORE"),
+            ordinal = 0,
+            remap = false
+    )
+    private boolean setSatisfied(boolean value, @Local(ordinal = 1) int promised) {
+        return value && promised == 0;
     }
 }
