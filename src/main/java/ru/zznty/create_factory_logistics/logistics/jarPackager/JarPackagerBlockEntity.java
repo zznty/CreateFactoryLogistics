@@ -39,7 +39,7 @@ import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySum
 import java.util.*;
 
 public class JarPackagerBlockEntity extends PackagerBlockEntity {
-    private TankManipulationBehaviour drainInventory;
+    public TankManipulationBehaviour drainInventory;
     private IIngredientInventorySummary available;
 
     public JarPackagerBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {

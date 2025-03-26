@@ -25,6 +25,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
 import ru.zznty.create_factory_logistics.logistics.panel.request.*;
 
 import java.util.*;
@@ -133,15 +134,18 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         if (recipeAddress.isBlank())
             return;
 
+        FactoryPanelBehaviour source = (FactoryPanelBehaviour) (Object) this;
+
         if (panelBE.restocker) {
-            tryRestock();
+            if (source instanceof FactoryFluidPanelBehaviour fluidPanelBehaviour)
+                fluidPanelBehaviour.tryRestock();
+            else
+                tryRestock();
             return;
         }
 
         Multimap<UUID, PanelRequestedIngredients> toRequest = HashMultimap.create();
         Set<FactoryPanelPosition> visited = new HashSet<>();
-
-        FactoryPanelBehaviour source = (FactoryPanelBehaviour) (Object) this;
 
         for (FactoryPanelConnection connection : source.targetedBy.values()) {
             if (!requestDependent(toRequest, connection, source, visited))

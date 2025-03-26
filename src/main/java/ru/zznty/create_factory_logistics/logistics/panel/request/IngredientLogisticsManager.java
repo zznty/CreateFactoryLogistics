@@ -7,6 +7,7 @@ import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import net.createmod.catnip.data.Pair;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -112,5 +113,13 @@ public final class IngredientLogisticsManager {
             packager.triggerStockCheck();
             packager.notifyUpdate();
         }
+    }
+
+    public static int getStockOf(UUID freqId, BoardIngredient ingredient, @Nullable IdentifiedInventory ignoredHandler) {
+        int sum = 0;
+        for (LogisticallyLinkedBehaviour link : LogisticallyLinkedBehaviour.getAllPresent(freqId, false))
+            sum += ((IIngredientInventorySummary) link.getSummary(ignoredHandler))
+                    .getCountOf(ingredient);
+        return sum;
     }
 }

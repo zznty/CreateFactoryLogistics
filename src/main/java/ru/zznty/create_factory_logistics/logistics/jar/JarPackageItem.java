@@ -206,7 +206,7 @@ public class JarPackageItem extends PackageItem {
     }
 
     public static ItemStack getDefaultJar() {
-        return new ItemStack(JarStyles.ALL_JARS.get(0));
+        return JarStyles.ALL_JARS.get(0).getDefaultInstance();
     }
 
     public boolean emptyContents(@Nullable Player player, Level level, InteractionHand hand, BlockPos pos, ItemStack container) {

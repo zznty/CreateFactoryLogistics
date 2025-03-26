@@ -1,10 +1,18 @@
 package ru.zznty.create_factory_logistics.logistics.panel;
 
+import com.simibubi.create.AllPackets;
 import com.simibubi.create.Create;
+import com.simibubi.create.api.packager.InventoryIdentifier;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntity;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelEffectPacket;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelPosition;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
+import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
+import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.utility.CreateLang;
@@ -21,9 +29,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.fluids.FluidStack;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientPromiseQueue;
+import net.minecraftforge.items.ItemStackHandler;
+import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlockEntity;
+import ru.zznty.create_factory_logistics.logistics.panel.request.*;
 import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
 import ru.zznty.create_factory_logistics.mixin.accessor.FactoryPanelBehaviourAccessor;
 
@@ -108,6 +116,47 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
         forceClearPromises = false;
 
         return promises.getTotalPromisedAndRemoveExpired(ingredient, getPromiseExpiryTimeInTicks());
+    }
+
+    public void tryRestock() {
+        FluidStack fluidStack = getFluid();
+        if (fluidStack.isEmpty()) return;
+
+        FactoryPanelBlockEntity panelBE = panelBE();
+        JarPackagerBlockEntity packager = (JarPackagerBlockEntity) panelBE.getRestockedPackager();
+        if (packager == null || !packager.drainInventory.hasInventory())
+            return;
+
+        BoardIngredient ingredient = new FluidBoardIngredient(fluidStack, 1);
+
+        IdentifiedInventory identifiedInventory = new IdentifiedInventory(InventoryIdentifier.get(packager.drainInventory.getWorld(), packager.drainInventory.getTarget().getOpposite()), new ItemStackHandler());
+
+        int availableOnNetwork = IngredientLogisticsManager.getStockOf(network, ingredient, identifiedInventory);
+        if (availableOnNetwork == 0) {
+            sendEffect(getPanelPosition(), false);
+            return;
+        }
+
+        int inStorage = getLevelInStorage();
+        int promised = getPromised();
+        int demand = getAmount();
+        int amountToOrder = Math.max(0, demand - promised - inStorage);
+
+        BigIngredientStack orderedIngredient = BigIngredientStack.of(ingredient, Math.min(amountToOrder, availableOnNetwork));
+        IngredientOrder order = IngredientOrder.order(List.of(orderedIngredient));
+
+        sendEffect(getPanelPosition(), true);
+
+        if (!IngredientLogisticsManager.broadcastPackageRequest(network, LogisticallyLinkedBehaviour.RequestType.RESTOCK, order,
+                identifiedInventory, recipeAddress))
+            return;
+
+        restockerPromises.add(new RequestPromise(orderedIngredient.asStack()));
+    }
+
+    private void sendEffect(FactoryPanelPosition fromPos, boolean success) {
+        AllPackets.sendToNear(getWorld(), getPos(), 64,
+                new FactoryPanelEffectPacket(fromPos, getPanelPosition(), success));
     }
 
     @Override
