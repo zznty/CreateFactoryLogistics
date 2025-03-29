@@ -1,11 +1,11 @@
 {
-  "block.create_factory_logistics.factory_fluid_gauge": "Factory Fluid Gauge",
-  "block.create_factory_logistics.jar_packager": "Bottler",
-  "entity.create_factory_logistics.jar": "Jar",
-  "item.create_factory_logistics.fluid_mechanism": "Fluid Mechanism",
-  "item.create_factory_logistics.incomplete_fluid_mechanism": "Incomplete Fluid Mechanism",
-  "item.create_factory_logistics.jar": "Copper jar",
-  "itemGroup.create_factory_logistics.create_factory_logistics_tab": "Create: Factory Logistics",
-  "gui.create_factory_logistics.redstone_requester.fluid_slot_mode": "Hold Alt to place containing fluid",
-  "itemGroup.create_factory_logistics.base": "Create Factory Logistics"
+  "block.create_factory_logistics.factory_fluid_gauge": "工厂仪表（流体）",
+  "block.create_factory_logistics.jar_packager": "装罐机",
+  "entity.create_factory_logistics.jar": "流体罐",
+  "item.create_factory_logistics.fluid_mechanism": "流体构件",
+  "item.create_factory_logistics.incomplete_fluid_mechanism": "流体构件（半成品）",
+  "item.create_factory_logistics.jar": "铜罐",
+  "itemGroup.create_factory_logistics.create_factory_logistics_tab": "机械动力：流体物流",
+  "gui.create_factory_logistics.redstone_requester.fluid_slot_mode": "按住 Alt 添加含有的流体",
+  "itemGroup.create_factory_logistics.base": "机械动力：流体物流"
 }
