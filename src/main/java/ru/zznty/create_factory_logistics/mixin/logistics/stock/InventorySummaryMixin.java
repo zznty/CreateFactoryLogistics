@@ -9,20 +9,27 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fluids.FluidStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import ru.zznty.create_factory_logistics.logistics.panel.request.*;
-import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
+import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 @Mixin(InventorySummary.class)
-public class InventorySummaryMixin implements IIngredientInventorySummary {
+public class InventorySummaryMixin implements IngredientInventorySummary {
     @Unique
     private final Multimap<IngredientKey, BigIngredientStack> createFactoryLogistics$ingredients = HashMultimap.create();
+
+    @Unique
+    private List<BigIngredientStack> createFactoryLogistics$stacksByCount;
 
     @Shadow(remap = false)
     private int totalCount;
@@ -33,37 +40,56 @@ public class InventorySummaryMixin implements IIngredientInventorySummary {
     @Overwrite(remap = false)
     public void add(ItemStack stack, int count) {
         if (stack.isEmpty() || count == 0) return;
-        add(new ItemBoardIngredient(stack, count), count);
+        add(new BoardIngredient(IngredientKey.of(stack), count));
     }
 
     @Overwrite(remap = false)
     public int getCountOf(ItemStack stack) {
-        return getCountOf(BigIngredientStack.of(new ItemBoardIngredient(stack, 1)));
+        return getCountOf(IngredientKey.of(stack));
     }
 
     @Overwrite(remap = false)
     public List<BigIngredientStack> getStacks() {
         // note: resulting list must be mutable
-        return new ArrayList<>(createFactoryLogistics$ingredients.values());
+        List<BigIngredientStack> stacks = new ArrayList<>();
+        for (Collection<BigIngredientStack> value : createFactoryLogistics$ingredients.asMap().values()) {
+            Iterator<BigIngredientStack> iter = value.iterator();
+            BigIngredientStack stack = BigIngredientStack.of(iter.next().ingredient());
+            while (iter.hasNext()) {
+                stack.setCount(stack.getCount() + iter.next().getCount());
+            }
+            stacks.add(stack);
+        }
+        return stacks;
+    }
+
+    @Override
+    public List<BoardIngredient> get() {
+        // note: resulting list must be mutable
+        List<BoardIngredient> list = new ArrayList<>(createFactoryLogistics$ingredients.size());
+        for (BigIngredientStack stack : createFactoryLogistics$ingredients.values()) {
+            list.add(stack.ingredient());
+        }
+        return list;
     }
 
     @Overwrite(remap = false)
     public boolean erase(ItemStack stack) {
-        return erase(new ItemBoardIngredient(stack, 1));
+        return erase(IngredientKey.of(stack));
     }
 
     @Overwrite(remap = false)
     public void add(InventorySummary summary) {
-        IIngredientInventorySummary otherSummary = (IIngredientInventorySummary) summary;
-        for (BigIngredientStack stack : otherSummary.getStacks()) {
-            add(stack);
+        IngredientInventorySummary otherSummary = (IngredientInventorySummary) summary;
+        for (BoardIngredient ingredient : otherSummary.get()) {
+            add(ingredient);
         }
         contributingLinks += summary.contributingLinks;
     }
 
     @Overwrite(remap = false)
     public InventorySummary copy() {
-        IIngredientInventorySummary copy = (IIngredientInventorySummary) new InventorySummary();
+        IngredientInventorySummary copy = (IngredientInventorySummary) new InventorySummary();
         copy.add(this);
         return (InventorySummary) copy;
     }
@@ -77,10 +103,10 @@ public class InventorySummaryMixin implements IIngredientInventorySummary {
 
     @Overwrite(remap = false)
     public static InventorySummary read(CompoundTag tag) {
-        IIngredientInventorySummary summary = (IIngredientInventorySummary) new InventorySummary();
+        IngredientInventorySummary summary = (IngredientInventorySummary) new InventorySummary();
 
         ListTag listTag = tag.getList("List", Tag.TAG_COMPOUND);
-        NBTHelper.iterateCompoundList(listTag, compoundTag -> summary.add((BigIngredientStack) BigItemStack.read(compoundTag)));
+        NBTHelper.iterateCompoundList(listTag, compoundTag -> summary.add(((BigIngredientStack) BigItemStack.read(compoundTag)).ingredient()));
         return (InventorySummary) summary;
     }
 
@@ -92,64 +118,50 @@ public class InventorySummaryMixin implements IIngredientInventorySummary {
 
     @Overwrite(remap = false)
     public List<BigIngredientStack> getStacksByCount() {
-        List<BigIngredientStack> list = new ArrayList<>(createFactoryLogistics$ingredients.values());
-        list.sort(Comparator.comparingInt(BigIngredientStack::getCount));
-        return list;
+        if (createFactoryLogistics$stacksByCount == null) {
+            createFactoryLogistics$stacksByCount = getStacks();
+            createFactoryLogistics$stacksByCount.sort(BigIngredientStack.COMPARATOR);
+        }
+        return createFactoryLogistics$stacksByCount;
     }
 
     @Overwrite(remap = false)
     public void add(BigItemStack stack) {
-        add((BigIngredientStack) stack);
+        add(((BigIngredientStack) stack).ingredient());
     }
 
     @Override
-    public void add(BigIngredientStack stack) {
-        add(stack.getIngredient(), stack.getCount());
-    }
+    public void add(BoardIngredient ingredient) {
+        if (ingredient.isEmpty()) return;
 
-    @Override
-    public void add(BoardIngredient ingredient, int count) {
-        if (ingredient == BoardIngredient.EMPTY) return;
+        createFactoryLogistics$invalidate();
 
         if (totalCount < BigItemStack.INF)
-            totalCount += count;
+            totalCount += ingredient.amount();
 
-        Collection<BigIngredientStack> stacks = createFactoryLogistics$ingredients.get(ingredient.key());
+        Collection<BigIngredientStack> stacks = createFactoryLogistics$ingredients.get(ingredient.key().genericCopy());
 
         for (BigIngredientStack stack : stacks) {
-            if (stack.getIngredient().canStack(ingredient)) {
+            if (stack.ingredient().canStack(ingredient)) {
                 if (!stack.isInfinite())
-                    stack.setCount(stack.getCount() + count);
+                    stack.setCount(stack.getCount() + ingredient.amount());
                 return;
             }
         }
 
-        stacks.add(BigIngredientStack.of(ingredient, count));
+        stacks.add(BigIngredientStack.of(ingredient, ingredient.amount()));
     }
 
     @Override
-    public void add(FluidStack stack) {
-        add(stack, stack.getAmount());
-    }
-
-    @Override
-    public void add(FluidStack stack, int amount) {
-        if (stack.isEmpty() || amount == 0) return;
-        add(new FluidBoardIngredient(stack, amount), amount);
-    }
-
-    @Override
-    public void add(IIngredientInventorySummary summary) {
+    public void add(IngredientInventorySummary summary) {
         add((InventorySummary) summary);
     }
 
     @Override
-    public int getCountOf(BoardIngredient ingredient) {
-        if (ingredient == BoardIngredient.EMPTY) return 0;
-
+    public int getCountOf(IngredientKey key) {
         int count = 0;
-        for (BigIngredientStack stack : createFactoryLogistics$ingredients.get(ingredient.key())) {
-            if (stack.getIngredient().canStack(ingredient)) {
+        for (BigIngredientStack stack : createFactoryLogistics$ingredients.get(key.genericCopy())) {
+            if (stack.ingredient().canStack(key)) {
                 if (count < BigItemStack.INF)
                     count += stack.getCount();
             }
@@ -160,23 +172,27 @@ public class InventorySummaryMixin implements IIngredientInventorySummary {
 
     @Override
     public int getCountOf(BigIngredientStack stack) {
-        return getCountOf(stack.getIngredient());
+        return getCountOf(stack.ingredient().key());
     }
 
     @Override
-    public boolean erase(BoardIngredient ingredient) {
-        if (ingredient == BoardIngredient.EMPTY) return false;
-
-        Collection<BigIngredientStack> stacks = createFactoryLogistics$ingredients.get(ingredient.key());
+    public boolean erase(IngredientKey key) {
+        Collection<BigIngredientStack> stacks = createFactoryLogistics$ingredients.get(key.genericCopy());
         if (stacks.isEmpty()) return false;
 
         for (Iterator<BigIngredientStack> iterator = stacks.iterator(); iterator.hasNext(); ) {
             BigIngredientStack existing = iterator.next();
-            if (!existing.getIngredient().canStack(ingredient)) continue;
+            if (!existing.ingredient().canStack(key)) continue;
             totalCount -= existing.getCount();
             iterator.remove();
+            createFactoryLogistics$invalidate();
             return true;
         }
         return false;
+    }
+
+    @Unique
+    private void createFactoryLogistics$invalidate() {
+        createFactoryLogistics$stacksByCount = null;
     }
 }

@@ -2,6 +2,7 @@ package ru.zznty.create_factory_logistics.logistics.panel.request;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 
 import javax.annotation.Nullable;
 

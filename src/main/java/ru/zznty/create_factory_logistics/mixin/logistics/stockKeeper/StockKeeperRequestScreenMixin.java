@@ -10,13 +10,9 @@ import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
 import com.simibubi.create.content.logistics.stockTicker.StockTickerBlockEntity;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
-import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.gui.element.GuiGameElement;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -27,15 +23,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientStack;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.panel.request.FluidBoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.panel.request.ItemBoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
-import ru.zznty.create_factory_logistics.render.FluidSlotRenderer;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientGui;
+import ru.zznty.create_factory_logistics.logistics.ingredient.impl.fluid.FluidIngredientKey;
+import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
-import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,12 +37,6 @@ import java.util.Set;
 public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContainerScreen<StockKeeperRequestMenu> {
     public StockKeeperRequestScreenMixin(StockKeeperRequestMenu container, Inventory inv, Component title) {
         super(container, inv, title);
-    }
-
-    @Nullable
-    @Shadow(remap = false)
-    private BigItemStack getOrderForItem(ItemStack stack) {
-        return null;
     }
 
     @Shadow(remap = false)
@@ -73,7 +60,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private int getCountInForced(InventorySummary instance, ItemStack $, @Local BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
-        return stack.getIngredient().getCountIn(instance);
+        return ((IngredientInventorySummary) instance).getCountOf(stack);
     }
 
     @Redirect(
@@ -85,8 +72,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private boolean eraseFromForced(InventorySummary instance, ItemStack $, @Local BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
-        IIngredientInventorySummary summary = (IIngredientInventorySummary) instance;
-        return summary.erase(stack.getIngredient());
+        IngredientInventorySummary summary = (IngredientInventorySummary) instance;
+        return summary.erase(stack.ingredient().key());
     }
 
     @Redirect(
@@ -98,7 +85,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private BigItemStack createOrderForIngredientInClicked(ItemStack $, int count, @Local(ordinal = 0) BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
-        return BigIngredientStack.of(stack.getIngredient().withAmount(1), 0).asStack();
+        return BigIngredientStack.of(stack.ingredient().withAmount(1), 0).asStack();
     }
 
     @Redirect(
@@ -110,7 +97,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private BigItemStack createOrderForIngredientInScrolled(ItemStack $, int count, @Local(ordinal = 0) BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
-        return BigIngredientStack.of(stack.getIngredient().withAmount(1), 0).asStack();
+        return BigIngredientStack.of(stack.ingredient().withAmount(1), 0).asStack();
     }
 
     @Redirect(
@@ -122,14 +109,14 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private int getCountInSummary(InventorySummary instance, ItemStack $, @Local(ordinal = 0) BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
-        return stack.getIngredient().getCountIn(instance);
+        return ((IngredientInventorySummary) instance).getCountOf(stack);
     }
 
     @Unique
     private BigIngredientStack createFactoryLogistics$getOrderForIngredient(BoardIngredient ingredient) {
         for (BigItemStack entry : itemsToOrder) {
             BigIngredientStack stack = (BigIngredientStack) entry;
-            if (stack.getIngredient().canStack(ingredient))
+            if (stack.ingredient().canStack(ingredient))
                 return stack;
         }
         return null;
@@ -144,7 +131,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private BigItemStack getExistingOrderInClicked(StockKeeperRequestScreen instance, ItemStack $, @Local BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
-        BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.getIngredient());
+        BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.ingredient());
         return order == null ? null : order.asStack();
     }
 
@@ -158,7 +145,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private BigItemStack getExistingOrderInRender(StockKeeperRequestScreen instance, ItemStack $, @Local(argsOnly = true) BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
-        BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.getIngredient());
+        BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.ingredient());
         return order == null ? null : order.asStack();
     }
 
@@ -171,12 +158,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private int getMaxStackSize(ItemStack instance, @Local BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
-        if (stack.getIngredient() instanceof FluidBoardIngredient) {
-            return 1000;
-        } else if (stack.getIngredient() instanceof ItemBoardIngredient itemIngredient) {
-            return itemIngredient.stack().getMaxStackSize();
-        }
-        return 0;
+        return IngredientGui.stackSize(stack.ingredient().key());
     }
 
     @Redirect(
@@ -188,21 +170,21 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private BigItemStack getExistingOrderInScrolled(StockKeeperRequestScreen instance, ItemStack $, @Local BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
-        BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.getIngredient());
+        BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.ingredient());
         return order == null ? null : order.asStack();
     }
 
     @Overwrite(remap = false)
     private void revalidateOrders() {
         Set<BigItemStack> invalid = new HashSet<>(itemsToOrder);
-        InventorySummary summary = blockEntity.getLastClientsideStockSnapshotAsSummary();
+        IngredientInventorySummary summary = (IngredientInventorySummary) blockEntity.getLastClientsideStockSnapshotAsSummary();
         if (currentItemSource == null || summary == null) {
             itemsToOrder.removeAll(invalid);
             return;
         }
         for (BigItemStack entry : itemsToOrder) {
             BigIngredientStack stack = (BigIngredientStack) entry;
-            stack.setCount(Math.min(stack.getIngredient().getCountIn(summary), stack.getCount()));
+            stack.setCount(Math.min(summary.getCountOf(stack), stack.getCount()));
             if (stack.getCount() > 0)
                 invalid.remove(entry);
         }
@@ -217,12 +199,12 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     target = "Lnet/minecraft/client/gui/GuiGraphics;renderTooltip(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;II)V"
             )
     )
-    private void renderTooltip(GuiGraphics instance, Font p_282308_, ItemStack p_282781_, int p_282687_, int p_282292_, @Local BigItemStack itemStack) {
+    private void renderTooltip(GuiGraphics instance, Font p_282308_, ItemStack p_282781_, int p_282687_, int p_282292_, @Local BigItemStack itemStack, @Local(ordinal = 1) boolean orderHovered) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
-        BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.getIngredient());
+        BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.ingredient());
         int customCount = stack.getCount();
-        if (stack.getCount() < BigItemStack.INF) {
-            int forcedCount = stack.getIngredient().getCountIn(forcedEntries);
+        if (stack.getCount() < BigItemStack.INF && !orderHovered) {
+            int forcedCount = ((IngredientInventorySummary) forcedEntries).getCountOf(stack);
             if (forcedCount != 0)
                 customCount = Math.min(customCount, -forcedCount - 1);
             if (order != null)
@@ -230,27 +212,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             customCount = Math.max(0, customCount);
         }
 
-        List<Component> component;
-        if (stack.getIngredient() instanceof FluidBoardIngredient fluidIngredient) {
-            component = customCount > 0 ? List.of(
-                    fluidIngredient.stack().getDisplayName(),
-                    Component.empty(),
-                    FactoryFluidPanelBehaviour.formatLevel(customCount, false)
-                            .style(ChatFormatting.GRAY)
-                            .component()
-            ) : List.of(fluidIngredient.stack().getDisplayName());
-        } else {
-            component = Screen.getTooltipFromItem(Minecraft.getInstance(), p_282781_);
-            if (customCount > 0) {
-                component.add(Component.empty());
-                component.add(CreateLang.text("x")
-                        .add(CreateLang.number(customCount))
-                        .style(ChatFormatting.GRAY)
-                        .component());
-            }
-        }
-
-        instance.renderComponentTooltip(p_282308_, component, p_282687_, p_282292_);
+        instance.renderComponentTooltip(p_282308_, IngredientGui.tooltipBuilder(stack.ingredient().key(), customCount), p_282687_, p_282292_);
     }
 
     // todo make that as proper search
@@ -264,13 +226,13 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private ItemStack fluidStackSearchPlaceholder(BigItemStack instance, Operation<ItemStack> original) {
         BigIngredientStack stack = (BigIngredientStack) instance;
-        if (stack.getIngredient() instanceof FluidBoardIngredient fluidIngredient) {
-            return fluidIngredient.stack().getFluid().getBucket().getDefaultInstance();
+        if (stack.ingredient().key() instanceof FluidIngredientKey fluidKey) {
+            return fluidKey.stack().getFluid().getBucket().getDefaultInstance();
         }
         return original.call(instance);
     }
 
-    @WrapOperation(
+    @Redirect(
             method = "renderItemEntry",
             at = @At(
                     value = "INVOKE",
@@ -278,20 +240,10 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             ),
             remap = false
     )
-    private GuiGameElement.GuiRenderBuilder renderIngredientEntry(ItemStack itemStack,
-                                                                  Operation<GuiGameElement.GuiRenderBuilder> original,
-                                                                  @Local(argsOnly = true) BigItemStack entry,
-                                                                  @Local(argsOnly = true) GuiGraphics graphics) {
+    private GuiGameElement.GuiRenderBuilder renderIngredientEntry(ItemStack itemStack, @Local(argsOnly = true) BigItemStack entry, @Local(argsOnly = true) GuiGraphics graphics) {
         BigIngredientStack stack = (BigIngredientStack) entry;
-        if (stack.getIngredient() instanceof FluidBoardIngredient fluidIngredient) {
-//            return GuiGameElement.of(fluidIngredient.stack().getFluid().getBucket())
-//                    .atLocal(1 / 32f, 1 + 1 / 32f, 2);
-
-            FluidSlotRenderer.renderFluidSlot(graphics, 0, 0, fluidIngredient.stack());
-
-            return GuiGameElement.of(Blocks.AIR);
-        }
-        return original.call(itemStack);
+        IngredientGui.renderSlot(graphics, stack.ingredient().key(), 0, 0);
+        return GuiGameElement.of(Blocks.AIR);
     }
 
     @Redirect(
@@ -302,21 +254,15 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             ),
             remap = false
     )
-    private void renderIngredientEntryAmount(StockKeeperRequestScreen instance, GuiGraphics graphics, int count, int customCount, @Local(argsOnly = true) BigItemStack entry) {
+    private void renderIngredientEntryAmount(StockKeeperRequestScreen instance, GuiGraphics graphics, int count, int customCount,
+                                             @Local(argsOnly = true) BigItemStack entry,
+                                             @Local(argsOnly = true, ordinal = 0) boolean isStackHovered,
+                                             @Local(argsOnly = true, ordinal = 1) boolean isRenderingOrders) {
+        // todo workaround amount text rendering over tooltip for order entries
+        if (isStackHovered && isRenderingOrders) return;
         BigIngredientStack stack = (BigIngredientStack) entry;
         count = customCount;
-        String text = "";
-        if (stack.isInfinite())
-            text = "\u221E";
-        else if (stack.getIngredient() instanceof FluidBoardIngredient)
-            text = FactoryFluidPanelBehaviour.formatLevelShort(count).string();
-        else if (stack.getIngredient() instanceof ItemBoardIngredient) {
-            text = count >= 1000000 ? (count / 1000000) + "m"
-                    : count >= 10000 ? (count / 1000) + "k"
-                    : count >= 1000 ? ((count * 10) / 1000) / 10f + "k" : count >= 100 ? count + "" : " " + count;
-        }
-
-        graphics.drawString(font, text, 19 - 2 - font.width(text), 6 + 3, 16777215, true);
+        IngredientGui.renderDecorations(graphics, stack.ingredient().withAmount(count), 1, 1);
     }
 
     @Redirect(

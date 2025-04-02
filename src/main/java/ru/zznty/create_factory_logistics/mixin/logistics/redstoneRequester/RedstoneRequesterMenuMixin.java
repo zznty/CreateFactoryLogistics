@@ -12,8 +12,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientStack;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientGhostMenu;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequester;
 
@@ -42,7 +42,7 @@ public abstract class RedstoneRequesterMenuMixin extends GhostItemMenu<RedstoneR
     public BoardIngredient getIngredientInSlot(int slot) {
         IngredientRedstoneRequester requester = (IngredientRedstoneRequester) contentHolder;
         List<BigIngredientStack> stacks = requester.getOrder().stacks();
-        return slot < stacks.size() ? stacks.get(slot).getIngredient() : BoardIngredient.EMPTY;
+        return slot < stacks.size() ? stacks.get(slot).ingredient() : BoardIngredient.of();
     }
 
     @Override
@@ -58,6 +58,6 @@ public abstract class RedstoneRequesterMenuMixin extends GhostItemMenu<RedstoneR
 
     @Override
     public List<BoardIngredient> getIngredients() {
-        return ((IngredientRedstoneRequester) contentHolder).getOrder().stacks().stream().map(BigIngredientStack::getIngredient).toList();
+        return ((IngredientRedstoneRequester) contentHolder).getOrder().stacks().stream().map(BigIngredientStack::ingredient).toList();
     }
 }

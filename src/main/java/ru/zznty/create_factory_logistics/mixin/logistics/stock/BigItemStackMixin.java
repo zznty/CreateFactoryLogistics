@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics.mixin.logistics.panel;
+package ru.zznty.create_factory_logistics.mixin.logistics.stock;
 
 import com.simibubi.create.content.logistics.BigItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -11,9 +11,10 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientStack;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.panel.request.ItemBoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
+import ru.zznty.create_factory_logistics.logistics.ingredient.impl.item.ItemIngredientKey;
 
 @Mixin(BigItemStack.class)
 public class BigItemStackMixin implements BigIngredientStack {
@@ -27,7 +28,7 @@ public class BigItemStackMixin implements BigIngredientStack {
     private BoardIngredient ingredient;
 
     @Override
-    public BoardIngredient getIngredient() {
+    public BoardIngredient ingredient() {
         return ingredient;
     }
 
@@ -35,8 +36,8 @@ public class BigItemStackMixin implements BigIngredientStack {
     public void setIngredient(BoardIngredient ingredient) {
         this.ingredient = ingredient;
         count = ingredient.amount();
-        if (ingredient instanceof ItemBoardIngredient itemIngredient)
-            stack = itemIngredient.stack();
+        if (ingredient.key() instanceof ItemIngredientKey itemKey)
+            stack = itemKey.stack();
     }
 
     @Override
@@ -66,20 +67,19 @@ public class BigItemStackMixin implements BigIngredientStack {
             remap = false
     )
     private void addIngredient(ItemStack stack, int count, CallbackInfo ci) {
-        ingredient = stack == ItemStack.EMPTY ? BoardIngredient.EMPTY : new ItemBoardIngredient(stack, count);
+        ingredient = stack == ItemStack.EMPTY ? BoardIngredient.of() : new BoardIngredient(IngredientKey.of(stack), count);
     }
 
     @Overwrite(remap = false)
     public CompoundTag write() {
         CompoundTag tag = new CompoundTag();
-        ingredient.writeToNBT(tag);
+        ingredient.write(tag);
         return tag;
     }
 
     @Overwrite(remap = false)
     public static BigItemStack read(CompoundTag tag) {
-        BoardIngredient ingredient = BoardIngredient.readFromNBT(tag);
-        return BigIngredientStack.of(ingredient, ingredient.amount()).asStack();
+        return BigIngredientStack.of(BoardIngredient.read(tag)).asStack();
     }
 
     @Overwrite(remap = false)
@@ -89,13 +89,12 @@ public class BigItemStackMixin implements BigIngredientStack {
 
     @Overwrite(remap = false)
     public static BigItemStack receive(FriendlyByteBuf buf) {
-        BoardIngredient ingredient = BoardIngredient.read(buf);
-        return BigIngredientStack.of(ingredient, ingredient.amount()).asStack();
+        return BigIngredientStack.of(BoardIngredient.read(buf)).asStack();
     }
 
     @Overwrite(remap = false)
     public boolean equals(final Object obj) {
-        return obj instanceof BigIngredientStack ingredientStack && ingredient.equals(ingredientStack.getIngredient());
+        return obj instanceof BigIngredientStack ingredientStack && ingredient.equals(ingredientStack.ingredient());
     }
 
     @Overwrite(remap = false)

@@ -26,7 +26,6 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.Nullable;
@@ -36,10 +35,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import ru.zznty.create_factory_logistics.logistics.ingredient.*;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
-import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
-import ru.zznty.create_factory_logistics.logistics.panel.request.*;
-import ru.zznty.create_factory_logistics.render.FluidSlotRenderer;
+import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientGhostMenu;
+import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequester;
+import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequesterConfigurationPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,29 +97,24 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             )
     )
     private boolean isIngredientEmpty(boolean original, @Share("ingredient") LocalRef<BoardIngredient> ingredient) {
-        return ingredient.get() == BoardIngredient.EMPTY;
+        return ingredient.get().isEmpty();
     }
 
-    @WrapOperation(
+    @Redirect(
             method = "renderForeground",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/GuiGraphics;renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V"
             )
     )
-    private void renderIngredient(GuiGraphics instance, Font l, ItemStack i, int x, int y, String i1, Operation<Void> original,
+    private void renderIngredient(GuiGraphics instance, Font l, ItemStack i, int j, int k, String i1,
                                   @Local(index = 7) int index,
                                   @Share("ingredient") LocalRef<BoardIngredient> ingredient) {
-        if (ingredient.get() instanceof FluidBoardIngredient fluidIngredient) {
-            i = JarPackageItem.getDefaultJar();
-            i1 = FactoryFluidPanelBehaviour.formatLevel(amounts.get(index)).string();
-
-            FluidSlotRenderer.renderFluidSlot(instance, x, y, fluidIngredient.stack());
-        } else if (ingredient.get() instanceof ItemBoardIngredient itemIngredient) {
-            i = itemIngredient.stack();
+        if (i.isEmpty()) {
+            IngredientGui.renderSlot(instance, ingredient.get().key(), j, k);
         }
 
-        original.call(instance, l, i, x, y, i1);
+        IngredientGui.renderDecorations(instance, ingredient.get().withAmount(amounts.get(index)), j, k);
     }
 
     @WrapOperation(
@@ -145,7 +141,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             )
     )
     private boolean isIngredientEmptyMouseHandler(boolean original, @Share("ingredient") LocalRef<BoardIngredient> ingredient) {
-        return ingredient.get() == BoardIngredient.EMPTY;
+        return ingredient.get().isEmpty();
     }
 
     @ModifyConstant(
@@ -155,7 +151,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
     private int modifyMaxAmount(int constant, @Share("ingredient") LocalRef<BoardIngredient> ingredient) {
         // 16 jars per fluid at max
         // I don't know why create limits this in the first place
-        return ingredient.get() instanceof FluidBoardIngredient ? 16 * JarPackageItem.JAR_CAPACITY : constant;
+        return ingredient.get().key().provider() == IngredientProviders.FLUID.get() ? 16 * JarPackageItem.JAR_CAPACITY : constant;
     }
 
     @Override
@@ -164,18 +160,8 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             IngredientGhostMenu ghostMenu = (IngredientGhostMenu) menu;
             BoardIngredient ingredient = ghostMenu.getIngredientInSlot(this.hoveredSlot.getSlotIndex());
 
-            if (ingredient != BoardIngredient.EMPTY) {
-                LangBuilder name;
-                if (ingredient instanceof FluidBoardIngredient fluidIngredient) {
-                    name = CreateLang.translate("gui.factory_panel.send_item", CreateLang.fluidName(fluidIngredient.stack())
-                            .space()
-                            .add(FactoryFluidPanelBehaviour.formatLevel(amounts.get(this.hoveredSlot.getSlotIndex()))));
-                } else if (ingredient instanceof ItemBoardIngredient itemIngredient) {
-                    name = CreateLang.translate("gui.factory_panel.send_item", CreateLang.itemName(itemIngredient.stack())
-                            .add(CreateLang.text(" x" + amounts.get(this.hoveredSlot.getSlotIndex()))));
-                } else {
-                    return; // unreachable
-                }
+            if (!ingredient.isEmpty()) {
+                LangBuilder name = CreateLang.translate("gui.factory_panel.send_item", IngredientGui.nameBuilder(ingredient.withAmount(amounts.get(this.hoveredSlot.getSlotIndex()))));
 
                 List<Component> components = List.of(name
                                 .color(ScrollInput.HEADER_RGB)
@@ -206,17 +192,18 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
         }
     }
 
-    @WrapOperation(
+    @Redirect(
             method = "getTooltipFromContainerItem",
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/foundation/gui/menu/AbstractSimiContainerScreen;getTooltipFromContainerItem(Lnet/minecraft/world/item/ItemStack;)Ljava/util/List;"
             )
     )
-    private List<Component> getTooltipFromContainerItem(RedstoneRequesterScreen instance, ItemStack stack, Operation<List<Component>> original) {
-        return stack.getItem() instanceof JarPackageItem ?
+    private List<Component> getTooltipFromContainerItem(AbstractSimiContainerScreen instance, ItemStack stack) {
+        /*return stack.getItem() instanceof JarPackageItem ?
                 List.of(FluidUtil.getFluidContained(stack).orElse(FluidStack.EMPTY).getDisplayName()) :
-                original.call(instance, stack);
+                original.call(instance, stack);*/
+        return List.of();
     }
 
     @Overwrite(remap = false)
@@ -225,7 +212,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
         addressBox.tick();
         IngredientGhostMenu ghostMenu = (IngredientGhostMenu) menu;
         for (int i = 0; i < amounts.size(); i++)
-            if (ghostMenu.getIngredientInSlot(i) == BoardIngredient.EMPTY)
+            if (ghostMenu.getIngredientInSlot(i).isEmpty())
                 amounts.set(i, 1);
     }
 
@@ -234,16 +221,16 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
         if (p_97778_ != null && p_97778_ instanceof SlotItemHandler) {
             IngredientGhostMenu ghostMenu = (IngredientGhostMenu) menu;
             if (this.menu.getCarried().isEmpty()) {
-                ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), BoardIngredient.EMPTY);
+                ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), BoardIngredient.of());
             } else {
                 if (hasAltDown() && GenericItemEmptying.canItemBeEmptied(this.menu.contentHolder.getLevel(), this.menu.getCarried())) {
                     FluidStack stack = GenericItemEmptying.emptyItem(this.menu.contentHolder.getLevel(), this.menu.getCarried(), true).getFirst();
                     if (!stack.isEmpty())
-                        ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new FluidBoardIngredient(stack, 1));
+                        ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new BoardIngredient(IngredientKey.of(stack), 1));
                     return;
                 }
 
-                ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new ItemBoardIngredient(this.menu.getCarried().copy(), 1));
+                ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), new BoardIngredient(IngredientKey.of(this.menu.getCarried().copy()), 1));
             }
         }
         super.slotClicked(p_97778_, p_97779_, p_97780_, p_97781_);
@@ -264,7 +251,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
         List<BigIngredientStack> stacks = new ArrayList<>(ingredients.size());
 
         for (int i = 0; i < ingredients.size(); i++) {
-            if (ingredients.get(i) == BoardIngredient.EMPTY) {
+            if (ingredients.get(i).isEmpty()) {
                 continue;
             }
             stacks.add(BigIngredientStack.of(ingredients.get(i), amounts.get(i)));

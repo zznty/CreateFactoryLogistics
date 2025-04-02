@@ -18,11 +18,12 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientLogisticsManager;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequester;
-import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 @Mixin(RedstoneRequesterBlockEntity.class)
 public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlockEntity implements IngredientRedstoneRequester {
@@ -45,13 +46,14 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
 
         boolean anySucceeded = false;
 
-        IIngredientInventorySummary summaryOfOrder = (IIngredientInventorySummary) new InventorySummary();
-        createFactoryLogistics$encodedRequest.stacks()
-                .forEach(summaryOfOrder::add);
+        IngredientInventorySummary summaryOfOrder = (IngredientInventorySummary) new InventorySummary();
+        for (BigIngredientStack stack : createFactoryLogistics$encodedRequest.stacks()) {
+            summaryOfOrder.add(stack.ingredient());
+        }
 
-        IIngredientInventorySummary summary = (IIngredientInventorySummary) getAccurateSummary();
-        for (BigIngredientStack entry : summaryOfOrder.getStacks()) {
-            if (summary.getCountOf(entry) >= entry.getCount()) {
+        IngredientInventorySummary summary = (IngredientInventorySummary) getAccurateSummary();
+        for (BoardIngredient ingredient : summaryOfOrder.get()) {
+            if (summary.getCountOf(ingredient.key()) >= ingredient.amount()) {
                 anySucceeded = true;
                 continue;
             }

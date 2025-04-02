@@ -9,6 +9,8 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import ru.zznty.create_factory_logistics.data.FactoryDataGen;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 
 @Mod(CreateFactoryLogistics.MODID)
 public class CreateFactoryLogistics {
@@ -25,6 +27,7 @@ public class CreateFactoryLogistics {
         IEventBus modEventBus = context.getModEventBus();
 
         REGISTRATE.registerEventListeners(modEventBus);
+        IngredientRegistry.BOARD_INGREDIENTS.register(modEventBus);
 
         modEventBus.addListener(FactoryEntities::registerEntityAttributes);
         modEventBus.addListener(FactoryDataGen::gatherData);
@@ -35,8 +38,10 @@ public class CreateFactoryLogistics {
         FactoryBlockEntities.register();
         FactoryBlocks.register();
         FactoryMenus.register();
+        IngredientProviders.register();
 
         context.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
+        context.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
     }
 
     public static ResourceLocation resource(String path) {

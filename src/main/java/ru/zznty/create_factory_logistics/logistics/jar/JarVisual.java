@@ -28,10 +28,12 @@ public class JarVisual extends PackageVisual {
         super.beginFrame(ctx);
 
         fluid.begin();
-        
+
         FluidStack fluidStack = FluidHelper.copyStackWithAmount(this.fluidStack, (int) jarEntity.fluidLevel.getValue());
 
         TransformedInstance[] buffers = fluid.setupBuffers(fluidStack, 0);
+        
+        if (buffers == null) return;
 
         for (int i = 0; i < buffers.length; i++) {
             fluid.setupBuffer(fluidStack, JarPackageItem.JAR_CAPACITY, buffers[i], i, 8f / 16, 8f / 16);

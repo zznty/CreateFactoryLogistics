@@ -9,6 +9,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -66,11 +67,6 @@ public record IngredientOrder(List<BigIngredientStack> stacks, List<PackageOrder
     }
 
     public PackageOrderWithCrafts asCrafting() {
-        for (BigIngredientStack stack : stacks) {
-            if (!(stack.getIngredient() instanceof ItemBoardIngredient))
-                return null;
-        }
-
         return new PackageOrderWithCrafts(new PackageOrder(stacks.stream().map(BigIngredientStack::asStack).toList()), crafts);
     }
 

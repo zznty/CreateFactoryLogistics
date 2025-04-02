@@ -1,19 +1,22 @@
 package ru.zznty.create_factory_logistics.mixin.logistics.panel;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConnectionHandler;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
-import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlock;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientFilterProvider;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientGui;
 
 @Mixin(FactoryPanelConnectionHandler.class)
 public class FactoryPanelConnectionHandlerMixin {
@@ -26,11 +29,11 @@ public class FactoryPanelConnectionHandlerMixin {
             )
     )
     private static BlockState replaceFluidPanelBlockState1(BlockState original) {
-        if (original.getBlock() instanceof FactoryFluidPanelBlock) {
-            return createFactoryLogistics$copyBlockState(original);
+        if (original.is(AllBlocks.FACTORY_GAUGE.get())) {
+            return original;
         }
 
-        return original;
+        return createFactoryLogistics$copyBlockState(original);
     }
 
     @ModifyExpressionValue(
@@ -43,11 +46,11 @@ public class FactoryPanelConnectionHandlerMixin {
             remap = true
     )
     private static BlockState replaceFluidPanelBlockState2(BlockState original) {
-        if (original.getBlock() instanceof FactoryFluidPanelBlock) {
-            return createFactoryLogistics$copyBlockState(original);
+        if (original.is(AllBlocks.FACTORY_GAUGE.get())) {
+            return original;
         }
 
-        return original;
+        return createFactoryLogistics$copyBlockState(original);
     }
 
     @Unique
@@ -59,37 +62,35 @@ public class FactoryPanelConnectionHandlerMixin {
                 .setValue(FactoryPanelBlock.FACE, original.getValue(FactoryPanelBlock.FACE));
     }
 
-    @ModifyExpressionValue(
+    @WrapOperation(
             method = "panelClicked",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/item/ItemStack;getHoverName()Lnet/minecraft/network/chat/Component;",
                     ordinal = 0
-            ),
-            remap = true
+            )
     )
-    private static Component fixTooltipFluidNameFrom(Component original, @Local(argsOnly = true) FactoryPanelBehaviour panel) {
-        if (panel instanceof FactoryFluidPanelBehaviour fluidPanel) {
-            return fluidPanel.getFluid().getDisplayName();
+    private static Component ingredientNameFrom(ItemStack instance, Operation<Component> original, @Local(argsOnly = true) FactoryPanelBehaviour panel) {
+        if (panel instanceof IngredientFilterProvider filterProvider) {
+            return IngredientGui.nameBuilder(filterProvider.key()).component();
         }
 
-        return original;
+        return original.call(instance);
     }
 
-    @ModifyExpressionValue(
+    @WrapOperation(
             method = "panelClicked",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/item/ItemStack;getHoverName()Lnet/minecraft/network/chat/Component;",
                     ordinal = 1
-            ),
-            remap = true
+            )
     )
-    private static Component fixTooltipFluidNameTo(Component original, @Local(ordinal = 1) FactoryPanelBehaviour panel) {
-        if (panel instanceof FactoryFluidPanelBehaviour fluidPanel) {
-            return fluidPanel.getFluid().getDisplayName();
+    private static Component ingredientNameTo(ItemStack instance, Operation<Component> original, @Local(ordinal = 1) FactoryPanelBehaviour panel) {
+        if (panel instanceof IngredientFilterProvider filterProvider) {
+            return IngredientGui.nameBuilder(filterProvider.key()).component();
         }
 
-        return original;
+        return original.call(instance);
     }
 }

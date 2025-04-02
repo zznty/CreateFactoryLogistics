@@ -1,7 +1,6 @@
 package ru.zznty.create_factory_logistics.mixin.logistics.packager;
 
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
-import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlockEntity;
 import net.createmod.catnip.data.Pair;
@@ -9,10 +8,11 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRequest;
 import ru.zznty.create_factory_logistics.logistics.panel.request.PackagerIngredientLinkBlockEntity;
+import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 @Mixin(PackagerLinkBlockEntity.class)
 public class PackagerIngredientLinkBlockEntityMixin implements PackagerIngredientLinkBlockEntity {
@@ -31,8 +31,8 @@ public class PackagerIngredientLinkBlockEntityMixin implements PackagerIngredien
         if (packager.isTargetingSameInventory(ignoredHandler))
             return null;
 
-        InventorySummary summary = packager.getAvailableItems();
-        int availableCount = ingredient.getCountIn(summary);
+        IngredientInventorySummary summary = (IngredientInventorySummary) packager.getAvailableItems();
+        int availableCount = summary.getCountOf(ingredient.key());
         if (availableCount == 0)
             return null;
         int toWithdraw = Math.min(ingredient.amount(), availableCount);

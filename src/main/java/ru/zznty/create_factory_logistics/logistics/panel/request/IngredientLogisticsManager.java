@@ -7,7 +7,9 @@ import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import net.createmod.catnip.data.Pair;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -56,7 +58,7 @@ public final class IngredientLogisticsManager {
             BigIngredientStack entry = stacks.get(i);
             int remainingCount = entry.getCount();
             boolean finalEntry = i == stacks.size() - 1;
-            BoardIngredient requestedIngredient = entry.getIngredient();
+            BoardIngredient requestedIngredient = entry.ingredient();
 
             for (LogisticallyLinkedBehaviour link : availableLinks) {
                 int usedIndex = usedLinks.indexOf(link);
@@ -118,8 +120,8 @@ public final class IngredientLogisticsManager {
     public static int getStockOf(UUID freqId, BoardIngredient ingredient, @Nullable IdentifiedInventory ignoredHandler) {
         int sum = 0;
         for (LogisticallyLinkedBehaviour link : LogisticallyLinkedBehaviour.getAllPresent(freqId, false))
-            sum += ((IIngredientInventorySummary) link.getSummary(ignoredHandler))
-                    .getCountOf(ingredient);
+            sum += ((IngredientInventorySummary) link.getSummary(ignoredHandler))
+                    .getCountOf(ingredient.key());
         return sum;
     }
 }

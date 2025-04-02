@@ -1,18 +1,9 @@
 package ru.zznty.create_factory_logistics.logistics.panel;
 
-import com.simibubi.create.AllPackets;
-import com.simibubi.create.Create;
-import com.simibubi.create.api.packager.InventoryIdentifier;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
-import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntity;
-import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelEffectPacket;
-import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelPosition;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
-import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
-import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
-import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.utility.CreateLang;
@@ -29,15 +20,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.items.ItemStackHandler;
-import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlockEntity;
-import ru.zznty.create_factory_logistics.logistics.panel.request.*;
-import ru.zznty.create_factory_logistics.logistics.stock.IIngredientInventorySummary;
-import ru.zznty.create_factory_logistics.mixin.accessor.FactoryPanelBehaviourAccessor;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientFilterProvider;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
 
 import java.util.List;
 
-public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
+public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements IngredientFilterProvider {
     public FactoryFluidPanelBehaviour(FactoryFluidPanelBlockEntity be, FactoryFluidPanelBlock.PanelSlot slot) {
         super(be, slot);
     }
@@ -67,96 +55,6 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
 
     public FluidStack getFluid() {
         return filter.fluid(blockEntity.getLevel());
-    }
-
-    @Override
-    public int getLevelInStorage() {
-        if (blockEntity.isVirtual())
-            return 1;
-        if (getWorld().isClientSide())
-            return super.getLevelInStorage();
-        if (getFilter().isEmpty())
-            return 0;
-
-        IIngredientInventorySummary summary = getRelevantSummary();
-        return summary.getCountOf(new FluidBoardIngredient(filter.fluid(blockEntity.getLevel()), 1));
-    }
-
-    @Override
-    public int getPromised() {
-        if (getWorld().isClientSide())
-            return super.getPromised();
-        FluidStack fluid = getFluid();
-        if (fluid.isEmpty())
-            return 0;
-
-        BoardIngredient ingredient = BoardIngredient.of(this);
-
-        if (panelBE().restocker) {
-            IngredientPromiseQueue restockerPromiseQueue = (IngredientPromiseQueue) restockerPromises;
-
-            if (forceClearPromises) {
-
-                restockerPromiseQueue.forceClear(ingredient);
-
-                resetTimerSlightly();
-            }
-            forceClearPromises = false;
-            return restockerPromiseQueue.getTotalPromisedAndRemoveExpired(ingredient, getPromiseExpiryTimeInTicks());
-        }
-
-        IngredientPromiseQueue promises = (IngredientPromiseQueue) Create.LOGISTICS.getQueuedPromises(network);
-        if (promises == null)
-            return 0;
-
-        if (forceClearPromises) {
-            promises.forceClear(ingredient);
-            resetTimerSlightly();
-        }
-        forceClearPromises = false;
-
-        return promises.getTotalPromisedAndRemoveExpired(ingredient, getPromiseExpiryTimeInTicks());
-    }
-
-    public void tryRestock() {
-        FluidStack fluidStack = getFluid();
-        if (fluidStack.isEmpty()) return;
-
-        FactoryPanelBlockEntity panelBE = panelBE();
-        JarPackagerBlockEntity packager = (JarPackagerBlockEntity) panelBE.getRestockedPackager();
-        if (packager == null || !packager.drainInventory.hasInventory())
-            return;
-
-        BoardIngredient ingredient = new FluidBoardIngredient(fluidStack, 1);
-
-        IdentifiedInventory identifiedInventory = new IdentifiedInventory(InventoryIdentifier.get(packager.drainInventory.getWorld(), packager.drainInventory.getTarget().getOpposite()), new ItemStackHandler());
-
-        int availableOnNetwork = IngredientLogisticsManager.getStockOf(network, ingredient, identifiedInventory);
-        if (availableOnNetwork == 0) {
-            sendEffect(getPanelPosition(), false);
-            return;
-        }
-
-        int inStorage = getLevelInStorage();
-        int promised = getPromised();
-        int demand = getAmount();
-        int amountToOrder = Math.max(0, demand - promised - inStorage);
-
-        BigIngredientStack orderedIngredient = BigIngredientStack.of(ingredient, Math.min(amountToOrder, availableOnNetwork));
-        IngredientOrder order = IngredientOrder.order(List.of(orderedIngredient));
-
-        sendEffect(getPanelPosition(), true);
-
-        if (!IngredientLogisticsManager.broadcastPackageRequest(network, LogisticallyLinkedBehaviour.RequestType.RESTOCK, order,
-                identifiedInventory, recipeAddress))
-            return;
-
-        restockerPromises.add(new RequestPromise(orderedIngredient.asStack()));
-    }
-
-    private void sendEffect(FactoryPanelPosition fromPos, boolean success) {
-        AllPackets.sendToNear(getWorld(), getPos(), 64,
-                new FactoryPanelEffectPacket(fromPos, getPanelPosition(), success));
     }
 
     @Override
@@ -190,44 +88,6 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
                         .style(ChatFormatting.WHITE))
                 .add(formatLevel(count)
                         .color(0xF1EFE8))
-                .component();
-    }
-
-    @Override
-    public MutableComponent getLabel() {
-        String key = "";
-
-        if (!targetedBy.isEmpty() && count == 0)
-            return CreateLang.translate("gui.factory_panel.no_target_amount_set")
-                    .style(ChatFormatting.RED)
-                    .component();
-
-        if (isMissingAddress())
-            return CreateLang.translate("gui.factory_panel.address_missing")
-                    .style(ChatFormatting.RED)
-                    .component();
-
-        if (getFilter().isEmpty())
-            key = "factory_panel.new_factory_task";
-        else if (waitingForNetwork)
-            key = "factory_panel.some_links_unloaded";
-        else if (getAmount() == 0 || targetedBy.isEmpty())
-            return getFluid().getDisplayName()
-                    .plainCopy();
-        else {
-            key = getFilter().getDisplayName()
-                    .getString();
-            if (redstonePowered)
-                key += " " + CreateLang.translate("factory_panel.redstone_paused")
-                        .string();
-            else if (!satisfied)
-                key += " " + CreateLang.translate("factory_panel.in_progress")
-                        .string();
-            return CreateLang.text(key)
-                    .component();
-        }
-
-        return CreateLang.translate(key)
                 .component();
     }
 
@@ -283,16 +143,8 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour {
                 .add(CreateLang.translate("generic.unit.buckets"));
     }
 
-    private IIngredientInventorySummary getRelevantSummary() {
-        return (IIngredientInventorySummary) ((FactoryPanelBehaviourAccessor) this).callGetRelevantSummary();
-    }
-
-    private int getPromiseExpiryTimeInTicks() {
-        if (promiseClearingInterval == -1)
-            return -1;
-        if (promiseClearingInterval == 0)
-            return 20 * 30;
-
-        return promiseClearingInterval * 20 * 60;
+    @Override
+    public IngredientKey key() {
+        return IngredientKey.of(getFluid());
     }
 }

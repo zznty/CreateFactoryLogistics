@@ -6,7 +6,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.AllPackets;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.factoryBoard.*;
-import com.simibubi.create.content.logistics.packager.InventorySummary;
+import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
@@ -26,8 +26,15 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import ru.zznty.create_factory_logistics.Config;
-import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
-import ru.zznty.create_factory_logistics.logistics.panel.request.*;
+import ru.zznty.create_factory_logistics.FactoryCapabilities;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.ingredient.capability.PackagerAttachedHandler;
+import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientLogisticsManager;
+import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
+import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRequest;
+import ru.zznty.create_factory_logistics.logistics.panel.request.PanelRequestedIngredients;
+import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 import java.util.*;
 
@@ -50,7 +57,21 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
     }
 
     @Shadow(remap = false)
-    private void tryRestock() {
+    public FactoryPanelPosition getPanelPosition() {
+        return null;
+    }
+
+    @Shadow(remap = false)
+    public RequestPromiseQueue restockerPromises;
+
+    @Shadow(remap = false)
+    public int getLevelInStorage() {
+        return 0;
+    }
+
+    @Shadow(remap = false)
+    public int getPromised() {
+        return 0;
     }
 
     @Shadow(remap = false)
@@ -82,7 +103,48 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
                 new FactoryPanelEffectPacket(fromPos, toPos, success));
     }
 
-    private boolean requestDependent(Multimap<UUID, PanelRequestedIngredients> toRequest, FactoryPanelConnection sourceConnection, FactoryPanelBehaviour context, Set<FactoryPanelPosition> visited) {
+    @Unique
+    private void createFactoryLogistics$tryRestock() {
+        FactoryPanelBlockEntity panelBE = panelBE();
+        PackagerBlockEntity packager = panelBE.getRestockedPackager();
+        if (packager == null)
+            return;
+        Optional<PackagerAttachedHandler> handler = packager.getCapability(FactoryCapabilities.PACKAGER_ATTACHED).resolve();
+        if (handler.isEmpty())
+            return;
+
+        BoardIngredient ingredient = BoardIngredient.of((FactoryPanelBehaviour) (Object) this);
+
+        IdentifiedInventory identifiedInventory = handler.get().identifiedInventory();
+
+        if (identifiedInventory == null)
+            return;
+
+        int availableOnNetwork = IngredientLogisticsManager.getStockOf(network, ingredient, identifiedInventory);
+        if (availableOnNetwork == 0) {
+            sendEffect(getPanelPosition(), false);
+            return;
+        }
+
+        int inStorage = getLevelInStorage();
+        int promised = getPromised();
+        int demand = getAmount();
+        int amountToOrder = java.lang.Math.max(0, demand - promised - inStorage);
+
+        BigIngredientStack orderedIngredient = BigIngredientStack.of(ingredient, java.lang.Math.min(amountToOrder, availableOnNetwork));
+        IngredientOrder order = IngredientOrder.order(List.of(orderedIngredient));
+
+        sendEffect(getPanelPosition(), true);
+
+        if (!IngredientLogisticsManager.broadcastPackageRequest(network, LogisticallyLinkedBehaviour.RequestType.RESTOCK, order,
+                identifiedInventory, recipeAddress))
+            return;
+
+        restockerPromises.add(new RequestPromise(orderedIngredient.asStack()));
+    }
+
+    @Unique
+    private boolean createFactoryLogistics$requestDependent(Multimap<UUID, PanelRequestedIngredients> toRequest, FactoryPanelConnection sourceConnection, FactoryPanelBehaviour context, Set<FactoryPanelPosition> visited) {
         FactoryPanelBehaviour source = FactoryPanelBehaviour.at(getWorld(), sourceConnection);
         if (source == null)
             return false;
@@ -93,15 +155,15 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         }
 
         BoardIngredient ingredient = BoardIngredient.of(source);
-        InventorySummary summary = LogisticsManager.getSummaryOfNetwork(source.network, true);
+        IngredientInventorySummary summary = (IngredientInventorySummary) LogisticsManager.getSummaryOfNetwork(source.network, true);
 
-        if (ingredient == BoardIngredient.EMPTY || summary.isEmpty()) {
+        if (ingredient.isEmpty() || summary.isEmpty()) {
             createFactoryLogistics$sendEffect(sourceConnection.from, context.getPanelPosition(), false);
             return false;
         }
 
         // Check if we have enough or enough is queued
-        if (ingredient.hasEnough(summary))
+        if (summary.getCountOf(ingredient.key()) >= ingredient.amount())
             return true;
 
         if (source.getLevelInStorage() + source.getPromised() >= ingredient.amount()) {
@@ -109,9 +171,9 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         }
 
         // request lower level ingredients recursively
-        if (Config.factoryGaugeCascadeRequest) {
+        if (Config.factoryGaugeCascadeRequest && !source.targetedBy.isEmpty() && !source.recipeAddress.isBlank()) {
             for (FactoryPanelConnection connection : source.targetedBy.values()) {
-                if (!requestDependent(toRequest, connection, source, visited))
+                if (!createFactoryLogistics$requestDependent(toRequest, connection, source, visited))
                     return false;
             }
         } else {
@@ -145,10 +207,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         FactoryPanelBehaviour source = (FactoryPanelBehaviour) (Object) this;
 
         if (panelBE.restocker) {
-            if (source instanceof FactoryFluidPanelBehaviour fluidPanelBehaviour)
-                fluidPanelBehaviour.tryRestock();
-            else
-                tryRestock();
+            createFactoryLogistics$tryRestock();
             return;
         }
 
@@ -156,7 +215,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         Set<FactoryPanelPosition> visited = new HashSet<>();
 
         for (FactoryPanelConnection connection : source.targetedBy.values()) {
-            if (!requestDependent(toRequest, connection, source, visited)) {
+            if (!createFactoryLogistics$requestDependent(toRequest, connection, source, visited)) {
                 sendEffect(connection.from, false);
                 return;
             }

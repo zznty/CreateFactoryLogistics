@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import ru.zznty.create_factory_logistics.logistics.panel.request.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequester;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequesterConfigurationPacket;

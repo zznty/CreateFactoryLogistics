@@ -17,7 +17,7 @@ public class CreateFactoryLogisticsClient {
     public static void onClientInit(FMLClientSetupEvent event) {
         BaseConfigScreen.setDefaultActionFor(MODID, base -> base
                 .withButtonLabels(null, null, "Gameplay Settings")
-                .withSpecs(null, null, Config.SPEC));
+                .withSpecs(ClientConfig.SPEC, null, Config.SPEC));
     }
 
     @SubscribeEvent

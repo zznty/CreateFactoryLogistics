@@ -1,44 +1,45 @@
 package ru.zznty.create_factory_logistics.mixin.logistics.packager;
 
-import com.llamalad7.mixinextras.sugar.Local;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.material.Fluid;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import ru.zznty.create_factory_logistics.logistics.panel.request.*;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
+import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientPromiseQueue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 @Mixin(RequestPromiseQueue.class)
 public class IngredientPromiseQueueMixin implements IngredientPromiseQueue {
     @Unique
-    private final Map<Fluid, List<RequestPromise>> createFactoryLogistics$promiseByFluid = new IdentityHashMap<>();
+    private final Multimap<IngredientKey, RequestPromise> createFactoryLogistics$promises = HashMultimap.create();
 
-    @Shadow(remap = false)
-    private Map<Item, List<RequestPromise>> promisesByItem;
     @Shadow(remap = false)
     private Runnable onChanged;
 
-    @Shadow(remap = false)
+    @Overwrite(remap = false)
     public void forceClear(ItemStack stack) {
+        forceClear(new BoardIngredient(IngredientKey.of(stack), 1));
     }
 
-    @Shadow(remap = false)
+    @Overwrite(remap = false)
     public int getTotalPromisedAndRemoveExpired(ItemStack stack, int expiryTime) {
-        return 0;
+        return getTotalPromisedAndRemoveExpired(new BoardIngredient(IngredientKey.of(stack), 1), expiryTime);
     }
 
-    @Shadow(remap = false)
+    @Overwrite(remap = false)
     public void itemEnteredSystem(ItemStack stack, int amount) {
+        ingredientEnteredSystem(new BoardIngredient(IngredientKey.of(stack), amount));
     }
 
     @Override
@@ -48,88 +49,69 @@ public class IngredientPromiseQueueMixin implements IngredientPromiseQueue {
 
     @Override
     public void forceClear(BoardIngredient ingredient) {
-        if (ingredient instanceof ItemBoardIngredient itemIngredient) {
-            forceClear(itemIngredient.stack());
-        } else if (ingredient instanceof FluidBoardIngredient fluidIngredient) {
-            List<RequestPromise> list = createFactoryLogistics$promiseByFluid.get(fluidIngredient.stack().getFluid());
-            if (list == null)
-                return;
+        Collection<RequestPromise> promises = createFactoryLogistics$promises.get(ingredient.key().genericCopy());
+        if (promises.isEmpty())
+            return;
 
-            for (Iterator<RequestPromise> iterator = list.iterator(); iterator.hasNext(); ) {
-                RequestPromise promise = iterator.next();
+        for (Iterator<RequestPromise> iterator = promises.iterator(); iterator.hasNext(); ) {
+            RequestPromise promise = iterator.next();
 
-                BigIngredientStack stack = (BigIngredientStack) promise.promisedStack;
+            BigIngredientStack stack = (BigIngredientStack) promise.promisedStack;
 
-                if (!stack.getIngredient().canStack(ingredient))
-                    continue;
-                iterator.remove();
-                onChanged.run();
-            }
-
-            if (list.isEmpty())
-                createFactoryLogistics$promiseByFluid.remove(fluidIngredient.stack().getFluid());
+            if (!stack.ingredient().canStack(ingredient))
+                continue;
+            iterator.remove();
+            onChanged.run();
         }
     }
 
     @Override
     public int getTotalPromisedAndRemoveExpired(BoardIngredient ingredient, int expiryTime) {
-        if (ingredient instanceof ItemBoardIngredient itemIngredient) {
-            return getTotalPromisedAndRemoveExpired(itemIngredient.stack(), expiryTime);
-        } else if (ingredient instanceof FluidBoardIngredient fluidIngredient) {
-            int promised = 0;
-            List<RequestPromise> list = createFactoryLogistics$promiseByFluid.get(fluidIngredient.stack().getFluid());
-            if (list == null)
-                return promised;
-
-            for (Iterator<RequestPromise> iterator = list.iterator(); iterator.hasNext(); ) {
-                RequestPromise promise = iterator.next();
-                BigIngredientStack stack = (BigIngredientStack) promise.promisedStack;
-                if (!fluidIngredient.canStack(stack.getIngredient()))
-                    continue;
-                if (expiryTime != -1 && promise.ticksExisted >= expiryTime) {
-                    iterator.remove();
-                    onChanged.run();
-                    continue;
-                }
-
-                promised += promise.promisedStack.count;
-            }
+        int promised = 0;
+        Collection<RequestPromise> promises = createFactoryLogistics$promises.get(ingredient.key().genericCopy());
+        if (promises.isEmpty())
             return promised;
+
+        for (Iterator<RequestPromise> iterator = promises.iterator(); iterator.hasNext(); ) {
+            RequestPromise promise = iterator.next();
+            BigIngredientStack stack = (BigIngredientStack) promise.promisedStack;
+            if (!ingredient.canStack(stack.ingredient()))
+                continue;
+            if (expiryTime != -1 && promise.ticksExisted >= expiryTime) {
+                iterator.remove();
+                onChanged.run();
+                continue;
+            }
+
+            promised += promise.promisedStack.count;
         }
-        return 0;
+        return promised;
     }
 
     @Override
     public void ingredientEnteredSystem(BoardIngredient ingredient) {
-        if (ingredient instanceof ItemBoardIngredient itemIngredient) {
-            itemEnteredSystem(itemIngredient.stack(), itemIngredient.amount());
-        } else if (ingredient instanceof FluidBoardIngredient fluidIngredient) {
-            List<RequestPromise> list = createFactoryLogistics$promiseByFluid.get(fluidIngredient.stack().getFluid());
-            if (list == null)
-                return;
+        Collection<RequestPromise> promises = createFactoryLogistics$promises.get(ingredient.key().genericCopy());
+        if (promises.isEmpty())
+            return;
 
-            int amount = fluidIngredient.amount();
+        int amount = ingredient.amount();
 
-            for (Iterator<RequestPromise> iterator = list.iterator(); iterator.hasNext(); ) {
-                RequestPromise requestPromise = iterator.next();
-                BigIngredientStack stack = (BigIngredientStack) requestPromise.promisedStack;
-                if (!fluidIngredient.canStack(stack.getIngredient()))
-                    continue;
+        for (Iterator<RequestPromise> iterator = promises.iterator(); iterator.hasNext(); ) {
+            RequestPromise requestPromise = iterator.next();
+            BigIngredientStack stack = (BigIngredientStack) requestPromise.promisedStack;
+            if (!ingredient.canStack(stack.ingredient()))
+                continue;
 
-                int toSubtract = Math.min(amount, stack.getCount());
-                amount -= toSubtract;
-                stack.setCount(stack.getCount() - toSubtract);
+            int toSubtract = Math.min(amount, stack.getCount());
+            amount -= toSubtract;
+            stack.setCount(stack.getCount() - toSubtract);
 
-                if (stack.getCount() <= 0) {
-                    iterator.remove();
-                    onChanged.run();
-                }
-                if (amount <= 0)
-                    break;
+            if (stack.getCount() <= 0) {
+                iterator.remove();
+                onChanged.run();
             }
-
-            if (list.isEmpty())
-                createFactoryLogistics$promiseByFluid.remove(fluidIngredient.stack().getFluid());
+            if (amount <= 0)
+                break;
         }
     }
 
@@ -137,47 +119,27 @@ public class IngredientPromiseQueueMixin implements IngredientPromiseQueue {
     public void add(RequestPromise promise) {
         BigIngredientStack stack = (BigIngredientStack) promise.promisedStack;
 
-        if (stack.getIngredient() instanceof FluidBoardIngredient fluidIngredient) {
-            createFactoryLogistics$promiseByFluid.computeIfAbsent(fluidIngredient.stack().getFluid(), $ -> new LinkedList<>())
-                    .add(promise);
-        } else if (stack.getIngredient() instanceof ItemBoardIngredient itemIngredient) {
-            promisesByItem.computeIfAbsent(itemIngredient.stack().getItem(), $ -> new LinkedList<>())
-                    .add(promise);
-        }
+        createFactoryLogistics$promises.put(stack.ingredient().key().genericCopy(), promise);
 
-        if (stack.getIngredient() != BoardIngredient.EMPTY)
+        if (!stack.ingredient().isEmpty())
             onChanged.run();
     }
 
-    @Inject(
-            method = "tick",
-            at = @At("RETURN"),
-            remap = false
-    )
-    private void tickFluids(CallbackInfo ci) {
-        createFactoryLogistics$promiseByFluid.forEach((key, list) -> list.forEach(RequestPromise::tick));
+    @Overwrite(remap = false)
+    public void tick() {
+        createFactoryLogistics$promises.forEach((key, promise) -> promise.tick());
     }
 
-    @Inject(
-            method = "isEmpty",
-            at = @At("RETURN"),
-            cancellable = true,
-            remap = false
-    )
-    private void isFluidsEmpty(CallbackInfoReturnable<Boolean> cir) {
-        if (cir.getReturnValueZ() && !createFactoryLogistics$promiseByFluid.isEmpty())
-            cir.setReturnValue(false);
+    @Overwrite(remap = false)
+    public boolean isEmpty() {
+        return createFactoryLogistics$promises.isEmpty();
     }
 
-    @Inject(
-            method = "flatten",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Ljava/util/Map;forEach(Ljava/util/function/BiConsumer;)V"
-            ),
-            remap = false
-    )
-    private void flattenFluids(boolean sorted, CallbackInfoReturnable<List<RequestPromise>> cir, @Local List<RequestPromise> all) {
-        createFactoryLogistics$promiseByFluid.forEach((key, list) -> all.addAll(list));
+    @Overwrite(remap = false)
+    public List<RequestPromise> flatten(boolean sorted) {
+        List<RequestPromise> all = new ArrayList<>(createFactoryLogistics$promises.values());
+        if (sorted)
+            all.sort(RequestPromise.ageComparator());
+        return all;
     }
 }
