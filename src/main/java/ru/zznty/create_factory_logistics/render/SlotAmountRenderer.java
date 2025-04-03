@@ -26,9 +26,6 @@ public class SlotAmountRenderer {
 
     public static void render(GuiGraphics graphics, Font font, float x, float y,
                               String text) {
-        if (ClientConfig.fontStyle.equals(ClientConfig.FontStyle.CREATE))
-            return; // todo bring back create fonts
-
         render(graphics, font, x, y, text, ClientConfig.fontStyle == ClientConfig.FontStyle.LARGE);
     }
 

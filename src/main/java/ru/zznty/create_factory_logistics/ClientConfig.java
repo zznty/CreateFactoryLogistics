@@ -27,6 +27,6 @@ public class ClientConfig {
     public enum FontStyle {
         SMALL,
         LARGE,
-        CREATE
+        // CREATE // todo maybe later
     }
 }

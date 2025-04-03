@@ -9,7 +9,7 @@ import net.createmod.catnip.math.AngleHelper;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.core.Direction;
@@ -29,18 +29,8 @@ public class JarPackageRenderer extends EntityRenderer<JarPackageEntity> {
 
     @Override
     public void render(JarPackageEntity entity, float yaw, float pt, PoseStack ms, MultiBufferSource buffer, int light) {
-        /*if (!VisualizationManager.supportsVisualization(entity.level())) {
-            ItemStack box = entity.box;
-            if (box.isEmpty() || !PackageItem.isPackage(box)) box = AllBlocks.CARDBOARD_BLOCK.asStack();
-            PartialModel model = AllPartialModels.PACKAGES.get(ForgeRegistries.ITEMS.getKey(box.getItem()));
-            ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
-            BakedModel itemModel = itemRenderer.getModel(box, entity.level(), null, 0);
-            itemRenderer.render(box, ItemDisplayContext.FIXED, false, ms, buffer, light, 0, itemModel);
-            renderBox(entity, yaw, ms, buffer, light, model);
-        }*/
-
+//        if (!VisualizationManager.supportsVisualization(entity.level()))
         renderBox(entity, entity.box, yaw, entity.fluidLevel.getValue(pt), ms, buffer, light);
-        //renderBox(entity, yaw, ms, buffer, light, FactoryModels.JAR);
 
         super.render(entity, yaw, pt, ms, buffer, light);
     }
@@ -78,6 +68,6 @@ public class JarPackageRenderer extends EntityRenderer<JarPackageEntity> {
                 .light(light);
         if (entity != null)
             sbb.nudge(entity.getId());
-        sbb.renderInto(ms, buffer.getBuffer(Sheets.translucentCullBlockSheet()));
+        sbb.renderInto(ms, buffer.getBuffer(RenderType.cutoutMipped()));
     }
 }

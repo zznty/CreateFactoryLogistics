@@ -14,6 +14,7 @@ public class JarVisual extends PackageVisual {
     private final FluidVisual fluid;
     private final JarPackageEntity jarEntity;
     private final FluidStack fluidStack;
+    private final TransformedInstance[] buffers;
 
     public JarVisual(VisualizationContext ctx, PackageEntity entity, float partialTick) {
         super(ctx, entity, partialTick);
@@ -21,25 +22,23 @@ public class JarVisual extends PackageVisual {
         jarEntity = (JarPackageEntity) entity;
         fluidStack = FluidUtil.getFluidContained(entity.getBox()).orElse(FluidStack.EMPTY);
         fluid = new FluidVisual(ctx, false, true);
+
+        buffers = fluid.setupBuffers(fluidStack, 0);
     }
 
     @Override
     public void beginFrame(Context ctx) {
         super.beginFrame(ctx);
 
-        fluid.begin();
+        instance.translateY(1 / 32f).setChanged();
+
+        if (buffers == null) return;
 
         FluidStack fluidStack = FluidHelper.copyStackWithAmount(this.fluidStack, (int) jarEntity.fluidLevel.getValue());
-
-        TransformedInstance[] buffers = fluid.setupBuffers(fluidStack, 0);
-        
-        if (buffers == null) return;
 
         for (int i = 0; i < buffers.length; i++) {
             fluid.setupBuffer(fluidStack, JarPackageItem.JAR_CAPACITY, buffers[i], i, 8f / 16, 8f / 16);
         }
-
-        fluid.end();
     }
 
     @Override
