@@ -33,7 +33,7 @@ public interface IngredientKey {
 
     static IngredientKey of(ItemStack item) {
         // items are unique
-        return new ItemIngredientKey(item.copy());
+        return new ItemIngredientKey(item.copyWithCount(1));
     }
 
     static IngredientKey of(FluidStack fluid) {
