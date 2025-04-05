@@ -11,6 +11,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public final class IngredientGui {
     @SuppressWarnings("rawtypes")
     public static final Map<IngredientKeyProvider, IngredientGuiHandler> HANDLERS = new IdentityHashMap<>();
@@ -22,37 +23,35 @@ public final class IngredientGui {
     }
 
     public static void renderDecorations(GuiGraphics graphics, BoardIngredient ingredient, int x, int y) {
-        //noinspection unchecked
-        HANDLERS.get(ingredient.key().provider()).renderDecorations(graphics, ingredient.key(), ingredient.amount(), x, y);
+        getUnchecked(ingredient.key()).renderDecorations(graphics, ingredient.key(), ingredient.amount(), x, y);
     }
 
     public static LangBuilder nameBuilder(BoardIngredient ingredient) {
-        //noinspection unchecked
-        return HANDLERS.get(ingredient.key().provider()).nameBuilder(ingredient.key(), ingredient.amount());
+        return getUnchecked(ingredient.key()).nameBuilder(ingredient.key(), ingredient.amount());
     }
 
     public static List<Component> tooltipBuilder(IngredientKey key, int amount) {
-        //noinspection unchecked
-        return HANDLERS.get(key.provider()).tooltipBuilder(key, amount);
+        return getUnchecked(key).tooltipBuilder(key, amount);
     }
 
     public static LangBuilder nameBuilder(IngredientKey key) {
-        //noinspection unchecked
-        return HANDLERS.get(key.provider()).nameBuilder(key);
+        return getUnchecked(key).nameBuilder(key);
     }
 
     public static int stackSize(IngredientKey key) {
-        //noinspection unchecked
-        return HANDLERS.get(key.provider()).stackSize(key);
+        return getUnchecked(key).stackSize(key);
     }
 
     public static int maxStackSize(IngredientKey key) {
-        //noinspection unchecked
-        return HANDLERS.get(key.provider()).maxStackSize(key);
+        return getUnchecked(key).maxStackSize(key);
     }
 
     public static void renderSlot(GuiGraphics graphics, IngredientKey key, int x, int y) {
-        //noinspection unchecked
-        HANDLERS.get(key.provider()).renderSlot(graphics, key, x, y);
+        getUnchecked(key).renderSlot(graphics, key, x, y);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static IngredientGuiHandler getUnchecked(IngredientKey key) {
+        return HANDLERS.get(key.provider());
     }
 }

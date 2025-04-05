@@ -59,6 +59,18 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
         super(container, inv, title);
     }
 
+    @Override
+    public void renderSlot(GuiGraphics p_281607_, Slot p_282613_) {
+        if (p_282613_ instanceof SlotItemHandler) {
+            IngredientGhostMenu ghostMenu = (IngredientGhostMenu) menu;
+            BoardIngredient ingredient = ghostMenu.getIngredientInSlot(p_282613_.getSlotIndex());
+            IngredientGui.renderSlot(p_281607_, ingredient.key(), p_282613_.x, p_282613_.y);
+            return;
+        }
+
+        super.renderSlot(p_281607_, p_282613_);
+    }
+
     @WrapOperation(
             method = "<init>",
             at = @At(
@@ -110,10 +122,6 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
     private void renderIngredient(GuiGraphics instance, Font l, ItemStack i, int j, int k, String i1,
                                   @Local(index = 7) int index,
                                   @Share("ingredient") LocalRef<BoardIngredient> ingredient) {
-        if (i.isEmpty()) {
-            IngredientGui.renderSlot(instance, ingredient.get().key(), j, k);
-        }
-
         IngredientGui.renderDecorations(instance, ingredient.get().withAmount(amounts.get(index)), j, k);
     }
 
@@ -156,7 +164,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
 
     @Override
     protected void renderTooltip(GuiGraphics graphics, int x, int y) {
-        if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null) {
+        if (this.menu.getCarried().isEmpty() && this.hoveredSlot instanceof SlotItemHandler) {
             IngredientGhostMenu ghostMenu = (IngredientGhostMenu) menu;
             BoardIngredient ingredient = ghostMenu.getIngredientInSlot(this.hoveredSlot.getSlotIndex());
 
@@ -179,7 +187,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
                 return;
             }
 
-            if (this.hoveredSlot instanceof SlotItemHandler && menu.getCarried().isEmpty()) {
+            if (menu.getCarried().isEmpty()) {
                 List<Component> components = List.of(
                         Component.translatable("gui.create_factory_logistics.redstone_requester.fluid_slot_mode")
                                 .withStyle(ChatFormatting.GRAY)
@@ -187,19 +195,22 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
                 graphics.renderTooltip(this.font, components, Optional.empty(), x, y);
                 return;
             }
-
-            super.renderTooltip(graphics, x, y);
         }
+
+        super.renderTooltip(graphics, x, y);
     }
 
-    @Redirect(
+    @WrapOperation(
             method = "getTooltipFromContainerItem",
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/foundation/gui/menu/AbstractSimiContainerScreen;getTooltipFromContainerItem(Lnet/minecraft/world/item/ItemStack;)Ljava/util/List;"
             )
     )
-    private List<Component> getTooltipFromContainerItem(AbstractSimiContainerScreen instance, ItemStack stack) {
+    private List<Component> getTooltipFromContainerItem(RedstoneRequesterScreen instance, ItemStack itemStack, Operation<List<Component>> original) {
+        if (!(hoveredSlot instanceof SlotItemHandler))
+            return original.call(instance, itemStack);
+
         /*return stack.getItem() instanceof JarPackageItem ?
                 List.of(FluidUtil.getFluidContained(stack).orElse(FluidStack.EMPTY).getDisplayName()) :
                 original.call(instance, stack);*/
@@ -218,7 +229,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
 
     @Override
     protected void slotClicked(@Nullable Slot p_97778_, int p_97779_, int p_97780_, ClickType p_97781_) {
-        if (p_97778_ != null && p_97778_ instanceof SlotItemHandler) {
+        if (p_97778_ instanceof SlotItemHandler) {
             IngredientGhostMenu ghostMenu = (IngredientGhostMenu) menu;
             if (this.menu.getCarried().isEmpty()) {
                 ghostMenu.setIngredientInSlot(p_97778_.getSlotIndex(), BoardIngredient.of());
