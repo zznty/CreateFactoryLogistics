@@ -8,6 +8,7 @@ import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -16,12 +17,10 @@ import org.spongepowered.asm.mixin.Unique;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
+import ru.zznty.create_factory_logistics.logistics.ingredient.impl.item.ItemIngredientKey;
 import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Mixin(InventorySummary.class)
 public class InventorySummaryMixin implements IngredientInventorySummary {
@@ -123,6 +122,16 @@ public class InventorySummaryMixin implements IngredientInventorySummary {
             createFactoryLogistics$stacksByCount.sort(BigIngredientStack.COMPARATOR);
         }
         return createFactoryLogistics$stacksByCount;
+    }
+
+    @Overwrite(remap = false)
+    public Map<Item, List<BigIngredientStack>> getItemMap() {
+        Map<Item, List<BigIngredientStack>> map = new IdentityHashMap<>();
+        for (Map.Entry<IngredientKey, Collection<BigIngredientStack>> entry : createFactoryLogistics$ingredients.asMap().entrySet()) {
+            if (entry.getKey() instanceof ItemIngredientKey itemKey)
+                map.put(itemKey.stack().getItem(), new ArrayList<>(entry.getValue()));
+        }
+        return map;
     }
 
     @Overwrite(remap = false)
