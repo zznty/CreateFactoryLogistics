@@ -30,6 +30,7 @@ import ru.zznty.create_factory_logistics.logistics.jar.JarStyles;
 import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 import java.util.List;
+import java.util.Optional;
 
 @ApiStatus.Internal
 public class JarPackagerAttachedHandler implements PackagerAttachedHandler {
@@ -61,9 +62,15 @@ public class JarPackagerAttachedHandler implements PackagerAttachedHandler {
     public boolean unwrap(Level level, BlockPos pos, BlockState state, Direction side, @Nullable PackageOrderWithCrafts orderContext, ItemStack box, boolean simulate) {
         if (!(box.getItem() instanceof JarPackageItem)) return false;
 
-        return FluidUtil.getFluidHandler(level, pos, side).map(fluidHandler -> FluidUtil.getFluidContained(box).filter(fluidStack ->
-                        !FluidUtil.tryFluidTransfer(fluidHandler, FluidUtil.getFluidHandler(box).resolve().get(), fluidStack, !simulate).isEmpty()).isPresent())
-                .orElse(false);
+        Optional<FluidStack> source = FluidUtil.getFluidContained(box);
+        Optional<IFluidHandler> destination = FluidUtil.getFluidHandler(level, pos, side).resolve();
+
+        if (source.isEmpty() || destination.isEmpty()) return false;
+
+        if (destination.get().fill(source.get(), IFluidHandler.FluidAction.SIMULATE) != source.get().getAmount())
+            return false;
+
+        return destination.get().fill(source.get(), IFluidHandler.FluidAction.EXECUTE) == source.get().getAmount();
     }
 
     @Override
