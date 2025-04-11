@@ -20,7 +20,6 @@ public class FactoryModels {
         JAR = PartialModel.of(CreateFactoryLogistics.resource("item/jar/" + JarStyles.REGULAR.type() + "_" + JarStyles.REGULAR.width() + "x" + JarStyles.REGULAR.height()));
         ResourceLocation key = JarStyles.getItemId(JarStyles.REGULAR);
         AllPartialModels.PACKAGES.put(key, JAR);
-        AllPartialModels.PACKAGES_TO_HIDE_AS.add(JAR);
         AllPartialModels.PACKAGE_RIGGING.put(key, PartialModel.of(JarStyles.getRiggingModel(JarStyles.REGULAR)));
     }
 
