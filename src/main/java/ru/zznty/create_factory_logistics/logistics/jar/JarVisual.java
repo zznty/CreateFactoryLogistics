@@ -7,6 +7,7 @@ import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
+import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.render.FluidVisual;
 
 public class JarVisual extends PackageVisual {
@@ -37,7 +38,7 @@ public class JarVisual extends PackageVisual {
         FluidStack fluidStack = FluidHelper.copyStackWithAmount(this.fluidStack, (int) jarEntity.fluidLevel.getValue());
 
         for (int i = 0; i < buffers.length; i++) {
-            fluid.setupBuffer(fluidStack, JarPackageItem.JAR_CAPACITY, buffers[i], i, 8f / 16, 8f / 16);
+            fluid.setupBuffer(fluidStack, Config.jarCapacity, buffers[i], i, 8f / 16, 8f / 16);
         }
     }
 

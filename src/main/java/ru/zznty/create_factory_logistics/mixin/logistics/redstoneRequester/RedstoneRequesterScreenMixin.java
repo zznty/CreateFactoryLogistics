@@ -36,8 +36,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.logistics.ingredient.*;
-import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientGhostMenu;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequester;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequesterConfigurationPacket;
@@ -159,7 +159,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
     private int modifyMaxAmount(int constant, @Share("ingredient") LocalRef<BoardIngredient> ingredient) {
         // 16 jars per fluid at max
         // I don't know why create limits this in the first place
-        return ingredient.get().key().provider() == IngredientProviders.FLUID.get() ? 16 * JarPackageItem.JAR_CAPACITY : constant;
+        return ingredient.get().key().provider() == IngredientProviders.FLUID.get() ? 16 * Config.jarCapacity : constant;
     }
 
     @Override

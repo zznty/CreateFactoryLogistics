@@ -18,6 +18,7 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
@@ -135,7 +136,7 @@ class JarPackageBuilder implements PackageBuilder {
         }
 
         int remainingAmount = content.amount();
-        int amountToAdd = Math.min(JarPackageItem.JAR_CAPACITY - fluidStack.getAmount(), remainingAmount);
+        int amountToAdd = Math.min(Config.jarCapacity - fluidStack.getAmount(), remainingAmount);
         fluidStack.grow(amountToAdd);
         return remainingAmount - amountToAdd;
     }
@@ -147,12 +148,12 @@ class JarPackageBuilder implements PackageBuilder {
 
     @Override
     public boolean isFull() {
-        return fluidStack.getAmount() >= JarPackageItem.JAR_CAPACITY;
+        return fluidStack.getAmount() >= Config.jarCapacity;
     }
 
     @Override
     public int maxPerSlot() {
-        return JarPackageItem.JAR_CAPACITY;
+        return Config.jarCapacity;
     }
 
     @Override

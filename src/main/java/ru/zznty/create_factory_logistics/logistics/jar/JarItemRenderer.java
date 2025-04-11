@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
+import ru.zznty.create_factory_logistics.Config;
 
 import java.util.Optional;
 
@@ -37,7 +38,7 @@ public class JarItemRenderer extends CustomRenderedItemModelRenderer {
         float totalHeight = 8f * capHeight - minPuddleHeight;
         float tankWidth = .5f;
 
-        float level = fluidLevel / JarPackageItem.JAR_CAPACITY * totalHeight;
+        float level = fluidLevel / Config.jarCapacity * totalHeight;
 
         if (level == 0) return;
 

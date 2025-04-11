@@ -41,6 +41,7 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryEntities;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
@@ -50,8 +51,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class JarPackageItem extends PackageItem {
-
-    public static final int JAR_CAPACITY = 1000;
 
     public JarPackageItem(Properties properties, PackageStyles.PackageStyle style) {
         super(properties, style);
@@ -85,8 +84,8 @@ public class JarPackageItem extends PackageItem {
         BlockPos relative = hitResult.getBlockPos().relative(hitResult.getDirection());
 
         return box.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).map(fluidItem -> {
-            FluidStack fluid = fluidItem.drain(JAR_CAPACITY, IFluidHandler.FluidAction.SIMULATE);
-            if (fluid.getAmount() != JAR_CAPACITY ||
+            FluidStack fluid = fluidItem.drain(Config.jarCapacity, IFluidHandler.FluidAction.SIMULATE);
+            if (fluid.getAmount() != Config.jarCapacity ||
                     !(fluid.getFluid() instanceof FlowingFluid) ||
                     !worldIn.mayInteract(playerIn, relative) ||
                     !playerIn.mayUseItemAt(relative, hitResult.getDirection(), box))
@@ -180,7 +179,7 @@ public class JarPackageItem extends PackageItem {
 
     @Override
     public @Nullable ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-        return new FluidHandlerItemStack(stack, JAR_CAPACITY);
+        return new FluidHandlerItemStack(stack, Config.jarCapacity);
     }
 
     @Override
@@ -191,7 +190,7 @@ public class JarPackageItem extends PackageItem {
     }
 
     public static ItemStack slurp(Level world, BlockPos pos, IFluidHandler tank, FluidStack extractedFluid, int amount) {
-        if (amount < 1) amount = JAR_CAPACITY;
+        if (amount < 1) amount = Config.jarCapacity;
 
         ItemStack jar = new ItemStack(JarStyles.getRandomJar());
 

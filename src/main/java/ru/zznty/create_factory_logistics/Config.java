@@ -1,5 +1,6 @@
 package ru.zznty.create_factory_logistics;
 
+import com.simibubi.create.content.logistics.BigItemStack;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -14,13 +15,19 @@ public class Config {
             .comment("Whether to allow factory gauges cascade ingredient requests")
             .define("factoryGaugeCascadeRequest", true);
 
+    private static final ForgeConfigSpec.IntValue JAR_CAPACITY = BUILDER
+            .comment("Capacity of the jar in millibuckets")
+            .defineInRange("jarCapacity", 1000, 1, BigItemStack.INF - 1);
+
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean factoryGaugeCascadeRequest;
+    public static int jarCapacity;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
         if (event.getConfig().getType() != ModConfig.Type.SERVER) return;
         factoryGaugeCascadeRequest = FACTORY_GAUGE_CASCADE_REQUEST.get();
+        jarCapacity = JAR_CAPACITY.get();
     }
 }

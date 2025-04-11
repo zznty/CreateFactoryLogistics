@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 import ru.zznty.create_factory_logistics.render.FluidVisual;
 
@@ -106,7 +107,7 @@ public class ChainConveyorVisualMixin {
                                        @Share("fluid") LocalRef<FluidStack> fluid) {
         if (buf == rigBuffer || buf == boxBuffer) return original.call(instance);
 
-        createFactoryLogistics$fluidVisual.setupBuffer(fluid.get(), JarPackageItem.JAR_CAPACITY, buf, fluidBufferIndex.get(), 8f / 16, 8f / 16);
+        createFactoryLogistics$fluidVisual.setupBuffer(fluid.get(), Config.jarCapacity, buf, fluidBufferIndex.get(), 8f / 16, 8f / 16);
         fluidBufferIndex.set(fluidBufferIndex.get() + 1);
 
         /*var side = fluidBufferIndex.get() >= Iterate.horizontalDirections.length ? Direction.UP : Iterate.horizontalDirections[fluidBufferIndex.get()];
@@ -119,7 +120,7 @@ public class ChainConveyorVisualMixin {
 
         float mult = side.getAxis() == Direction.Axis.X ? 1 : -1;
 
-        float fillFactor = (float) fluidAmount.get() / JarPackageItem.JAR_CAPACITY;
+        float fillFactor = (float) fluidAmount.get() / Config.jarCapacity;
         float scaleFactor = fillFactor * 4 / 16f / JarStyles.JAR_WINDOW_WIDTH;
 
         float height = 8 / 16f;
