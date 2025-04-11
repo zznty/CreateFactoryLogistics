@@ -11,12 +11,20 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
+import net.minecraft.data.recipes.SpecialRecipeBuilder;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlock;
+import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlock;
+import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlockItem;
+import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkGenerator;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlock;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlockItem;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelModel;
 
+import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
 import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
 import static ru.zznty.create_factory_logistics.CreateFactoryLogistics.REGISTRATE;
 
@@ -42,8 +50,8 @@ public class FactoryBlocks {
             REGISTRATE.block("factory_fluid_gauge", FactoryFluidPanelBlock::new)
                     .addLayer(() -> RenderType::cutoutMipped)
                     .initialProperties(SharedProperties::copperMetal)
-                    .properties(p -> p.noOcclusion())
-                    .properties(p -> p.forceSolidOn())
+                    .properties(BlockBehaviour.Properties::noOcclusion)
+                    .properties(BlockBehaviour.Properties::forceSolidOn)
                     .transform(pickaxeOnly())
                     .blockstate((c, p) -> p.horizontalFaceBlock(c.get(), AssetLookup.partialBaseModel(c, p)))
                     .onRegister(CreateRegistrate.blockModel(() -> FactoryFluidPanelModel::new))
@@ -60,6 +68,29 @@ public class FactoryBlocks {
                                     .save(b))
                     .build()
                     .register();
+
+    public static final BlockEntry<NetworkLinkBlock> NETWORK_LINK =
+            REGISTRATE.block("network_link", NetworkLinkBlock::new)
+                    .initialProperties(SharedProperties::softMetal)
+                    .properties(p -> p.mapColor(MapColor.TERRACOTTA_BLUE)
+                            .sound(SoundType.NETHERITE_BLOCK))
+                    .transform(pickaxeOnly())
+                    .blockstate(new NetworkLinkGenerator()::generate)
+                    .item(NetworkLinkBlockItem::new)
+                    .recipe((c, b) ->
+                            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.NETWORK_LINK, 2)
+                                    .unlockedBy("has_" + b.safeName(c.getId()),
+                                            DataIngredient.items(AllBlocks.STOCK_LINK.asItem()).getCritereon(b))
+                                    .pattern("t")
+                                    .pattern("C")
+                                    .define('t', AllBlocks.STOCK_LINK)
+                                    .define('C', AllBlocks.BRASS_CASING)
+                                    .save(b))
+                    .recipe((c, b) ->
+                            SpecialRecipeBuilder.special(FactoryRecipes.NETWORK_LINK_QUALIFICATION.get()).save(b, "network_link_qualification"))
+                    .transform(customItemModel("_", "block_vertical"))
+                    .register();
+
 
     // Load this class
 

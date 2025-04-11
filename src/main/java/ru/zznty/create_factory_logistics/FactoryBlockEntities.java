@@ -4,6 +4,7 @@ import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlockEntity;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerRenderer;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerVisual;
+import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlockEntity;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlockEntity;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelRenderer;
 
@@ -21,6 +22,11 @@ public class FactoryBlockEntities {
             REGISTRATE.blockEntity("factory_fluid_panel", FactoryFluidPanelBlockEntity::new)
                     .validBlocks(FactoryBlocks.FACTORY_FLUID_GAUGE)
                     .renderer(() -> FactoryFluidPanelRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<NetworkLinkBlockEntity> NETWORK_LINK =
+            REGISTRATE.blockEntity("network_link", NetworkLinkBlockEntity::new)
+                    .validBlocks(FactoryBlocks.NETWORK_LINK)
                     .register();
 
     // Load this class

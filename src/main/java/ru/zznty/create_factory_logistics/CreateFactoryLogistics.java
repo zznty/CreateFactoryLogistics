@@ -28,6 +28,7 @@ public class CreateFactoryLogistics {
 
         REGISTRATE.registerEventListeners(modEventBus);
         IngredientRegistry.BOARD_INGREDIENTS.register(modEventBus);
+        FactoryRecipes.REGISTER.register(modEventBus);
 
         modEventBus.addListener(FactoryEntities::registerEntityAttributes);
         modEventBus.addListener(FactoryDataGen::gatherData);

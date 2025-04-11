@@ -189,7 +189,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
 
             if (menu.getCarried().isEmpty()) {
                 List<Component> components = List.of(
-                        Component.translatable("gui.create_factory_logistics.redstone_requester.fluid_slot_mode")
+                        Component.translatable("create_factory_logistics.gui.redstone_requester.fluid_slot_mode")
                                 .withStyle(ChatFormatting.GRAY)
                 );
                 graphics.renderTooltip(this.font, components, Optional.empty(), x, y);

@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics.mixin.logistics.packager;
+package ru.zznty.create_factory_logistics.mixin.logistics.stockLink;
 
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
