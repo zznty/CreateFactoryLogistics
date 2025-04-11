@@ -11,15 +11,17 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
-import net.minecraft.data.recipes.SpecialRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlock;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlock;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlockItem;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkGenerator;
+import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkQualificationRecipeBuilder;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlock;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlockItem;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelModel;
@@ -77,17 +79,19 @@ public class FactoryBlocks {
                     .transform(pickaxeOnly())
                     .blockstate(new NetworkLinkGenerator()::generate)
                     .item(NetworkLinkBlockItem::new)
-                    .recipe((c, b) ->
-                            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.NETWORK_LINK, 2)
-                                    .unlockedBy("has_" + b.safeName(c.getId()),
-                                            DataIngredient.items(AllBlocks.STOCK_LINK.asItem()).getCritereon(b))
-                                    .pattern("t")
-                                    .pattern("C")
-                                    .define('t', AllBlocks.STOCK_LINK)
-                                    .define('C', AllBlocks.BRASS_CASING)
-                                    .save(b))
-                    .recipe((c, b) ->
-                            SpecialRecipeBuilder.special(FactoryRecipes.NETWORK_LINK_QUALIFICATION.get()).save(b, "network_link_qualification"))
+                    .recipe((c, b) -> {
+                        for (ResourceLocation key : IngredientRegistry.REGISTRY.get().getKeys()) {
+                            new NetworkLinkQualificationRecipeBuilder(FactoryRecipes.NETWORK_LINK_QUALIFICATION.get()).save(b, key);
+                        }
+                        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.NETWORK_LINK, 2)
+                                .unlockedBy("has_" + b.safeName(c.getId()),
+                                        DataIngredient.items(AllBlocks.STOCK_LINK.asItem()).getCritereon(b))
+                                .pattern("t")
+                                .pattern("C")
+                                .define('t', AllBlocks.STOCK_LINK)
+                                .define('C', AllBlocks.BRASS_CASING)
+                                .save(b);
+                    })
                     .transform(customItemModel("_", "block_vertical"))
                     .register();
 

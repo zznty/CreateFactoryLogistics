@@ -1,7 +1,9 @@
 package ru.zznty.create_factory_logistics.logistics.networkLink;
 
+import com.google.gson.JsonObject;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -13,17 +15,23 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.FactoryRecipes;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 
+import java.util.Objects;
+
 import static net.minecraft.world.item.BlockItem.BLOCK_ENTITY_TAG;
 
 public class NetworkLinkQualificationRecipe extends CustomRecipe {
-    public NetworkLinkQualificationRecipe(ResourceLocation p_252125_, CraftingBookCategory p_249010_) {
+    private final ResourceLocation key;
+
+    public NetworkLinkQualificationRecipe(ResourceLocation p_252125_, ResourceLocation key, CraftingBookCategory p_249010_) {
         super(p_252125_, p_249010_);
+        this.key = key;
     }
 
     @Override
@@ -38,12 +46,7 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     }
 
     private @Nullable ResourceLocation test(ItemStack item) {
-        for (ResourceLocation key : IngredientRegistry.REGISTRY.get().getKeys()) {
-            if (Ingredient.of(tag(key)).test(item))
-                return key;
-        }
-
-        return null;
+        return Ingredient.of(tag(key)).test(item) ? key : null;
     }
 
     public static TagKey<Item> tag(ResourceLocation location) {
@@ -77,14 +80,19 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
 
         if (link == null || qualifier == null) return ItemStack.EMPTY;
 
+        link = qualifyTo(link, qualifier);
+
+        if (air)
+            Objects.requireNonNull(link.getTagElement(BLOCK_ENTITY_TAG)).remove("Freq");
+
+        return link;
+    }
+
+    public static @NotNull ItemStack qualifyTo(ItemStack link, ResourceLocation qualifier) {
         link = link.copy();
 
         CompoundTag tag = link.getOrCreateTagElement(BLOCK_ENTITY_TAG);
         tag.putString(NetworkLinkBlock.INGREDIENT_TYPE, qualifier.toString());
-        
-        if (air)
-            tag.remove("Freq");
-
         return link;
     }
 
@@ -96,5 +104,27 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     @Override
     public RecipeSerializer<?> getSerializer() {
         return FactoryRecipes.NETWORK_LINK_QUALIFICATION.get();
+    }
+
+    public ResourceLocation key() {
+        return key;
+    }
+
+    public static class Serializer implements RecipeSerializer<NetworkLinkQualificationRecipe> {
+        @Override
+        public NetworkLinkQualificationRecipe fromJson(ResourceLocation p_44103_, JsonObject p_44104_) {
+            return new NetworkLinkQualificationRecipe(p_44103_, ResourceLocation.parse(p_44104_.get("key").getAsString()), CraftingBookCategory.CODEC.byName(p_44104_.get("category").getAsString()));
+        }
+
+        @Override
+        public @Nullable NetworkLinkQualificationRecipe fromNetwork(ResourceLocation p_44105_, FriendlyByteBuf p_44106_) {
+            return new NetworkLinkQualificationRecipe(p_44105_, p_44106_.readResourceLocation(), p_44106_.readEnum(CraftingBookCategory.class));
+        }
+
+        @Override
+        public void toNetwork(FriendlyByteBuf p_44101_, NetworkLinkQualificationRecipe p_44102_) {
+            p_44101_.writeResourceLocation(p_44102_.key);
+            p_44101_.writeEnum(p_44102_.category());
+        }
     }
 }
