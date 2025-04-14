@@ -59,7 +59,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
     @Shadow(remap = false)
     public ItemStack heldBox, previouslyUnwrapped;
     @Shadow(remap = false)
-    public int animationTicks;
+    public int animationTicks, buttonCooldown;
     @Shadow(remap = false)
     public boolean animationInward;
     @Shadow(remap = false)
@@ -196,6 +196,9 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
 
     @Overwrite(remap = false)
     public void attemptToSend(List<PackagingRequest> queuedRequests) {
+        if (queuedRequests == null && (!heldBox.isEmpty() || animationTicks != 0 || buttonCooldown > 0))
+            return;
+
         if (queuedRequests == null) {
             attemptToSendIngredients(null);
             return;
