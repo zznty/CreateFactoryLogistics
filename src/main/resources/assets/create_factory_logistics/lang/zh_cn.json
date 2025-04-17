@@ -1,11 +1,23 @@
 {
   "block.create_factory_logistics.factory_fluid_gauge": "工厂仪表（流体）",
   "block.create_factory_logistics.jar_packager": "装罐机",
+  "block.create_factory_logistics.network_link": "Network Link",
   "entity.create_factory_logistics.jar": "流体罐",
   "item.create_factory_logistics.fluid_mechanism": "流体构件",
   "item.create_factory_logistics.incomplete_fluid_mechanism": "流体构件（半成品）",
   "item.create_factory_logistics.jar": "铜罐",
   "itemGroup.create_factory_logistics.create_factory_logistics_tab": "机械动力：流体物流",
   "create_factory_logistics.gui.redstone_requester.fluid_slot_mode": "按住 Alt 添加含有的流体",
-  "itemGroup.create_factory_logistics.base": "机械动力：流体物流"
+  "itemGroup.create_factory_logistics.base": "机械动力：流体物流",
+  "create_factory_logistics.gui.ingredient_type_qualified_item": "Content Type:",
+  "create_factory_logistics.gui.ingredient_type.fluid": "Fluid",
+  "create_factory_logistics.gui.ingredient_type.item": "Item",
+  "create_factory_logistics.gui.network_link.mode": "Stock Source",
+  "create.gui.network_link.mode.stored": "In Stock",
+  "create.gui.network_link.mode.promised": "Promised",
+  "create.gui.network_link.mode.all": "In Stock and Promised",
+  "create_factory_logistics.ponder.mixer_upkeep.header": "Mixer Upkeep with Network links",
+  "create_factory_logistics.ponder.mixer_upkeep.text_1": "Network Links could be attached to a inventory reading device like Threshold Switch.",
+  "create_factory_logistics.ponder.mixer_upkeep.text_2": "So that blaze burner would be fed only when necessary.",
+  "create_factory_logistics.ponder.mixer_upkeep.text_3": "When order has arrived, the switch will read new state and react."
 }
