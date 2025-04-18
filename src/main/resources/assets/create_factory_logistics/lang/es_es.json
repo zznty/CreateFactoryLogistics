@@ -17,7 +17,8 @@
   "create.gui.network_link.mode.promised": "Promised",
   "create.gui.network_link.mode.all": "In Stock and Promised",
   "create_factory_logistics.ponder.mixer_upkeep.header": "Mixer Upkeep with Network links",
-  "create_factory_logistics.ponder.mixer_upkeep.text_1": "Network Links could be attached to a inventory reading device like Threshold Switch.",
-  "create_factory_logistics.ponder.mixer_upkeep.text_2": "So that blaze burner would be fed only when necessary.",
-  "create_factory_logistics.ponder.mixer_upkeep.text_3": "When order has arrived, the switch will read new state and react."
+  "create_factory_logistics.ponder.mixer_upkeep.text_1": "Network Links could be attached to a inventory reading device like Threshold Switch",
+  "create_factory_logistics.ponder.mixer_upkeep.text_2": "So that blaze burner would be fed only when necessary",
+  "create_factory_logistics.ponder.mixer_upkeep.text_3": "When order has arrived, the switch will read new state and react",
+  "create_factory_logistics.gui.factory_fluid_panel.place_fluid_to_monitor": "Place Fluid to Monitor"
 }
