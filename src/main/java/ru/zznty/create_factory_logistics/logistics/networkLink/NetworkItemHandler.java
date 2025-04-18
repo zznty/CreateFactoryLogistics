@@ -31,11 +31,13 @@ public class NetworkItemHandler extends BaseNetworkHandler implements IItemHandl
 
     @Override
     public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if (!simulate) return ItemStack.EMPTY;
-
-        ItemStack stack = getStackInSlot(slot);
-
-        return stack.copyWithCount(Math.min(stack.getCount(), amount));
+        return ItemStack.EMPTY;
+        // causes too much trouble with other mods implementing extraction without any checks
+//        if (!simulate) return ItemStack.EMPTY;
+//
+//        ItemStack stack = getStackInSlot(slot);
+//
+//        return stack.copyWithCount(Math.min(stack.getCount(), amount));
     }
 
     @Override

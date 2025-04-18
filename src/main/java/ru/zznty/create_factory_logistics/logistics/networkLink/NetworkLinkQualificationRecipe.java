@@ -20,8 +20,11 @@ import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.FactoryRecipes;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static net.minecraft.world.item.BlockItem.BLOCK_ENTITY_TAG;
@@ -36,13 +39,13 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
 
     @Override
     public boolean matches(CraftingContainer p_44002_, Level p_44003_) {
-        for (int i = 0; i < p_44002_.getContainerSize(); i++) {
-            if (p_44002_.getItem(i).getItem() == FactoryBlocks.NETWORK_LINK.asItem()) {
-                return true;
-            }
-        }
-
-        return false;
+        List<ItemStack> list = new ArrayList<>(p_44002_.getItems());
+        list.removeIf(ItemStack::isEmpty);
+        boolean isEmpty = key.equals(IngredientProviders.EMPTY.getId());
+        if (list.size() != (isEmpty ? 1 : 2))
+            return false;
+        
+        return (isEmpty || list.stream().anyMatch(Ingredient.of(tag(key)))) && list.stream().anyMatch(Ingredient.of(FactoryBlocks.NETWORK_LINK));
     }
 
     private @Nullable ResourceLocation test(ItemStack item) {
