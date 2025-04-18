@@ -1,5 +1,5 @@
 {
-  "block.create_factory_logistics.factory_fluid_gauge": "工厂仪表（流体）",
+  "block.create_factory_logistics.factory_fluid_gauge": "工厂流体仪表",
   "block.create_factory_logistics.jar_packager": "装罐机",
   "block.create_factory_logistics.network_link": "请求链接站",
   "entity.create_factory_logistics.jar": "流体罐",
@@ -17,7 +17,8 @@
   "create.gui.network_link.mode.promised": "已承诺",
   "create.gui.network_link.mode.all": "在仓储中或已承诺",
   "create_factory_logistics.ponder.mixer_upkeep.header": "使用请求链接站控制补充燃料",
-  "create_factory_logistics.ponder.mixer_upkeep.text_1": "请求链接站需要被放置在一个读取仓储存量的方块上，例如存量转信器",
-  "create_factory_logistics.ponder.mixer_upkeep.text_2": "这样，烈焰人燃烧室只有在需要的时候才会被补充燃料",
-  "create_factory_logistics.ponder.mixer_upkeep.text_3": "当请求到达，开关将读取新的状态并做出反应"
+  "create_factory_logistics.ponder.mixer_upkeep.text_1": "Network Links could be attached to a inventory reading device like Threshold Switch",
+  "create_factory_logistics.ponder.mixer_upkeep.text_2": "So that blaze burner would be fed only when necessary",
+  "create_factory_logistics.ponder.mixer_upkeep.text_3": "When order has arrived, the switch will read new state and react",
+  "create_factory_logistics.gui.factory_fluid_panel.place_fluid_to_monitor": "Place Fluid to Monitor"
 }
