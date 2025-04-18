@@ -25,6 +25,7 @@ import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkQualif
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlock;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlockItem;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelModel;
+import ru.zznty.create_factory_logistics.logistics.repackager.UniversalRepackagerBlock;
 
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
 import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
@@ -38,6 +39,22 @@ public class FactoryBlocks {
                     ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.JAR_PACKAGER)
                             .unlockedBy("has_" + b.safeName(c.getId()),
                                     DataIngredient.items(AllBlocks.PACKAGER.asItem()).getCritereon(b))
+                            .pattern(" c ")
+                            .pattern("cCc")
+                            .pattern("rir")
+                            .define('c', Items.COPPER_INGOT)
+                            .define('C', AllBlocks.COPPER_CASING)
+                            .define('r', Items.REDSTONE)
+                            .define('i', Items.IRON_INGOT)
+                            .save(b))
+            .register();
+
+    public static final BlockEntry<UniversalRepackagerBlock> UNIVERSAL_REPACKAGER = REGISTRATE.block("universal_repackager", UniversalRepackagerBlock::new)
+            .transform(BuilderTransformers.packager())
+            .recipe((c, b) ->
+                    ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.UNIVERSAL_REPACKAGER)
+                            .unlockedBy("has_" + b.safeName(c.getId()),
+                                    DataIngredient.items(AllBlocks.REPACKAGER.asItem()).getCritereon(b))
                             .pattern(" c ")
                             .pattern("cCc")
                             .pattern("rir")

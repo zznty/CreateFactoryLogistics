@@ -7,6 +7,7 @@ import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerVisual
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlockEntity;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlockEntity;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelRenderer;
+import ru.zznty.create_factory_logistics.logistics.repackager.UniversalRepackagerBlockEntity;
 
 import static ru.zznty.create_factory_logistics.CreateFactoryLogistics.REGISTRATE;
 
@@ -27,6 +28,11 @@ public class FactoryBlockEntities {
     public static final BlockEntityEntry<NetworkLinkBlockEntity> NETWORK_LINK =
             REGISTRATE.blockEntity("network_link", NetworkLinkBlockEntity::new)
                     .validBlocks(FactoryBlocks.NETWORK_LINK)
+                    .register();
+
+    public static final BlockEntityEntry<UniversalRepackagerBlockEntity> UNIVERSAL_REPACKAGER =
+            REGISTRATE.blockEntity("universal_repackager", UniversalRepackagerBlockEntity::new)
+                    .validBlocks(FactoryBlocks.UNIVERSAL_REPACKAGER)
                     .register();
 
     // Load this class

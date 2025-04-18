@@ -12,6 +12,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
+import ru.zznty.create_factory_logistics.logistics.composite.CompositePackageEntity;
+import ru.zznty.create_factory_logistics.logistics.composite.CompositePackageEntityRender;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageEntity;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageRenderer;
 
@@ -19,6 +21,10 @@ public class FactoryEntities {
     public static final EntityEntry<JarPackageEntity> JAR = register("jar", JarPackageEntity::new, () -> JarPackageRenderer::new,
             MobCategory.MISC, 10, 3, true, false, JarPackageEntity::build)
 //            .visual(() -> JarVisual::new, true)
+            .register();
+
+    public static final EntityEntry<CompositePackageEntity> COMPOSITE_PACKAGE = register("composite_package", CompositePackageEntity::new,
+            () -> CompositePackageEntityRender::new, MobCategory.MISC, 10, 3, true, false, CompositePackageEntity::build)
             .register();
 
     private static <T extends Entity> CreateEntityBuilder<T, ?> register(String name, EntityType.EntityFactory<T> factory,
@@ -41,6 +47,8 @@ public class FactoryEntities {
 
     public static void registerEntityAttributes(EntityAttributeCreationEvent event) {
         event.put(JAR.get(), JarPackageEntity.createPackageAttributes()
+                .build());
+        event.put(COMPOSITE_PACKAGE.get(), CompositePackageEntity.createPackageAttributes()
                 .build());
     }
 

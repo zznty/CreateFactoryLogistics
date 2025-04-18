@@ -7,6 +7,7 @@
   "refmap": "mixins.create_factory_logistics.refmap.json",
   "plugin": "ru.zznty.create_factory_logistics.mixin.CreateFactoryLogisticsMixinPlugin",
   "mixins": [
+    "accessor.PackageEntityAccessor",
     "logistics.jar.JarDrainMixin",
     "logistics.packager.IngredientPromiseQueueMixin",
     "logistics.packager.PackagerIngredientBlockEntityMixin",

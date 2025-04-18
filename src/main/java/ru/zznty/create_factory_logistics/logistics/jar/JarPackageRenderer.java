@@ -58,8 +58,8 @@ public class JarPackageRenderer extends EntityRenderer<JarPackageEntity> {
         return null;
     }
 
-    private static void renderBox(Entity entity, float yaw, PoseStack ms, MultiBufferSource buffer, int light,
-                                  PartialModel model) {
+    public static void renderBox(Entity entity, float yaw, PoseStack ms, MultiBufferSource buffer, int light,
+                                 PartialModel model) {
         if (model == null)
             return;
         SuperByteBuffer sbb = CachedBuffers.partial(model, Blocks.AIR.defaultBlockState());

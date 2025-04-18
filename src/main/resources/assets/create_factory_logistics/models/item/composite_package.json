@@ -1,0 +1,4 @@
+{
+  "render_type": "minecraft:cutout",
+  "parent": "create:item/package/cardboard_10x12"
+}

@@ -4,11 +4,9 @@ import com.simibubi.create.content.logistics.box.PackageEntity;
 import com.simibubi.create.content.logistics.chute.ChuteBlock;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,10 +14,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.network.PlayMessages;
 import ru.zznty.create_factory_logistics.FactoryEntities;
+import ru.zznty.create_factory_logistics.mixin.accessor.PackageEntityAccessor;
 
 public class JarPackageEntity extends PackageEntity {
-    private Entity originalEntity;
-
     public LerpedFloat fluidLevel = LerpedFloat.linear();
 
     public JarPackageEntity(EntityType<?> entityTypeIn, Level worldIn) {
@@ -35,22 +32,7 @@ public class JarPackageEntity extends PackageEntity {
     @Override
     public void tick() {
         super.tick();
-        if (firstTick) {
-            verifyInitialEntity();
-            originalEntity = null;
-        }
-
         fluidLevel.tickChaser();
-    }
-
-    protected void verifyInitialEntity() {
-        if (!(originalEntity instanceof ItemEntity itemEntity))
-            return;
-        CompoundTag nbt = new CompoundTag();
-        itemEntity.addAdditionalSaveData(nbt);
-        if (nbt.getInt("PickupDelay") != 32767) // See: ItemEntity#makeFakeItem
-            return;
-        discard();
     }
 
     @Override
@@ -78,7 +60,8 @@ public class JarPackageEntity extends PackageEntity {
         jarEntity.setBox(itemstack);
         jarEntity.setDeltaMovement(originalEntity.getDeltaMovement()
                 .scale(1.5f));
-        jarEntity.originalEntity = originalEntity;
+        PackageEntityAccessor accessor = (PackageEntityAccessor) jarEntity;
+        accessor.setOriginalEntity(originalEntity);
 
         if (world != null && !world.isClientSide)
             if (ChuteBlock.isChute(world.getBlockState(BlockPos.containing(position.x, position.y + .5f, position.z))))
