@@ -35,7 +35,7 @@ public class NetworkLinkBlockItem extends LogisticallyLinkedBlockItem {
     public static boolean isTuned(ItemStack pStack) {
         if (!pStack.hasTag()) return false;
         CompoundTag tag = pStack.getTagElement(BLOCK_ENTITY_TAG);
-        return tag != null && tag.contains("Freq", CompoundTag.TAG_STRING);
+        return tag != null && tag.contains("Freq");
     }
 
     @Override
@@ -46,7 +46,7 @@ public class NetworkLinkBlockItem extends LogisticallyLinkedBlockItem {
             return;
 
         ResourceLocation ingredientType = ResourceLocation.parse(tag.getString(NetworkLinkBlock.INGREDIENT_TYPE));
-        
+
         if (ingredientType.getPath().equals(IngredientRegistry.EMPTY_KEY))
             return;
 
