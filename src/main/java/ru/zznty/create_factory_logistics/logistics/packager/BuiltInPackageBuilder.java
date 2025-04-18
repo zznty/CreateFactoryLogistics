@@ -24,9 +24,9 @@ class BuiltInPackageBuilder implements PackageBuilder {
 
 
         if (content.key() instanceof ItemIngredientKey itemKey) {
-            hasBulky = itemKey.stack().getItem().canFitInsideContainerItems();
+            hasBulky = measure(itemKey) == PackageMeasureResult.BULKY;
 
-            return ItemHandlerHelper.insertItemStacked(inventory, itemKey.stack(), false).getCount();
+            return ItemHandlerHelper.insertItemStacked(inventory, itemKey.stack().copyWithCount(content.amount()), false).getCount();
         }
 
         throw new IllegalArgumentException("Unsupported content: " + content);
