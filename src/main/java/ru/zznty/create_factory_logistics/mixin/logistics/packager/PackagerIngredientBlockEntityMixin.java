@@ -302,9 +302,10 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
                     // content is not stackable with currently contained ingredients
                     if (leftovers < 0) continue;
 
-                    anyItemPresent = true;
                     int transferred = extracted.amount() - leftovers;
-                    target.get().extract(slot, transferred, false);
+                    if (target.get().extract(slot, transferred, false).isEmpty())
+                        continue;
+                    anyItemPresent = true;
 
                     if (!requestQueue) {
                         if (bulky)

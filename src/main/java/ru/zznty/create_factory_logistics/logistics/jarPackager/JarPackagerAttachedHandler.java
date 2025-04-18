@@ -71,6 +71,8 @@ public class JarPackagerAttachedHandler implements PackagerAttachedHandler {
         if (destination.get().fill(source.get(), IFluidHandler.FluidAction.SIMULATE) != source.get().getAmount())
             return false;
 
+        if (simulate) return true;
+
         return destination.get().fill(source.get(), IFluidHandler.FluidAction.EXECUTE) == source.get().getAmount();
     }
 
