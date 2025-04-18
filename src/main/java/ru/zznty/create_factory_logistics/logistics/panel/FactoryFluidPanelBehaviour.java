@@ -8,8 +8,10 @@ import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.data.Pair;
+import net.createmod.catnip.gui.ScreenOpener;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
@@ -131,6 +133,9 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
             return CreateLang.text("\u221e");
 
         if (!round || level < 1000 || level % 1000 != 0) {
+            if (level % 1000 == 0)
+                return CreateLang.number(level / 1000).add(CreateLang.translate("generic.unit.buckets"));
+            
             return CreateLang.number(level).add(CreateLang.translate("generic.unit.millibuckets"));
         }
 
@@ -146,5 +151,11 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
     @Override
     public IngredientKey key() {
         return IngredientKey.of(getFluid());
+    }
+
+    @Override
+    public void displayScreen(Player player) {
+        if (player instanceof LocalPlayer)
+            ScreenOpener.open(new FactoryFluidPanelScreen(this));
     }
 }

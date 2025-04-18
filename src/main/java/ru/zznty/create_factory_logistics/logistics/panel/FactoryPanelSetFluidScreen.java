@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 
 import java.util.Collections;
@@ -34,7 +35,6 @@ public class FactoryPanelSetFluidScreen extends AbstractSimiContainerScreen<Fact
         int x = getGuiLeft();
         int y = getGuiTop();
 
-
         confirmButton = new IconButton(x + bgWidth - 40, y + bgHeight - 25, AllIcons.I_CONFIRM);
         confirmButton.withCallback(() -> minecraft.player.closeContainer());
         addRenderableWidget(confirmButton);
@@ -50,7 +50,8 @@ public class FactoryPanelSetFluidScreen extends AbstractSimiContainerScreen<Fact
         renderPlayerInventory(pGuiGraphics, x + 5, y + 94);
 
         ItemStack stack = FactoryBlocks.FACTORY_FLUID_GAUGE.asStack();
-        Component title = CreateLang.translate("gui.factory_fluid_panel.place_fluid_to_monitor")
+        Component title = CreateLang.builder(CreateFactoryLogistics.MODID)
+                .translate("gui.factory_fluid_panel.place_fluid_to_monitor")
                 .component();
         pGuiGraphics.drawString(font, title, x + imageWidth / 2 - font.width(title) / 2 - 5, y + 4, 0x3D3C48, false);
 
