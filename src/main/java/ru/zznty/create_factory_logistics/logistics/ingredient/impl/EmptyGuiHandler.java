@@ -2,6 +2,7 @@ package ru.zznty.create_factory_logistics.logistics.ingredient.impl;
 
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.lang.LangBuilder;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientGuiHandler;
@@ -19,7 +20,7 @@ public class EmptyGuiHandler implements IngredientGuiHandler<EmptyIngredientKey>
 
     @Override
     public LangBuilder nameBuilder(EmptyIngredientKey key, int amount) {
-        return CreateLang.builder();
+        return nameBuilder(key);
     }
 
     @Override
@@ -29,7 +30,7 @@ public class EmptyGuiHandler implements IngredientGuiHandler<EmptyIngredientKey>
 
     @Override
     public LangBuilder nameBuilder(EmptyIngredientKey key) {
-        return CreateLang.builder();
+        return CreateLang.builder().text("<>").style(ChatFormatting.DARK_GRAY);
     }
 
     @Override
