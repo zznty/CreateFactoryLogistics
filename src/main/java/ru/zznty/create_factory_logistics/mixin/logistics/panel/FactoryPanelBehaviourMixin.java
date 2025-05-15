@@ -21,7 +21,9 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientFilterProvider;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientGui;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientPromiseQueue;
 import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
@@ -29,7 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Mixin(FactoryPanelBehaviour.class)
-public class FactoryPanelBehaviourMixin extends FilteringBehaviour {
+public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements IngredientFilterProvider {
     @Shadow(remap = false)
     private int lastReportedLevelInStorage, lastReportedPromises;
     @Shadow(remap = false)
@@ -90,7 +92,7 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour {
 
         BoardIngredient ingredient = BoardIngredient.of((FactoryPanelBehaviour) (Object) this);
 
-        if (ingredient.isEmpty())
+        if (ingredient.key() == IngredientKey.EMPTY)
             return 0;
 
         IngredientInventorySummary summary = (IngredientInventorySummary) getRelevantSummary();
@@ -104,7 +106,7 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour {
 
         BoardIngredient ingredient = BoardIngredient.of((FactoryPanelBehaviour) (Object) this);
 
-        if (ingredient.isEmpty())
+        if (ingredient.key() == IngredientKey.EMPTY)
             return 0;
 
         if (panelBE().restocker) {
@@ -150,7 +152,8 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour {
         BoardIngredient ingredient = BoardIngredient.of((FactoryPanelBehaviour) (Object) this);
 
         LangBuilder result;
-        if (ingredient.isEmpty())
+        // we dont want to compare count here
+        if (ingredient.key() == IngredientKey.EMPTY)
             result = CreateLang.translate("factory_panel.new_factory_task");
         else if (waitingForNetwork)
             result = CreateLang.translate("factory_panel.some_links_unloaded");
@@ -167,5 +170,10 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour {
         }
 
         return result.component();
+    }
+
+    @Override
+    public BoardIngredient ingredient() {
+        return new BoardIngredient(IngredientKey.of(getFilter()), count * (upTo ? 1 : getFilter().getMaxStackSize()));
     }
 }

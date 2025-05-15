@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -38,8 +39,9 @@ public class FactoryFluidGaugeDisplaySource extends ValueListDisplaySource {
             return null;
 
         FluidStack fluid = fluidPanel.getFluid();
+        BoardIngredient ingredient = BoardIngredient.of(fluidPanel);
 
-        int demand = panel.getAmount();
+        int demand = ingredient.amount();
         String s = " ";
 
         if (demand != 0) {

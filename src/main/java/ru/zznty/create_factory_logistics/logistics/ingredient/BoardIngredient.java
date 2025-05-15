@@ -4,7 +4,6 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.Objects;
 
@@ -66,18 +65,7 @@ public record BoardIngredient(IngredientKey key, int amount) {
     }
 
     public static BoardIngredient of(FactoryPanelBehaviour behaviour) {
-        // todo refactor this into mixin interface of behaviour
-        int count = behaviour.upTo ? behaviour.recipeOutput : behaviour.count;
-        if (count == 0) return of();
-        if (behaviour instanceof IngredientFilterProvider filterProvider) {
-            IngredientKey ingredientKey = filterProvider.key();
-            if (ingredientKey == IngredientKey.EMPTY) return of();
-            return new BoardIngredient(ingredientKey, count);
-        }
-
-        ItemStack stack = behaviour.getFilter();
-        if (stack == ItemStack.EMPTY) return of();
-
-        return new BoardIngredient(IngredientKey.of(stack), count);
+        IngredientFilterProvider filterProvider = (IngredientFilterProvider) behaviour;
+        return filterProvider.ingredient();
     }
 }

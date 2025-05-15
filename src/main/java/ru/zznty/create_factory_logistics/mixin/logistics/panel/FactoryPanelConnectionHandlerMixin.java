@@ -72,7 +72,8 @@ public class FactoryPanelConnectionHandlerMixin {
     )
     private static Component ingredientNameFrom(ItemStack instance, Operation<Component> original, @Local(argsOnly = true) FactoryPanelBehaviour panel) {
         if (panel instanceof IngredientFilterProvider filterProvider) {
-            return IngredientGui.nameBuilder(filterProvider.key()).component();
+            // we want the name only
+            return IngredientGui.nameBuilder(filterProvider.ingredient().key()).component();
         }
 
         return original.call(instance);
@@ -88,7 +89,8 @@ public class FactoryPanelConnectionHandlerMixin {
     )
     private static Component ingredientNameTo(ItemStack instance, Operation<Component> original, @Local(ordinal = 1) FactoryPanelBehaviour panel) {
         if (panel instanceof IngredientFilterProvider filterProvider) {
-            return IngredientGui.nameBuilder(filterProvider.key()).component();
+            // we want the name only
+            return IngredientGui.nameBuilder(filterProvider.ingredient().key()).component();
         }
 
         return original.call(instance);

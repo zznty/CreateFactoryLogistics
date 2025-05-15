@@ -47,7 +47,7 @@ public class FactoryFluidPanelScreen extends FactoryPanelScreen {
                             behaviour.blockEntity.getBlockState().getValue(FactoryFluidPanelBlock.FACING), false, behaviour.netId()));
         });
         amountBox.setTextColor(UIRenderHelper.COLOR_TEXT.getFirst().getRGB());
-        amountBox.setValue(FactoryFluidPanelBehaviour.formatLevel(behaviour.getAmount(), false).string());
+        amountBox.setValue(FactoryFluidPanelBehaviour.formatLevel(behaviour.ingredient().amount(), false).string());
         addRenderableWidget(amountBox);
     }
 

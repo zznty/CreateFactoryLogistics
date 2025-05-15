@@ -24,6 +24,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientFilterProvider;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
 
@@ -151,8 +152,9 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
     }
 
     @Override
-    public IngredientKey key() {
-        return IngredientKey.of(getFluid());
+    public BoardIngredient ingredient() {
+        // fluid panel doesnt use upTo field
+        return new BoardIngredient(IngredientKey.of(getFluid()), count);
     }
 
     @Override

@@ -128,7 +128,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 
         int inStorage = getLevelInStorage();
         int promised = getPromised();
-        int demand = getAmount();
+        int demand = ingredient.amount();
         int amountToOrder = java.lang.Math.max(0, demand - promised - inStorage);
 
         BigIngredientStack orderedIngredient = BigIngredientStack.of(ingredient, java.lang.Math.min(amountToOrder, availableOnNetwork));
@@ -154,7 +154,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 //            return false;
         }
 
-        BoardIngredient ingredient = BoardIngredient.of(source);
+        BoardIngredient ingredient = BoardIngredient.of(source).withAmount(sourceConnection.amount);
         IngredientInventorySummary summary = (IngredientInventorySummary) LogisticsManager.getSummaryOfNetwork(source.network, true);
 
         if (ingredient.isEmpty() || summary.isEmpty()) {
