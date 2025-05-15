@@ -21,6 +21,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientFilterProvider;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
@@ -135,7 +137,7 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
         if (!round || level < 1000 || level % 1000 != 0) {
             if (level % 1000 == 0)
                 return CreateLang.number(level / 1000).add(CreateLang.translate("generic.unit.buckets"));
-            
+
             return CreateLang.number(level).add(CreateLang.translate("generic.unit.millibuckets"));
         }
 
@@ -154,6 +156,7 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
     }
 
     @Override
+    @OnlyIn(value = Dist.CLIENT)
     public void displayScreen(Player player) {
         if (player instanceof LocalPlayer)
             ScreenOpener.open(new FactoryFluidPanelScreen(this));
