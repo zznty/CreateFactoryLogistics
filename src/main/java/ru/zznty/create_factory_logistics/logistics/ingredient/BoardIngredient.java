@@ -70,7 +70,9 @@ public record BoardIngredient(IngredientKey key, int amount) {
         int count = behaviour.upTo ? behaviour.recipeOutput : behaviour.count;
         if (count == 0) return of();
         if (behaviour instanceof IngredientFilterProvider filterProvider) {
-            return new BoardIngredient(filterProvider.key(), count);
+            IngredientKey ingredientKey = filterProvider.key();
+            if (ingredientKey == IngredientKey.EMPTY) return of();
+            return new BoardIngredient(ingredientKey, count);
         }
 
         ItemStack stack = behaviour.getFilter();

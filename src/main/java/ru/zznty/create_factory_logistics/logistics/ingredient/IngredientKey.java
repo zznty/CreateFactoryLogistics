@@ -1,6 +1,8 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient;
 
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
 import ru.zznty.create_factory_logistics.logistics.ingredient.impl.EmptyIngredientKey;
 import ru.zznty.create_factory_logistics.logistics.ingredient.impl.fluid.FluidIngredientKey;
@@ -32,11 +34,15 @@ public interface IngredientKey {
     }
 
     static IngredientKey of(ItemStack item) {
+        // intentionally avoiding checks for count
+        if (item.getItem() == Items.AIR) return EMPTY;
         // items are unique
         return new ItemIngredientKey(item.copyWithCount(1));
     }
 
     static IngredientKey of(FluidStack fluid) {
+        // intentionally avoiding checks for amount
+        if (fluid.getRawFluid() == Fluids.EMPTY) return EMPTY;
         // fluids depend on nbt (e.g. create potion fluids are different based on nbt)
         return new FluidIngredientKey(fluid.getFluid(), fluid.hasTag() ? fluid.getTag().copy() : null);
     }
