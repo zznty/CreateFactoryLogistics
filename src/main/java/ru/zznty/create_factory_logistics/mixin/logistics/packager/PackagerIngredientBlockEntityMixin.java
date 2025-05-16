@@ -209,7 +209,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
     }
 
     @Override
-    public void attemptToSendIngredients(List<IngredientRequest> queuedRequests) {
+    public void attemptToSendIngredients(Collection<IngredientRequest> queuedRequests) {
         Pair<ItemStack, PackageBuilder> extracted = createFactoryLogistics$extractBox(queuedRequests);
 
         if (extracted.getFirst().isEmpty())
@@ -246,7 +246,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
     }
 
     @Unique
-    public Pair<ItemStack, PackageBuilder> createFactoryLogistics$extractBox(List<IngredientRequest> queuedRequests) {
+    public Pair<ItemStack, PackageBuilder> createFactoryLogistics$extractBox(Collection<IngredientRequest> queuedRequests) {
         boolean requestQueue = queuedRequests != null;
 
         // Data written to packages for defrags
@@ -265,9 +265,11 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
         boolean anyItemPresent = false;
         PackageBuilder extractedPackage = target.get().newPackage();
         IngredientRequest nextRequest = null;
+        Iterator<IngredientRequest> requestIterator = null;
 
         if (requestQueue && !queuedRequests.isEmpty()) {
-            nextRequest = queuedRequests.get(0);
+            requestIterator = queuedRequests.iterator();
+            nextRequest = requestIterator.next();
             fixedAddress = nextRequest.address();
             fixedOrderId = nextRequest.orderId();
             linkIndexInOrder = nextRequest.linkIndex();
@@ -322,12 +324,12 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
                     }
 
                     finalPackageAtLink = true;
-                    queuedRequests.remove(0);
-                    if (queuedRequests.isEmpty())
+                    requestIterator.remove();
+                    if (!requestIterator.hasNext())
                         break Outer;
                     int previousCount = nextRequest.packageCounter()
                             .intValue();
-                    nextRequest = queuedRequests.get(0);
+                    nextRequest = requestIterator.next();
                     if (!fixedAddress.equals(nextRequest.address()))
                         break Outer;
                     if (fixedOrderId != nextRequest.orderId())
@@ -347,7 +349,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
             }
         }
 
-        if (!anyItemPresent && nextRequest != null) queuedRequests.remove(0);
+//        if (!anyItemPresent && nextRequest != null) requestIterator.remove();
 
         ItemStack box = extractedPackage.build();
 

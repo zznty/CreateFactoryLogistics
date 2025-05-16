@@ -180,7 +180,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
             return false;
         }
 
-        toRequest.put(source.network, PanelRequestedIngredients.of(getWorld(), sourceConnection.amount, source, source.recipeAddress));
+        toRequest.put(source.network, PanelRequestedIngredients.of(source));
 
         createFactoryLogistics$sendEffect(sourceConnection.from, context.getPanelPosition(), true);
         return true;
@@ -223,11 +223,11 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 
         // If all ingredients are present, request main one
         if (visited.size() == targetedBy.size()) {
-            toRequest.put(source.network, PanelRequestedIngredients.of(getWorld(), recipeOutput, source, recipeAddress));
+            toRequest.put(source.network, PanelRequestedIngredients.of(source));
         }
 
         // Input items may come from differing networks
-        List<Multimap<PackagerBlockEntity, IngredientRequest>> requests = new ArrayList<>();
+        Map<PanelRequestedIngredients, Multimap<PackagerBlockEntity, IngredientRequest>> requests = new HashMap<>();
 
         // Collect request distributions
         for (Map.Entry<UUID, Collection<PanelRequestedIngredients>> entry : toRequest.asMap().entrySet()) {
@@ -248,25 +248,28 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
             for (PanelRequestedIngredients requestedIngredients : entry.getValue()) {
                 IngredientOrder order = IngredientOrder.of(requestedIngredients);
                 Multimap<PackagerBlockEntity, IngredientRequest> request = IngredientLogisticsManager.findPackagersForRequest(entry.getKey(), order, null, requestedIngredients.recipeAddress());
-                requests.add(request);
+                if (!request.isEmpty())
+                    requests.put(requestedIngredients, request);
             }
         }
 
         // Check if any packager is busy - cancel all
-        for (Multimap<PackagerBlockEntity, IngredientRequest> entry : requests)
+        for (Multimap<PackagerBlockEntity, IngredientRequest> entry : requests.values())
             for (PackagerBlockEntity packager : entry.keySet())
                 if (packager.isTooBusyFor(LogisticallyLinkedBehaviour.RequestType.RESTOCK))
                     return;
 
         // Send it
-        for (Multimap<PackagerBlockEntity, IngredientRequest> entry : requests)
+        for (Multimap<PackagerBlockEntity, IngredientRequest> entry : requests.values())
             IngredientLogisticsManager.performPackageRequests(entry);
 
         // Keep the output promises
         RequestPromiseQueue promises = Create.LOGISTICS.getQueuedPromises(network);
         if (promises != null) {
-            for (PanelRequestedIngredients requestedIngredients : toRequest.values()) {
-                promises.add(new RequestPromise(requestedIngredients.result().asStack()));
+            for (Map.Entry<PanelRequestedIngredients, Multimap<PackagerBlockEntity, IngredientRequest>> entry : requests.entrySet()) {
+                // if all requests were sent, add the output promise
+                if (entry.getValue().isEmpty())
+                    promises.add(new RequestPromise(entry.getKey().result().asStack()));
             }
         }
 
