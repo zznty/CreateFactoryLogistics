@@ -3,7 +3,6 @@ package ru.zznty.create_factory_logistics.logistics.panel;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
-import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.utility.CreateLang;
@@ -17,9 +16,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -42,20 +39,18 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
 
     @Override
     public boolean setFilter(ItemStack stack) {
-        if (!GenericItemEmptying.canItemBeEmptied(blockEntity.getLevel(), stack))
-            return false;
+        if (!stack.isEmpty()) {
+            if (!GenericItemEmptying.canItemBeEmptied(blockEntity.getLevel(), stack))
+                return false;
 
-        Pair<FluidStack, ItemStack> emptyResult = GenericItemEmptying.emptyItem(blockEntity.getLevel(), stack, true);
+            Pair<FluidStack, ItemStack> emptyResult = GenericItemEmptying.emptyItem(blockEntity.getLevel(), stack, true);
 
-        if (emptyResult.getFirst().isEmpty())
-            return false;
+            if (emptyResult.getFirst().isEmpty()) return false;
 
-        Item bucket = emptyResult.getFirst().getFluid().getBucket();
+            stack = emptyResult.getFirst().getFluid().getBucket().getDefaultInstance();
+        }
 
-        this.filter = FilterItemStack.of(bucket == Items.AIR ? stack : new ItemStack(bucket));
-        blockEntity.setChanged();
-        blockEntity.sendData();
-        return true;
+        return super.setFilter(stack);
     }
 
     public FluidStack getFluid() {
