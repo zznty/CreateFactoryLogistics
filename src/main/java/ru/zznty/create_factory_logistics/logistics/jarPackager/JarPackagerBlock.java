@@ -4,17 +4,24 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.logistics.packager.PackagerBlock;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.foundation.utility.CreateLang;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import ru.zznty.create_factory_logistics.FactoryBlockEntities;
+import ru.zznty.create_factory_logistics.FactoryBlocks;
 
 public class JarPackagerBlock extends PackagerBlock {
     public JarPackagerBlock(Properties properties) {
@@ -69,5 +76,18 @@ public class JarPackagerBlock extends PackagerBlock {
         return super.getStateForPlacement(context).setValue(POWERED, context.getLevel()
                         .hasNeighborSignal(context.getClickedPos()))
                 .setValue(FACING, preferredFacing);
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
+        if (player == null)
+            return InteractionResult.PASS;
+
+        ItemStack itemInHand = player.getItemInHand(handIn);
+
+        if (FactoryBlocks.FACTORY_FLUID_GAUGE.isIn(itemInHand))
+            return InteractionResult.PASS;
+
+        return super.use(state, worldIn, pos, player, handIn, hit);
     }
 }
