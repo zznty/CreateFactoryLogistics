@@ -11,7 +11,7 @@ import java.util.Objects;
  * Immutable abstraction over stacks of items, fluids, etc.
  * Could be expanded to support other types via registry
  */
-public record BoardIngredient(IngredientKey key, int amount) {
+public record BoardIngredient(IngredientKey<?> key, int amount) {
     public boolean isEmpty() {
         return amount == 0 || key.provider() == IngredientProviders.EMPTY.get();
     }
@@ -24,7 +24,7 @@ public record BoardIngredient(IngredientKey key, int amount) {
         return key.equals(ingredient.key);
     }
 
-    public boolean canStack(IngredientKey otherKey) {
+    public boolean canStack(IngredientKey<?> otherKey) {
         return key.equals(otherKey);
     }
 

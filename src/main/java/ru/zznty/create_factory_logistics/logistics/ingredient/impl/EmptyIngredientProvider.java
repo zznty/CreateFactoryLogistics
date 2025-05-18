@@ -18,6 +18,12 @@ public class EmptyIngredientProvider implements IngredientKeyProvider {
     }
 
     @Override
+    public <T, K extends IngredientKey<T>> K wrap(T value) {
+        //noinspection unchecked
+        return (K) IngredientKey.EMPTY;
+    }
+
+    @Override
     public <K extends IngredientKey> IngredientKeySerializer<K> serializer() {
         //noinspection unchecked
         return (IngredientKeySerializer<K>) serializer;
@@ -31,5 +37,10 @@ public class EmptyIngredientProvider implements IngredientKeyProvider {
     @Override
     public <T> CapabilityFactory<T> capabilityFactory() {
         return (cap, mode, behaviour) -> LazyOptional.empty();
+    }
+
+    @Override
+    public String ingredientTypeUid() {
+        return "empty";
     }
 }

@@ -3,6 +3,7 @@ package ru.zznty.create_factory_logistics.logistics.ingredient.impl.fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_logistics.logistics.ingredient.CapabilityFactory;
@@ -27,6 +28,12 @@ public class FluidIngredientProvider implements IngredientKeyProvider {
     }
 
     @Override
+    public <T, K extends IngredientKey<T>> K wrap(T value) {
+        //noinspection unchecked
+        return (K) IngredientKey.of((FluidStack) value);
+    }
+
+    @Override
     public <K extends IngredientKey> IngredientKeySerializer<K> serializer() {
         //noinspection unchecked
         return (IngredientKeySerializer<K>) serializer;
@@ -45,5 +52,10 @@ public class FluidIngredientProvider implements IngredientKeyProvider {
     public <T> CapabilityFactory<T> capabilityFactory() {
         //noinspection unchecked
         return (CapabilityFactory<T>) capFactory;
+    }
+
+    @Override
+    public String ingredientTypeUid() {
+        return "fluid_stack";
     }
 }

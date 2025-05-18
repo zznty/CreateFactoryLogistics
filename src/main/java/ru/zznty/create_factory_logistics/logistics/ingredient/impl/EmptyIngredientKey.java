@@ -6,14 +6,19 @@ import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeyProvi
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
 
 @ApiStatus.Internal
-public record EmptyIngredientKey() implements IngredientKey {
+public record EmptyIngredientKey() implements IngredientKey<Object> {
     @Override
     public IngredientKeyProvider provider() {
         return IngredientProviders.EMPTY.get();
     }
 
     @Override
-    public IngredientKey genericCopy() {
+    public Object get() {
+        return null;
+    }
+
+    @Override
+    public IngredientKey<Object> genericCopy() {
         return this;
     }
 }

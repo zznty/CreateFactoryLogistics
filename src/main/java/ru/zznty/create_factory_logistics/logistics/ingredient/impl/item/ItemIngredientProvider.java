@@ -1,5 +1,6 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient.impl.item;
 
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -25,6 +26,12 @@ public class ItemIngredientProvider implements IngredientKeyProvider {
     }
 
     @Override
+    public <T, K extends IngredientKey<T>> K wrap(T value) {
+        //noinspection unchecked
+        return (K) IngredientKey.of((ItemStack) value);
+    }
+
+    @Override
     public <K extends IngredientKey> IngredientKeySerializer<K> serializer() {
         //noinspection unchecked
         return (IngredientKeySerializer<K>) serializer;
@@ -41,5 +48,10 @@ public class ItemIngredientProvider implements IngredientKeyProvider {
     public <T> CapabilityFactory<T> capabilityFactory() {
         //noinspection unchecked
         return (CapabilityFactory<T>) capFactory;
+    }
+
+    @Override
+    public String ingredientTypeUid() {
+        return "item_stack";
     }
 }

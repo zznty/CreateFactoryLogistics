@@ -9,14 +9,19 @@ import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProvider
 
 @ApiStatus.Internal
 // I don't want to decompose item stack to get rid of amount info
-public record ItemIngredientKey(ItemStack stack) implements IngredientKey {
+public record ItemIngredientKey(ItemStack stack) implements IngredientKey<ItemStack> {
     @Override
     public IngredientKeyProvider provider() {
         return IngredientProviders.ITEM.get();
     }
 
     @Override
-    public IngredientKey genericCopy() {
+    public ItemStack get() {
+        return stack;
+    }
+
+    @Override
+    public IngredientKey<?> genericCopy() {
         return IngredientKey.of(stack.getItem().getDefaultInstance());
     }
 

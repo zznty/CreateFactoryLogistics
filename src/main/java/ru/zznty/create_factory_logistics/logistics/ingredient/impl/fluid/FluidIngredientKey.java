@@ -10,14 +10,19 @@ import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeyProvi
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
 
 @ApiStatus.Internal
-public record FluidIngredientKey(Fluid fluid, @Nullable CompoundTag nbt) implements IngredientKey {
+public record FluidIngredientKey(Fluid fluid, @Nullable CompoundTag nbt) implements IngredientKey<FluidStack> {
     @Override
     public IngredientKeyProvider provider() {
         return IngredientProviders.FLUID.get();
     }
 
     @Override
-    public IngredientKey genericCopy() {
+    public FluidStack get() {
+        return stack();
+    }
+
+    @Override
+    public IngredientKey<?> genericCopy() {
         return this;
     }
 

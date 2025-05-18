@@ -20,6 +20,7 @@
     "logistics.redstoneRequester.RedstoneRequesterConfigurationPacketMixin",
     "logistics.redstoneRequester.RedstoneRequesterMenuMixin",
     "logistics.stock.BigItemStackMixin",
+    "logistics.stock.CraftableBigItemStackMixin",
     "logistics.stock.InventorySummaryMixin",
     "logistics.stock.StockCheckingBlockEntityMixin",
     "logistics.stockLink.PackagerIngredientLinkBlockEntityMixin"
@@ -28,6 +29,7 @@
     "logistics.panel.FactoryPanelScreenMixin",
     "logistics.redstoneRequester.RedstoneRequesterScreenMixin",
     "logistics.stockKeeper.StockKeeperRequestScreenMixin",
+    "logistics.stockKeeper.StockKeeperTransferHandlerMixin",
     "render.ChainConveyorRendererMixin",
     "render.ChainConveyorVisualMixin",
     "render.FactoryFluidPanelFilterRendererMixin",
