@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlock;
+import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerGenerator;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlock;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlockItem;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkGenerator;
@@ -25,7 +26,6 @@ import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkQualif
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlock;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlockItem;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelModel;
-import ru.zznty.create_factory_logistics.logistics.repackager.UniversalRepackagerBlock;
 
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
 import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
@@ -35,26 +35,11 @@ import static ru.zznty.create_factory_logistics.CreateFactoryLogistics.REGISTRAT
 public class FactoryBlocks {
     public static final BlockEntry<JarPackagerBlock> JAR_PACKAGER = REGISTRATE.block("jar_packager", JarPackagerBlock::new)
             .transform(BuilderTransformers.packager())
+            .blockstate(new JarPackagerGenerator()::generate)
             .recipe((c, b) ->
                     ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.JAR_PACKAGER)
                             .unlockedBy("has_" + b.safeName(c.getId()),
                                     DataIngredient.items(AllBlocks.PACKAGER.asItem()).getCritereon(b))
-                            .pattern(" c ")
-                            .pattern("cCc")
-                            .pattern("rir")
-                            .define('c', Items.COPPER_INGOT)
-                            .define('C', AllBlocks.COPPER_CASING)
-                            .define('r', Items.REDSTONE)
-                            .define('i', Items.IRON_INGOT)
-                            .save(b))
-            .register();
-
-    public static final BlockEntry<UniversalRepackagerBlock> UNIVERSAL_REPACKAGER = REGISTRATE.block("universal_repackager", UniversalRepackagerBlock::new)
-            .transform(BuilderTransformers.packager())
-            .recipe((c, b) ->
-                    ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.UNIVERSAL_REPACKAGER)
-                            .unlockedBy("has_" + b.safeName(c.getId()),
-                                    DataIngredient.items(AllBlocks.REPACKAGER.asItem()).getCritereon(b))
                             .pattern(" c ")
                             .pattern("cCc")
                             .pattern("rir")

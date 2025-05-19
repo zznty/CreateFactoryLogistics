@@ -96,8 +96,7 @@ public final class IngredientLogisticsManager {
     }
 
     public static void performPackageRequests(Multimap<PackagerBlockEntity, IngredientRequest> requests) {
-        Map<PackagerBlockEntity, Collection<IngredientRequest>> asMap = requests.asMap();
-        for (Map.Entry<PackagerBlockEntity, Collection<IngredientRequest>> entry : asMap.entrySet()) {
+        for (Map.Entry<PackagerBlockEntity, Collection<IngredientRequest>> entry : requests.asMap().entrySet().stream().toList()) {
             Collection<IngredientRequest> queuedRequests = entry.getValue();
             PackagerBlockEntity packager = entry.getKey();
 

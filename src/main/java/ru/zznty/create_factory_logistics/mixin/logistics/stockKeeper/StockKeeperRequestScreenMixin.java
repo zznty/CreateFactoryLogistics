@@ -18,7 +18,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.Blocks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -233,6 +235,18 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         instance.renderComponentTooltip(p_282308_, IngredientGui.tooltipBuilder(stack.ingredient().key(), customCount), p_282687_, p_282292_);
     }
 
+    @Redirect(
+            method = "renderForeground",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/item/ItemStack;getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;"
+            )
+    )
+    private List<Component> getCraftableTooltip(ItemStack instance, Player player, TooltipFlag flag, @Local BigItemStack itemStack) {
+        BigIngredientStack stack = (BigIngredientStack) itemStack;
+        return IngredientGui.tooltipBuilder(stack.ingredient().key(), stack.ingredient().amount());
+    }
+
     // todo make that as proper search
     @WrapOperation(
             method = "refreshSearchResults",
@@ -404,7 +418,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                         maxCraftable(cbis, availableItems, stack -> -usedItems.getCountOf(stack), -1);
                 int maxCraftable = craftingResult.getFirst();
                 List<List<BigItemStack>> validEntriesByIngredient = craftingResult.getSecond();
-                int outputCount = cbis.getOutputCount(blockEntity.getLevel());
+                int outputCount = craftableStack.outputCount(blockEntity.getLevel());
 
                 // Only tweak amounts downward
                 craftableStack.setCount(Math.min(craftableStack.getCount(), maxCraftable));
@@ -420,21 +434,21 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     }
                 }
             } else {
-                Pair<Integer, List<BoardIngredient>> craftingResult =
+                Pair<Integer, List<Pair<BoardIngredient, BoardIngredient>>> craftingResult =
                         createFactoryLogistics$maxCraftable(craftableStack, availableIngredients, stack -> -usedIngredients.getCountOf(stack.key()), -1);
 
-                int outputCount = cbis.getOutputCount(blockEntity.getLevel());
+                int outputCount = craftableStack.outputCount(blockEntity.getLevel());
 
                 // Only tweak amounts downward
                 craftableStack.setCount(Math.min(craftableStack.getCount(), craftingResult.getFirst()));
 
                 // Use ingredients up before checking next recipe
                 int remaining = cbis.count / outputCount;
-                for (BoardIngredient ingredient : craftingResult.getSecond()) {
+                for (Pair<BoardIngredient, BoardIngredient> ingredient : craftingResult.getSecond()) {
                     if (remaining <= 0)
                         break;
-                    int count = usedIngredients.getCountOf(ingredient.key());
-                    usedIngredients.add(ingredient.withAmount(Math.min(remaining, count)));
+                    int count = usedIngredients.getCountOf(ingredient.getSecond().key());
+                    usedIngredients.add(ingredient.getSecond().withAmount(Math.min(remaining, count)));
                     remaining -= count;
                 }
             }
@@ -483,9 +497,9 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
 
         CraftableIngredientStack craftableStack = (CraftableIngredientStack) cbis;
 
-        Pair<Integer, List<BoardIngredient>> craftingResult =
+        Pair<Integer, List<Pair<BoardIngredient, BoardIngredient>>> craftingResult =
                 createFactoryLogistics$maxCraftable(craftableStack, availableItems, countModifier, takeOrdersAway ? -1 : 9 - itemsToOrder.size());
-        int outputCount = cbis.getOutputCount(blockEntity.getLevel());
+        int outputCount = craftableStack.outputCount(blockEntity.getLevel());
         int adjustToRecipeAmount = Mth.ceil(Math.abs(requestedDifference) / (float) outputCount) * outputCount;
         int maxCraftable = Math.min(adjustToRecipeAmount, craftingResult.getFirst());
 
@@ -494,50 +508,52 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
 
         craftableStack.setCount(craftableStack.getCount() + (takeOrdersAway ? -maxCraftable : maxCraftable));
 
-        List<BoardIngredient> validEntriesByIngredient = craftingResult.getSecond();
-        for (BoardIngredient entry : validEntriesByIngredient) {
+        List<Pair<BoardIngredient, BoardIngredient>> validEntriesByIngredient = craftingResult.getSecond();
+        for (Pair<BoardIngredient, BoardIngredient> entry : validEntriesByIngredient) {
             int remaining = maxCraftable / outputCount;
             for (int i = 0; i < maxCraftable; i++) {
                 if (remaining <= 0)
                     break;
-                int toTransfer = Math.min(remaining, entry.amount());
-                BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(entry);
+                int toTransfer = Math.min(remaining, entry.getSecond().amount());
+                BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(entry.getSecond());
 
                 if (takeOrdersAway) {
                     if (order != null) {
-                        order.setCount(order.getCount() - toTransfer);
-                        if (order.getCount() == 0)
+                        order.setCount(order.getCount() - toTransfer * entry.getFirst().amount());
+                        if (order.getCount() <= 0)
                             itemsToOrder.remove(order);
                     }
                 } else {
                     if (order == null) {
                         order = (BigIngredientStack) new BigItemStack(ItemStack.EMPTY, 0);
-                        order.setIngredient(entry.withAmount(0));
+                        order.setIngredient(entry.getSecond().withAmount(0));
                         itemsToOrder.add(order.asStack());
                     }
-                    order.setCount(order.getCount() + toTransfer);
+                    order.setCount(order.getCount() + toTransfer * entry.getFirst().amount());
                 }
 
-                remaining -= entry.amount();
+                remaining -= 1;
             }
         }
     }
 
     @Unique
-    private Pair<Integer, List<BoardIngredient>> createFactoryLogistics$maxCraftable(CraftableIngredientStack cbis, IngredientInventorySummary summary, Function<BoardIngredient, Integer> countModifier, int newTypeLimit) {
-        List<BoardIngredient> validIngredients = new ArrayList<>(cbis.ingredients().size());
+    private Pair<Integer, List<Pair<BoardIngredient, BoardIngredient>>> createFactoryLogistics$maxCraftable(CraftableIngredientStack cbis, IngredientInventorySummary summary, Function<BoardIngredient, Integer> countModifier, int newTypeLimit) {
+        // original ingredient -> result with amount representing original times x
+        List<Pair<BoardIngredient, BoardIngredient>> validIngredients = new ArrayList<>(cbis.ingredients().size());
         for (BoardIngredient ingredient : cbis.ingredients()) {
-            ingredient = ingredient.withAmount(summary.getCountOf(ingredient.key()));
-            validIngredients.add(ingredient.withAmount(ingredient.amount() + countModifier.apply(ingredient)));
+            BoardIngredient storedIngredient = ingredient.withAmount(summary.getCountOf(ingredient.key()));
+            int storedAmount = storedIngredient.amount() + countModifier.apply(storedIngredient);
+            validIngredients.add(Pair.of(ingredient, storedIngredient.withAmount(storedAmount / ingredient.amount())));
         }
         // Used new items may have to be trimmed
         if (newTypeLimit != -1) {
             int toRemove = (int) validIngredients.stream()
-                    .filter(entry -> createFactoryLogistics$getOrderForIngredient(entry) == null)
+                    .filter(entry -> createFactoryLogistics$getOrderForIngredient(entry.getSecond()) == null)
                     .distinct()
                     .count() - newTypeLimit;
 
-            validIngredients.sort(Comparator.comparingInt(BoardIngredient::amount));
+            validIngredients.sort(Comparator.comparingInt(p -> p.getSecond().amount()));
             for (int i = 0; i < toRemove; i++) {
                 validIngredients.remove(validIngredients.size() - 1);
             }
@@ -545,14 +561,14 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
 
         // Determine the bottlenecking ingredient
         int minCount = Integer.MAX_VALUE;
-        for (BoardIngredient ingredient : validIngredients) {
-            minCount = Math.min(ingredient.amount(), minCount);
+        for (Pair<BoardIngredient, BoardIngredient> ingredient : validIngredients) {
+            minCount = Math.min(ingredient.getSecond().amount() * ingredient.getFirst().amount(), minCount);
         }
 
         if (minCount == 0)
             return Pair.of(0, List.of());
 
-        int outputCount = cbis.asStack().getOutputCount(blockEntity.getLevel());
+        int outputCount = cbis.outputCount(blockEntity.getLevel());
         return Pair.of(minCount * outputCount, validIngredients);
     }
 }

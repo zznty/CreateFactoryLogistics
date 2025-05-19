@@ -1,16 +1,16 @@
 {
   "variants": {
     "facing=down,linked=false,powered=false": {
-      "model": "create_factory_logistics:block/jar_packager/block_vertical"
+      "model": "create_factory_logistics:block/jar_packager/block"
     },
     "facing=down,linked=false,powered=true": {
-      "model": "create_factory_logistics:block/jar_packager/block_vertical_powered"
+      "model": "create_factory_logistics:block/jar_packager/block_powered"
     },
     "facing=down,linked=true,powered=false": {
-      "model": "create_factory_logistics:block/jar_packager/block_vertical_linked"
+      "model": "create_factory_logistics:block/jar_packager/block_linked"
     },
     "facing=down,linked=true,powered=true": {
-      "model": "create_factory_logistics:block/jar_packager/block_vertical_linked"
+      "model": "create_factory_logistics:block/jar_packager/block_linked"
     },
     "facing=east,linked=false,powered=false": {
       "model": "create_factory_logistics:block/jar_packager/block",
@@ -57,16 +57,16 @@
       "model": "create_factory_logistics:block/jar_packager/block_linked"
     },
     "facing=up,linked=false,powered=false": {
-      "model": "create_factory_logistics:block/jar_packager/block_vertical"
+      "model": "create_factory_logistics:block/jar_packager/block"
     },
     "facing=up,linked=false,powered=true": {
-      "model": "create_factory_logistics:block/jar_packager/block_vertical_powered"
+      "model": "create_factory_logistics:block/jar_packager/block_powered"
     },
     "facing=up,linked=true,powered=false": {
-      "model": "create_factory_logistics:block/jar_packager/block_vertical_linked"
+      "model": "create_factory_logistics:block/jar_packager/block_linked"
     },
     "facing=up,linked=true,powered=true": {
-      "model": "create_factory_logistics:block/jar_packager/block_vertical_linked"
+      "model": "create_factory_logistics:block/jar_packager/block_linked"
     },
     "facing=west,linked=false,powered=false": {
       "model": "create_factory_logistics:block/jar_packager/block",

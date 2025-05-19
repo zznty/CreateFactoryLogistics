@@ -27,13 +27,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import ru.zznty.create_factory_logistics.compat.jei.IngredientTransfer;
 import ru.zznty.create_factory_logistics.compat.jei.TransferOperation;
 import ru.zznty.create_factory_logistics.compat.jei.TransferOperationsResult;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.CraftableIngredientStack;
 import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,30 +84,27 @@ public class StockKeeperTransferHandlerMixin {
 
         {
             CraftableIngredientStack ingredientStack = (CraftableIngredientStack) cbis;
-            
+
             ingredientStack.setCount(0);
 
             for (TransferOperation operation : transferOperations.results()) {
                 IIngredientHelper helper = helpers.getIngredientManager().getIngredientHelper(operation.selectedIngredient().getType());
                 ingredientStack.ingredients().add(availableStacks.get(operation.from()).withAmount((int) helper.getAmount(operation.selectedIngredient().getIngredient())));
             }
-        }
 
-        if (cbis.stack.isEmpty()) {
-            //noinspection DataFlowIssue
-            BigIngredientStack stack = (BigIngredientStack) cbis;
+            // TODO think about cases where multiple results are defined per slot
+            // cant think of such cursed recipes though
+            for (IRecipeSlotView slotView : recipeSlots.getSlotViews(RecipeIngredientRole.OUTPUT)) {
+                Optional<ITypedIngredient<?>> displayedIngredient = slotView.getDisplayedIngredient();
+                if (displayedIngredient.isEmpty()) continue;
+                Optional<BoardIngredient> ingredient = IngredientTransfer.tryConvert(helpers.getIngredientManager(), displayedIngredient.get());
+                if (ingredient.isEmpty()) continue; // TODO maybe display a warning?
 
-            Outer:
-            for (IRecipeSlotView view : recipeSlots.getSlotViews(RecipeIngredientRole.OUTPUT)) {
-                Iterator<ITypedIngredient<?>> iterator = view.getAllIngredients().iterator();
+                ingredientStack.results().add(ingredient.get());
+            }
 
-                while (iterator.hasNext()) {
-                    Optional<BoardIngredient> convertedStack = IngredientTransfer.tryConvert(helpers.getIngredientManager(), iterator.next());
-                    if (convertedStack.isPresent()) {
-                        stack.setIngredient(convertedStack.get());
-                        break Outer;
-                    }
-                }
+            if (cbis.stack.isEmpty() && !ingredientStack.results().isEmpty()) {
+                ingredientStack.setIngredient(ingredientStack.results().get(0).withAmount(0));
             }
         }
 

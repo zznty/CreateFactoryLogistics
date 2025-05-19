@@ -15,6 +15,7 @@ public class FactoryModels {
             FACTORY_FLUID_PANEL_LIGHT = block("factory_fluid_gauge/bulb_light"),
             FACTORY_FLUID_PANEL_RED_LIGHT = block("factory_fluid_gauge/bulb_red"),
             COMPOSITE_PACKAGE = PartialModel.of(CreateFactoryLogistics.resource("item/composite_package")),
+            JAR_PACKAGER_TRAY = block("jar_packager/tray"),
 
     JAR;
 

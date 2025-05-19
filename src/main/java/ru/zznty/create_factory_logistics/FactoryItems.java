@@ -14,7 +14,8 @@ public class FactoryItems {
 
     public static final ItemEntry<CompositePackageItem> COMPOSITE_PACKAGE = REGISTRATE
             .item("composite_package", CompositePackageItem::new)
-            .defaultModel()
+            .model((c, p) -> {
+            })
             .properties(p -> p.stacksTo(1))
             .register();
 

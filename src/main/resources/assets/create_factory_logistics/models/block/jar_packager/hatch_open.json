@@ -1,6 +1,0 @@
-{
-	"parent": "create_factory_logistics:block/jar_packager/hatch_closed",
-	"textures": {
-		"3": "create_factory_logistics:block/jar_packager_iris_open"
-	}
-}

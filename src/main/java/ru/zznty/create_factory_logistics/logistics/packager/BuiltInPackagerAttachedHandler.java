@@ -52,7 +52,7 @@ record BuiltInPackagerAttachedHandler(PackagerBlockEntity packagerBE) implements
 
         // TODO figure out a better check if this is an items package
         // just strict class comparison for PackageItem wont fit since mods could extend it for their new packages
-        if (box.getTagElement("Items") == null) return false;
+        if (box.getTagElement("Items") == null || box.getTagElement("Items").isEmpty()) return false;
 
         ItemStackHandler contents = PackageItem.getContents(box);
         List<ItemStack> items = ItemHelper.getNonEmptyStacks(contents);

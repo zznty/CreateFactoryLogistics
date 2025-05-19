@@ -12,7 +12,7 @@ import ru.zznty.create_factory_logistics.logistics.composite.CompositePackageIte
 
 import java.util.List;
 
-public class UniversalRepackagerHelper extends PackageRepackageHelper {
+public class CompositeRepackagerHelper extends PackageRepackageHelper {
     @Override
     public List<BigItemStack> repack(int orderId, RandomSource r) {
         List<BigItemStack> exportingPackages = super.repack(orderId, r);
@@ -24,7 +24,7 @@ public class UniversalRepackagerHelper extends PackageRepackageHelper {
 
         int i = 0;
         while (partitioned.hasNext() && i < exportingPackages.size()) {
-            exportingPackages.set(i, new BigItemStack(CompositePackageItem.of(exportingPackages.get(i).stack, partitioned.next())));
+            exportingPackages.set(i, new BigItemStack(CompositePackageItem.of(exportingPackages.get(i).stack, partitioned.next().stream().toList())));
             i++;
         }
 

@@ -5,14 +5,13 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_logistics.logistics.ingredient.CapabilityFactory;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeyProvider;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeySerializer;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkFluidHandler;
-
-import java.util.Comparator;
 
 @ApiStatus.Internal
 public class FluidIngredientProvider implements IngredientKeyProvider {
@@ -44,8 +43,7 @@ public class FluidIngredientProvider implements IngredientKeyProvider {
     public <K extends IngredientKey> int compare(K a, K b) {
         FluidIngredientKey key1 = (FluidIngredientKey) a;
         FluidIngredientKey key2 = (FluidIngredientKey) b;
-        Comparator order = Comparator.naturalOrder();
-        return order.compare(key1.fluid(), key2.fluid());
+        return ForgeRegistries.FLUIDS.getKey(key1.fluid()).compareTo(ForgeRegistries.FLUIDS.getKey(key2.fluid()));
     }
 
     @Override

@@ -8,10 +8,7 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntity;
-import com.simibubi.create.content.logistics.packager.InventorySummary;
-import com.simibubi.create.content.logistics.packager.PackagerBlock;
-import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
-import com.simibubi.create.content.logistics.packager.PackagingRequest;
+import com.simibubi.create.content.logistics.packager.*;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlock;
@@ -33,11 +30,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_logistics.FactoryCapabilities;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.capability.PackageBuilder;
 import ru.zznty.create_factory_logistics.logistics.ingredient.capability.PackageMeasureResult;
 import ru.zznty.create_factory_logistics.logistics.ingredient.capability.PackagerAttachedHandler;
+import ru.zznty.create_factory_logistics.logistics.packager.IngredientPackagerItemHandler;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientPromiseQueue;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRequest;
@@ -81,6 +81,17 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
 
     public PackagerIngredientBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Redirect(
+            method = "<init>",
+            at = @At(
+                    value = "NEW",
+                    target = "(Lcom/simibubi/create/content/logistics/packager/PackagerBlockEntity;)Lcom/simibubi/create/content/logistics/packager/PackagerItemHandler;"
+            )
+    )
+    private PackagerItemHandler createInventory(PackagerBlockEntity blockEntity) {
+        return new IngredientPackagerItemHandler(blockEntity);
     }
 
     @Overwrite(remap = false)

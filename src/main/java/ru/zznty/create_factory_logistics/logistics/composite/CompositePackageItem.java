@@ -6,6 +6,7 @@ import com.simibubi.create.content.logistics.box.PackageStyles;
 import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
@@ -19,13 +20,19 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_logistics.FactoryItems;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class CompositePackageItem extends PackageItem {
+
+    public static final String CHILDREN_TAG = "Children";
+
     public CompositePackageItem(Properties properties) {
         super(properties, PackageStyles.STYLES.get(1));
         PackageStyles.ALL_BOXES.remove(this);
@@ -47,14 +54,46 @@ public class CompositePackageItem extends PackageItem {
 
     public static List<ItemStack> getChildren(ItemStack stack) {
         if (!stack.hasTag()) return List.of();
-        return NBTHelper.readCompoundList(stack.getTag().getList("Children", Tag.TAG_COMPOUND), ItemStack::of);
+        return NBTHelper.readCompoundList(stack.getTag().getList(CHILDREN_TAG, Tag.TAG_COMPOUND), ItemStack::of);
     }
 
-    public static ItemStack of(ItemStack box, Iterable<ItemStack> children) {
+    public static ItemStack of(ItemStack box, List<ItemStack> children) {
         ItemStack compositeBox = new ItemStack(FactoryItems.COMPOSITE_PACKAGE);
-        compositeBox.setTag(box.getTag());
+        if (box.hasTag())
+            compositeBox.setTag(box.getTag().copy());
 
-        compositeBox.addTagElement("Children", NBTHelper.writeCompoundList(children, ItemStack::serializeNBT));
+        children = new ArrayList<>(children);
+
+        ItemStackHandler contents = PackageItem.getContents(compositeBox);
+
+        ListTag listTag = compositeBox.getOrCreateTag().getList(CHILDREN_TAG, Tag.TAG_COMPOUND);
+        if (!listTag.isEmpty()) {
+            children.addAll(getChildren(compositeBox));
+            listTag.clear();
+        }
+
+        for (int i = 0; i < children.size(); i++) {
+            ItemStack child = children.get(i);
+            if (child.getItem() instanceof CompositePackageItem) {
+                children.addAll(getChildren(child));
+                child.getOrCreateTag().remove(CHILDREN_TAG);
+                // merge items with parent box
+                ItemStackHandler childContents = PackageItem.getContents(child);
+                boolean emptied = true;
+                for (int slot = 0; slot < childContents.getSlots(); slot++) {
+                    ItemStack reminder = ItemHandlerHelper.insertItemStacked(contents, childContents.getStackInSlot(slot), false);
+                    childContents.setStackInSlot(slot, reminder);
+                    if (!reminder.isEmpty())
+                        emptied = false;
+                }
+                if (!emptied)
+                    children.add(PackageItem.containing(childContents));
+                children.remove(i);
+                i--;
+            }
+        }
+
+        compositeBox.addTagElement(CHILDREN_TAG, NBTHelper.writeCompoundList(children, ItemStack::serializeNBT));
 
         return compositeBox;
     }

@@ -1,6 +1,6 @@
 {
 	"parent": "create_factory_logistics:block/jar_packager/block",
 	"textures": {
-		"2": "create_factory_logistics:block/jar_packager_horizontal_linked"
+		"1": "create_factory_logistics:block/frame_limked"
 	}
 }
