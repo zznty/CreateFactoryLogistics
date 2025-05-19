@@ -1,0 +1,8 @@
+{
+  "values": [
+    "minecraft:water_cauldron",
+    "minecraft:lava_cauldron",
+    "create:basin",
+    "create_factory_logistics:network_link"
+  ]
+}

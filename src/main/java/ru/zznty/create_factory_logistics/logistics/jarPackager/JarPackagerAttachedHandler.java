@@ -12,10 +12,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.Config;
@@ -28,6 +28,7 @@ import ru.zznty.create_factory_logistics.logistics.ingredient.capability.Package
 import ru.zznty.create_factory_logistics.logistics.ingredient.impl.fluid.FluidIngredientKey;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 import ru.zznty.create_factory_logistics.logistics.jar.JarStyles;
+import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientIdentifiedInventory;
 import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 import java.util.List;
@@ -117,7 +118,12 @@ public class JarPackagerAttachedHandler implements PackagerAttachedHandler {
 
     @Override
     public @Nullable IdentifiedInventory identifiedInventory() {
-        return new IdentifiedInventory(InventoryIdentifier.get(packagerBE.drainInventory.getWorld(), packagerBE.drainInventory.getTarget().getOpposite()), new ItemStackHandler());
+        IdentifiedInventory inv = new IdentifiedInventory(InventoryIdentifier.get(packagerBE.drainInventory.getWorld(), packagerBE.drainInventory.getTarget().getOpposite()), null);
+        {
+            IngredientIdentifiedInventory identifiedInventory = IngredientIdentifiedInventory.from(inv);
+            identifiedInventory.setCapability(ForgeCapabilities.FLUID_HANDLER, packagerBE.drainInventory.getInventory());
+        }
+        return inv;
     }
 }
 

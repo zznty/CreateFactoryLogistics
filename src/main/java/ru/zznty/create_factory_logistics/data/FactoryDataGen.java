@@ -22,6 +22,7 @@ public class FactoryDataGen {
 
         generator.addProvider(event.includeServer(), new SequencedAssemblyRecipeGen(output));
         generator.addProvider(event.includeServer(), new RecipeQualifierTagsProvider(output, lookupProvider, existingFileHelper));
+        generator.addProvider(event.includeServer(), new InventoryIdentifierTagsProvider(output, lookupProvider, existingFileHelper));
 
         CreateFactoryLogistics.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
             BiConsumer<String, String> langConsumer = provider::add;
