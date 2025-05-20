@@ -1,12 +1,9 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient;
 
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.minecraft.core.Registry;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
-
-import java.util.function.Supplier;
 
 @ApiStatus.Internal
 public final class IngredientRegistry {
@@ -14,8 +11,6 @@ public final class IngredientRegistry {
 
     public static final DeferredRegister<IngredientKeyProvider> BOARD_INGREDIENTS =
             DeferredRegister.create(CreateFactoryLogistics.resource("board_ingredients"), CreateFactoryLogistics.MODID);
-    public static final Supplier<IForgeRegistry<IngredientKeyProvider>> REGISTRY = BOARD_INGREDIENTS.makeRegistry(() ->
-            new RegistryBuilder<IngredientKeyProvider>()
-                    .setDefaultKey(CreateFactoryLogistics.resource(EMPTY_KEY))
-                    .disableSaving());
+    public static final Registry<IngredientKeyProvider> REGISTRY = BOARD_INGREDIENTS.makeRegistry(b ->
+            b.defaultKey(CreateFactoryLogistics.resource(EMPTY_KEY)));
 }

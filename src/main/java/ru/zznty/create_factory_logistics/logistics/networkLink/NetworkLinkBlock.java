@@ -1,5 +1,6 @@
 package ru.zznty.create_factory_logistics.logistics.networkLink;
 
+import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
@@ -25,13 +26,18 @@ import ru.zznty.create_factory_logistics.FactoryBlockEntities;
 
 public class NetworkLinkBlock extends FaceAttachedHorizontalDirectionalBlock
         implements IBE<NetworkLinkBlockEntity>, ProperWaterloggedBlock, IWrenchable {
-
+    public static final MapCodec<NetworkLinkBlock> CODEC = simpleCodec(NetworkLinkBlock::new);
     public static final String INGREDIENT_TYPE = "ingredient_type";
 
     public NetworkLinkBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState()
                 .setValue(WATERLOGGED, false));
+    }
+
+    @Override
+    protected MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
+        return CODEC;
     }
 
     @Override
@@ -73,7 +79,7 @@ public class NetworkLinkBlock extends FaceAttachedHorizontalDirectionalBlock
     }
 
     @Override
-    public boolean isPathfindable(BlockState pState, BlockGetter pLevel, BlockPos pPos, PathComputationType pType) {
+    protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
         return false;
     }
 

@@ -32,10 +32,10 @@ import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehavi
 
 @Mixin(FactoryPanelScreen.class)
 public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
-    @Shadow(remap = false)
+    @Shadow
     private FactoryPanelBehaviour behaviour;
 
-    @Shadow(remap = false)
+    @Shadow
     private BigItemStack outputConfig;
 
     @WrapOperation(
@@ -43,8 +43,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/content/logistics/box/PackageStyles;getDefaultBox()Lnet/minecraft/world/item/ItemStack;"
-            ),
-            remap = false
+            )
     )
     private ItemStack promisePackageItem(Operation<ItemStack> original) {
         // todo provider for package model
@@ -56,8 +55,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             at = @At(
                     value = "FIELD",
                     target = "Lcom/simibubi/create/AllBlocks;FACTORY_GAUGE:Lcom/tterrag/registrate/util/entry/BlockEntry;"
-            ),
-            remap = false
+            )
     )
     private BlockEntry<? extends FactoryPanelBlock> gaugeItem(Operation<BlockEntry<FactoryPanelBlock>> original) {
         // todo provider for block model
@@ -70,8 +68,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     value = "INVOKE",
                     target = "Lnet/createmod/catnip/gui/element/GuiGameElement;of(Lnet/minecraft/world/item/ItemStack;)Lnet/createmod/catnip/gui/element/GuiGameElement$GuiRenderBuilder;",
                     ordinal = 1
-            ),
-            remap = false
+            )
     )
     private GuiGameElement.GuiRenderBuilder filterItem(ItemStack stack, Operation<GuiGameElement.GuiRenderBuilder> original) {
         // todo provider for block filter render
@@ -86,8 +83,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/GuiGraphics;renderItem(Lnet/minecraft/world/item/ItemStack;II)V",
                     ordinal = 0
-            ),
-            remap = false
+            )
     )
     private void renderOutputConfig(GuiGraphics instance, ItemStack p_281978_, int p_282647_, int p_281944_) {
         BoardIngredient ingredient = BoardIngredient.of(behaviour);
@@ -103,8 +99,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
     @Expression("text(this.behaviour.getFilter().getHoverName().getString() + ' x' + ?)")
     @ModifyExpressionValue(
             method = "renderWindow",
-            at = @At("MIXINEXTRAS:EXPRESSION"),
-            remap = false
+            at = @At("MIXINEXTRAS:EXPRESSION")
     )*/
     @Redirect(
             method = "renderWindow",
@@ -112,8 +107,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     value = "CONSTANT",
                     args = "stringValue=gui.factory_panel.left_click_reset",
                     shift = At.Shift.BY, by = -4
-            ),
-            remap = false
+            )
     )
     private LangBuilder promiseTipValueFormat(String text) {
         BoardIngredient ingredient = BoardIngredient.of(behaviour);
@@ -126,8 +120,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
     @Expression("itemName(?).add(?)")
     @Redirect(
             method = "renderWindow",
-            at = @At("MIXINEXTRAS:EXPRESSION"),
-            remap = false
+            at = @At("MIXINEXTRAS:EXPRESSION")
     )
     private LangBuilder outputConfigTipFormat(LangBuilder instance, LangBuilder otherBuilder) {
         BoardIngredient ingredient = BoardIngredient.of(behaviour);
@@ -141,8 +134,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/GuiGraphics;renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V",
                     ordinal = 1
-            ),
-            remap = false
+            )
     )
     private void renderPromised(GuiGraphics instance, Font l, ItemStack i, int j, int k, String i1) {
         BoardIngredient ingredient = BoardIngredient.of(behaviour);
@@ -156,8 +148,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/GuiGraphics;renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V",
                     ordinal = 0
-            ),
-            remap = true
+            )
     )
     private void outputConfigAmount(GuiGraphics instance, Font l, ItemStack i, int j, int k, String i1) {
         BigIngredientStack stack = (BigIngredientStack) outputConfig;
@@ -171,8 +162,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/foundation/utility/CreateLang;itemName(Lnet/minecraft/world/item/ItemStack;)Lnet/createmod/catnip/lang/LangBuilder;",
                     ordinal = 0
-            ),
-            remap = false
+            )
     )
     private LangBuilder inputConfigRestockerTipFormat(ItemStack $, @Local(argsOnly = true) BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
@@ -184,8 +174,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
     @Expression("itemName(?).add(?)")
     @Redirect(
             method = "renderInputItem",
-            at = @At("MIXINEXTRAS:EXPRESSION"),
-            remap = false
+            at = @At("MIXINEXTRAS:EXPRESSION")
     )
     private LangBuilder inputConfigTipFormat(LangBuilder instance, LangBuilder otherBuilder, @Local(argsOnly = true) BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
@@ -217,7 +206,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
         IngredientGui.renderSlot(instance, stack.ingredient().key(), p_282647_, p_281944_);
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     private BigItemStack lambda$updateConfigs$0(FactoryPanelConnection connection) {
         FactoryPanelBehaviour b = FactoryPanelBehaviour.at(minecraft.level, connection.from);
         if (b == null)
@@ -231,8 +220,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             at = @At(
                     value = "NEW",
                     target = "(Lnet/minecraft/world/item/ItemStack;I)Lcom/simibubi/create/content/logistics/BigItemStack;"
-            ),
-            remap = false
+            )
     )
     private BigItemStack setOutputConfig(ItemStack stack, int count) {
         return BigIngredientStack.of(BoardIngredient.of(behaviour), count).asStack();
@@ -269,8 +257,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             at = @At(
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
-                    ordinal = 0,
-                    remap = false
+                    ordinal = 0
             )
     )
     private int getInputIngredientCount(BigItemStack instance) {
@@ -284,8 +271,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             at = @At(
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
-                    ordinal = 2,
-                    remap = false
+                    ordinal = 2
             )
     )
     private int getOutputIngredientCount(BigItemStack instance) {
@@ -298,8 +284,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             at = @At(
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
-                    ordinal = 1,
-                    remap = false
+                    ordinal = 1
             )
     )
     private void setInputIngredientCount(BigItemStack instance, int value) {
@@ -313,8 +298,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             at = @At(
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
-                    ordinal = 3,
-                    remap = false
+                    ordinal = 3
             )
     )
     private void setOutputIngredientCount(BigItemStack instance, int value) {

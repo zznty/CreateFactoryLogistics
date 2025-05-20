@@ -3,8 +3,8 @@ package ru.zznty.create_factory_logistics.logistics.packager;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
 import ru.zznty.create_factory_logistics.logistics.ingredient.capability.PackageBuilder;
@@ -60,7 +60,7 @@ class BuiltInPackageBuilder implements PackageBuilder {
 
     @Override
     public int maxPerSlot() {
-        return Item.MAX_STACK_SIZE;
+        return Item.DEFAULT_MAX_STACK_SIZE;
     }
 
     @Override

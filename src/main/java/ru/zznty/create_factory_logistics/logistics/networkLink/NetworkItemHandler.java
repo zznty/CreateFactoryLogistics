@@ -1,8 +1,8 @@
 package ru.zznty.create_factory_logistics.logistics.networkLink;
 
+import com.simibubi.create.foundation.item.ItemHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientCasts;
 
@@ -47,6 +47,6 @@ public class NetworkItemHandler extends BaseNetworkHandler implements IItemHandl
 
     @Override
     public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-        return ItemHandlerHelper.canItemStacksStack(IngredientCasts.asItemStack(summary().get(slot)), stack);
+        return ItemHelper.canItemStackAmountsStack(IngredientCasts.asItemStack(summary().get(slot)), stack);
     }
 }

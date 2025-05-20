@@ -17,7 +17,6 @@ public class JeiPlugin implements IModPlugin {
 
     @Override
     public void registerVanillaCategoryExtensions(IVanillaCategoryExtensionRegistration registration) {
-        registration.getCraftingCategory().addCategoryExtension(NetworkLinkQualificationRecipe.class,
-                recipe -> new NetworkLinkQualificationExtension(recipe.key()));
+        registration.getCraftingCategory().addExtension(NetworkLinkQualificationRecipe.class, new NetworkLinkQualificationExtension());
     }
 }

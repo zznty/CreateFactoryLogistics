@@ -18,7 +18,7 @@ import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySumm
 public class PackagerIngredientLinkBlockEntityMixin implements PackagerIngredientLinkBlockEntity {
 
     @Nullable
-    @Shadow(remap = false)
+    @Shadow
     public PackagerBlockEntity getPackager() {
         return null;
     }

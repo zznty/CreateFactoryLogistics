@@ -22,8 +22,7 @@ public class IconAtlasMixin implements IconAtlasIndexHolder {
 
     @Redirect(
             method = "render(Lnet/minecraft/client/gui/GuiGraphics;II)V",
-            at = @At(value = "FIELD", target = "Lcom/simibubi/create/foundation/gui/AllIcons;ICON_ATLAS:Lnet/minecraft/resources/ResourceLocation;"),
-            remap = false
+            at = @At(value = "FIELD", target = "Lcom/simibubi/create/foundation/gui/AllIcons;ICON_ATLAS:Lnet/minecraft/resources/ResourceLocation;")
     )
     private ResourceLocation redirectAtlas1() {
         return createFactoryLogistics$atlas[createFactoryLogistics$index];
@@ -31,8 +30,7 @@ public class IconAtlasMixin implements IconAtlasIndexHolder {
 
     @Redirect(
             method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-            at = @At(value = "FIELD", target = "Lcom/simibubi/create/foundation/gui/AllIcons;ICON_ATLAS:Lnet/minecraft/resources/ResourceLocation;"),
-            remap = false
+            at = @At(value = "FIELD", target = "Lcom/simibubi/create/foundation/gui/AllIcons;ICON_ATLAS:Lnet/minecraft/resources/ResourceLocation;")
     )
     private ResourceLocation redirectAtlas2() {
         return createFactoryLogistics$atlas[createFactoryLogistics$index];

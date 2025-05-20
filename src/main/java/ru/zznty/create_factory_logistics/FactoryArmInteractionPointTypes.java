@@ -6,15 +6,16 @@ import com.simibubi.create.content.kinetics.mechanicalArm.ArmInteractionPointTyp
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.Nullable;
 
 public class FactoryArmInteractionPointTypes {
     public static DeferredRegister<ArmInteractionPointType> ARM_INTERACTION_POINT_TYPES =
             DeferredRegister.create(CreateBuiltInRegistries.ARM_INTERACTION_POINT_TYPE.key(), CreateFactoryLogistics.MODID);
 
-    public static RegistryObject<ArmInteractionPointType> JAR_PACKAGER = ARM_INTERACTION_POINT_TYPES.register("jar_packager", PackagerType::new);
+    public static DeferredHolder<ArmInteractionPointType, ArmInteractionPointType> JAR_PACKAGER =
+            ARM_INTERACTION_POINT_TYPES.register("jar_packager", PackagerType::new);
 
     private static class PackagerType extends ArmInteractionPointType {
         @Override

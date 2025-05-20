@@ -35,7 +35,7 @@ public class FluidGuiHandler implements IngredientGuiHandler<FluidIngredientKey>
     @Override
     public List<Component> tooltipBuilder(FluidIngredientKey key, int amount) {
         List<Component> list = new ArrayList<>(3);
-        list.add(key.stack().getDisplayName());
+        list.add(key.stack().getHoverName());
         list.add(Component.empty());
         list.add(FactoryFluidPanelBehaviour.formatLevel(amount, false).style(ChatFormatting.GRAY).component());
         return list;

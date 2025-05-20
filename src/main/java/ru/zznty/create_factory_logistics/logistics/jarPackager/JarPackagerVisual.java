@@ -33,7 +33,7 @@ public class JarPackagerVisual<T extends JarPackagerBlockEntity> extends Abstrac
     }
 
     public void animate(float partialTick) {
-        float trayOffset = blockEntity.getTrayOffset(partialTick);
+        float trayOffset = blockEntity.getTrayOffset(partialTick) / 2;
 
         if (trayOffset != lastTrayOffset) {
             Direction facing = blockState.getValue(PackagerBlock.FACING)
@@ -42,7 +42,7 @@ public class JarPackagerVisual<T extends JarPackagerBlockEntity> extends Abstrac
             if (facing.getAxis() == Direction.Axis.Y)
                 facing = Direction.NORTH;
 
-            var lowerCorner = Vec3.atLowerCornerOf(facing.getNormal());
+            var lowerCorner = Vec3.atLowerCornerOf(Direction.DOWN.getNormal());
 
             tray.setIdentityTransform()
                     .translate(getVisualPosition())

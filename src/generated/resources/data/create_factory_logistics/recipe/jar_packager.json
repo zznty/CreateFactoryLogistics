@@ -21,7 +21,7 @@
     "rir"
   ],
   "result": {
-    "item": "create_factory_logistics:jar_packager"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "create_factory_logistics:jar_packager"
+  }
 }

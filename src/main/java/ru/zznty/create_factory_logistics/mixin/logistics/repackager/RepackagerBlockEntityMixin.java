@@ -17,6 +17,6 @@ public class RepackagerBlockEntityMixin {
             )
     )
     private PackageRepackageHelper createHelper() {
-        return new CompositeRepackagerHelper();
+        return new CompositeRepackagerHelper((RepackagerBlockEntity) (Object) this);
     }
 }

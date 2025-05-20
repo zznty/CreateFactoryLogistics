@@ -7,7 +7,7 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -16,10 +16,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.fluids.FluidUtil;
 import ru.zznty.create_factory_logistics.FactoryBlockEntities;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 
@@ -41,7 +39,6 @@ public class JarPackagerBlock extends PackagerBlock {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Capability<IFluidHandler> fluidCap = ForgeCapabilities.FLUID_HANDLER;
         Direction preferredFacing = null;
         for (Direction face : context.getNearestLookingDirections()) {
             BlockEntity be = context.getLevel()
@@ -49,7 +46,8 @@ public class JarPackagerBlock extends PackagerBlock {
                             .relative(face));
             if (be instanceof PackagerBlockEntity)
                 continue;
-            if (be != null && (be.getCapability(fluidCap)
+            if (be != null && (FluidUtil.getFluidHandler(context.getLevel(), context.getClickedPos()
+                            .relative(face), face.getOpposite())
                     .isPresent())) {
                 preferredFacing = face.getOpposite();
                 break;
@@ -79,15 +77,10 @@ public class JarPackagerBlock extends PackagerBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
-        if (player == null)
-            return InteractionResult.PASS;
+    public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (FactoryBlocks.FACTORY_FLUID_GAUGE.isIn(stack))
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
-        ItemStack itemInHand = player.getItemInHand(handIn);
-
-        if (FactoryBlocks.FACTORY_FLUID_GAUGE.isIn(itemInHand))
-            return InteractionResult.PASS;
-
-        return super.use(state, worldIn, pos, player, handIn, hit);
+        return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 }

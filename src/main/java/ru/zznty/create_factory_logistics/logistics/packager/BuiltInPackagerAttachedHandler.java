@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_logistics.logistics.packager;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.api.packager.InventoryIdentifier;
 import com.simibubi.create.api.packager.unpacking.UnpackingHandler;
 import com.simibubi.create.content.logistics.BigItemStack;
@@ -18,8 +19,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
@@ -29,7 +31,8 @@ import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySumm
 
 import java.util.List;
 
-record BuiltInPackagerAttachedHandler(PackagerBlockEntity packagerBE) implements PackagerAttachedHandler {
+@ApiStatus.Internal
+public record BuiltInPackagerAttachedHandler(PackagerBlockEntity packagerBE) implements PackagerAttachedHandler {
     @Override
     public int slotCount() {
         return packagerBE.targetInventory.hasInventory() ? packagerBE.targetInventory.getInventory().getSlots() : 0;
@@ -50,9 +53,7 @@ record BuiltInPackagerAttachedHandler(PackagerBlockEntity packagerBE) implements
         if (!PackageItem.isPackage(box))
             return false;
 
-        // TODO figure out a better check if this is an items package
-        // just strict class comparison for PackageItem wont fit since mods could extend it for their new packages
-        if (box.getTagElement("Items") == null || box.getTagElement("Items").isEmpty()) return false;
+        if (!box.has(AllDataComponents.PACKAGE_CONTENTS)) return false;
 
         ItemStackHandler contents = PackageItem.getContents(box);
         List<ItemStack> items = ItemHelper.getNonEmptyStacks(contents);

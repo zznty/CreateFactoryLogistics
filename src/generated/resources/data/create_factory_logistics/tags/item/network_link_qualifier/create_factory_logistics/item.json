@@ -1,7 +1,7 @@
 {
   "values": [
-    "#forge:chests",
-    "#forge:barrels",
+    "#c:chests",
+    "#c:barrels",
     "create:creative_crate",
     "create:item_vault"
   ]

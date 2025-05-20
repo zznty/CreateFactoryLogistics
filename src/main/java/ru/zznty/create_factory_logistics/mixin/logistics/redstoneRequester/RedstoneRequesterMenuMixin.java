@@ -7,7 +7,7 @@ import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequester
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterMenu;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +21,7 @@ import java.util.List;
 
 @Mixin(RedstoneRequesterMenu.class)
 public abstract class RedstoneRequesterMenuMixin extends GhostItemMenu<RedstoneRequesterBlockEntity> implements IngredientGhostMenu {
-    protected RedstoneRequesterMenuMixin(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    protected RedstoneRequesterMenuMixin(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
@@ -30,8 +30,7 @@ public abstract class RedstoneRequesterMenuMixin extends GhostItemMenu<RedstoneR
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;stacks()Ljava/util/List;"
-            ),
-            remap = false
+            )
     )
     private List<BigIngredientStack> getRequest(PackageOrderWithCrafts instance, Operation<List<BigItemStack>> original) {
         IngredientRedstoneRequester requester = (IngredientRedstoneRequester) contentHolder;

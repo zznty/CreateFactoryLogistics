@@ -2,9 +2,9 @@ package ru.zznty.create_factory_logistics.mixin.logistics.stock;
 
 import com.simibubi.create.api.packager.InventoryIdentifier;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,18 +15,18 @@ import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientIdent
 @Mixin(IdentifiedInventory.class)
 public class IdentifiedInventoryMixin implements IngredientIdentifiedInventory {
     @Final
-    @Shadow(remap = false)
+    @Shadow
     @Nullable
     private IItemHandler handler;
 
     @Final
-    @Shadow(remap = false)
+    @Shadow
     @Nullable
     private InventoryIdentifier identifier;
 
     @Unique
     @Nullable
-    private Capability<?> createFactoryLogistics$capability;
+    private BlockCapability<?, ?> createFactoryLogistics$capability;
 
     @Unique
     @Nullable
@@ -38,8 +38,8 @@ public class IdentifiedInventoryMixin implements IngredientIdentifiedInventory {
     }
 
     @Override
-    public Capability<?> capability() {
-        return handler != null ? ForgeCapabilities.ITEM_HANDLER : createFactoryLogistics$capability;
+    public BlockCapability<?, ?> capability() {
+        return handler != null ? Capabilities.ItemHandler.BLOCK : createFactoryLogistics$capability;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class IdentifiedInventoryMixin implements IngredientIdentifiedInventory {
     }
 
     @Override
-    public <T> void setCapability(Capability<T> capability, T handler) {
+    public <T, C> void setCapability(BlockCapability<T, C> capability, T handler) {
         if (this.handler != null)
             throw new IllegalArgumentException("Handler must be null");
         createFactoryLogistics$capability = capability;

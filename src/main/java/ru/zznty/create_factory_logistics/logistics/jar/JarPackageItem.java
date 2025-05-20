@@ -7,7 +7,6 @@ import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -29,16 +28,15 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.fluids.FluidActionResult;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidHandlerItemStack;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.fluids.FluidActionResult;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.Config;
@@ -83,29 +81,31 @@ public class JarPackageItem extends PackageItem {
 
         BlockPos relative = hitResult.getBlockPos().relative(hitResult.getDirection());
 
-        return box.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).map(fluidItem -> {
-            FluidStack fluid = fluidItem.drain(Config.jarCapacity, IFluidHandler.FluidAction.SIMULATE);
-            if (fluid.getAmount() != Config.jarCapacity ||
-                    !(fluid.getFluid() instanceof FlowingFluid) ||
-                    !worldIn.mayInteract(playerIn, relative) ||
-                    !playerIn.mayUseItemAt(relative, hitResult.getDirection(), box))
-                return InteractionResultHolder.fail(box);
+        IFluidHandlerItem fluidItem = box.getCapability(Capabilities.FluidHandler.ITEM);
+        if (fluidItem == null) return InteractionResultHolder.pass(box);
 
-            BlockState blockState = worldIn.getBlockState(hitResult.getBlockPos());
-
-            BlockPos placePos = canBlockContainFluid(worldIn, hitResult.getBlockPos(), blockState, fluid) ? hitResult.getBlockPos() : relative;
-
-            if (emptyContents(playerIn, worldIn, handIn, placePos, box)) {
-                playerIn.setItemInHand(handIn, ItemStack.EMPTY);
-                return InteractionResultHolder.sidedSuccess(ItemStack.EMPTY, worldIn.isClientSide());
-            }
-
+        FluidStack fluid = fluidItem.drain(Config.jarCapacity, IFluidHandler.FluidAction.SIMULATE);
+        if (fluid.getAmount() != Config.jarCapacity ||
+                !(fluid.getFluid() instanceof FlowingFluid) ||
+                !worldIn.mayInteract(playerIn, relative) ||
+                !playerIn.mayUseItemAt(relative, hitResult.getDirection(), box))
             return InteractionResultHolder.fail(box);
-        }).orElse(InteractionResultHolder.pass(box));
+
+        BlockState blockState = worldIn.getBlockState(hitResult.getBlockPos());
+
+        BlockPos placePos = canBlockContainFluid(worldIn, hitResult.getBlockPos(), blockState, fluid) ? hitResult.getBlockPos() : relative;
+
+        if (emptyContents(playerIn, worldIn, handIn, placePos, box)) {
+            playerIn.setItemInHand(handIn, ItemStack.EMPTY);
+            return InteractionResultHolder.sidedSuccess(ItemStack.EMPTY, worldIn.isClientSide());
+        }
+
+        return InteractionResultHolder.fail(box);
     }
 
     protected boolean canBlockContainFluid(Level worldIn, BlockPos posIn, BlockState blockState, FluidStack fluid) {
-        return blockState.getBlock() instanceof LiquidBlockContainer liquidBlockContainer && liquidBlockContainer.canPlaceLiquid(worldIn, posIn, blockState, fluid.getFluid());
+        return blockState.getBlock() instanceof LiquidBlockContainer liquidBlockContainer &&
+                liquidBlockContainer.canPlaceLiquid(null, worldIn, posIn, blockState, fluid.getFluid());
     }
 
     @Override
@@ -147,7 +147,7 @@ public class JarPackageItem extends PackageItem {
     public void releaseUsing(ItemStack stack, Level world, LivingEntity entity, int ticks) {
         if (!(entity instanceof Player player))
             return;
-        int i = this.getUseDuration(stack) - ticks;
+        int i = this.getUseDuration(stack, entity) - ticks;
         if (i < 0)
             return;
 
@@ -177,11 +177,7 @@ public class JarPackageItem extends PackageItem {
         world.addFreshEntity(jarEntity);
     }
 
-    @Override
-    public @Nullable ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-        return new FluidHandlerItemStack(stack, Config.jarCapacity);
-    }
-
+    @SuppressWarnings("removal")
     @Override
     @OnlyIn(Dist.CLIENT)
     public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer) {
@@ -217,14 +213,14 @@ public class JarPackageItem extends PackageItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
-        super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
+    public void appendHoverText(ItemStack pStack, TooltipContext tooltipContext, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
+        super.appendHoverText(pStack, tooltipContext, pTooltipComponents, pIsAdvanced);
 
         FluidStack contained = FluidUtil.getFluidContained(pStack).orElse(FluidStack.EMPTY);
 
         if (contained.isEmpty()) return;
 
-        pTooltipComponents.add(contained.getDisplayName()
+        pTooltipComponents.add(contained.getHoverName()
                 .copy()
                 .append(" ")
                 .append(FactoryFluidPanelBehaviour.formatLevel(contained.getAmount()).component())

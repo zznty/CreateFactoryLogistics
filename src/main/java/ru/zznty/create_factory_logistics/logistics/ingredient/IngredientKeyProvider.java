@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Provides support for a specific implementation of {@link IngredientKey}
@@ -20,7 +21,7 @@ public interface IngredientKeyProvider extends Comparable<IngredientKeyProvider>
 
     <K extends IngredientKey> int compare(K a, K b);
 
-    <T> CapabilityFactory<T> capabilityFactory();
+    <T> @Nullable CapabilityFactory<T> capabilityFactory();
 
     /**
      * Returns UID of the ingredient type registered in JEI {@link mezz.jei.api.runtime.IIngredientManager}

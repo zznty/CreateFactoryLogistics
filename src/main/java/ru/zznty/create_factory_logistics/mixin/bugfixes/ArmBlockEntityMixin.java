@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 // fixes comparison of held item and simulated reminder
-// cuz in base create it only compares item type and count, ignoring nbt and caps
+// cuz in base create it only compares item type and count, ignoring components and caps
 @Mixin(ArmBlockEntity.class)
 public class ArmBlockEntityMixin {
     @Redirect(
@@ -18,7 +18,7 @@ public class ArmBlockEntityMixin {
             )
     )
     private boolean place1(ItemStack stack1, ItemStack stack2) {
-        return ItemStack.isSameItemSameTags(stack1, stack2);
+        return ItemStack.isSameItemSameComponents(stack1, stack2);
     }
 
     @Redirect(
@@ -29,6 +29,6 @@ public class ArmBlockEntityMixin {
             )
     )
     private boolean place2(ItemStack stack1, ItemStack stack2) {
-        return ItemStack.isSameItemSameTags(stack1, stack2);
+        return ItemStack.isSameItemSameComponents(stack1, stack2);
     }
 }

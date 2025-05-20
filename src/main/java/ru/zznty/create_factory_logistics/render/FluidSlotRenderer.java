@@ -6,13 +6,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 public class FluidSlotRenderer {
     public static void renderFluidSlot(GuiGraphics instance, int x, int y, FluidStack stack) {
-        if (stack.isEmpty() && stack.getRawFluid() != Fluids.EMPTY) {
-            stack = new FluidStack(stack.getRawFluid(), 1, stack.getTag());
+        if (stack.isEmpty() && stack.getFluid() != Fluids.EMPTY) {
+            stack = new FluidStack(stack.getFluidHolder(), 1, stack.getComponents().copy().asPatch());
         }
 
         var attributes = IClientFluidTypeExtensions.of(stack.getFluid());

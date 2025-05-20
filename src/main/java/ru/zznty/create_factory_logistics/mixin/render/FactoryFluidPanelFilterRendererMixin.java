@@ -22,8 +22,7 @@ public class FactoryFluidPanelFilterRendererMixin {
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/foundation/blockEntity/behaviour/ValueBoxRenderer;renderItemIntoValueBox(Lnet/minecraft/world/item/ItemStack;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V",
                     ordinal = 1
-            ),
-            remap = false
+            )
     )
     private static void renderFilter(ItemStack filter, PoseStack ms, MultiBufferSource buffer, int light, int overlay, Operation<Void> original, @Local FilteringBehaviour behaviour) {
         if (behaviour instanceof FactoryPanelBehaviour panelBehaviour) {

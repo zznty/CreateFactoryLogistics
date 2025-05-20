@@ -13,6 +13,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -24,9 +26,8 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.level.BlockEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import ru.zznty.create_factory_logistics.FactoryBlockEntities;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 
@@ -47,38 +48,35 @@ public class FactoryFluidPanelBlock extends FactoryPanelBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-        if (pPlayer == null)
-            return InteractionResult.PASS;
-        ItemStack item = pPlayer.getItemInHand(pHand);
-        if (pLevel.isClientSide)
-            return InteractionResult.SUCCESS;
-        if (!FactoryBlocks.FACTORY_FLUID_GAUGE.isIn(item))
-            return InteractionResult.SUCCESS;
-        Vec3 location = pHit.getLocation();
+    public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (level.isClientSide)
+            return ItemInteractionResult.SUCCESS;
+        if (!FactoryBlocks.FACTORY_FLUID_GAUGE.isIn(stack))
+            return ItemInteractionResult.SUCCESS;
+        Vec3 location = hitResult.getLocation();
         if (location == null)
-            return InteractionResult.SUCCESS;
+            return ItemInteractionResult.SUCCESS;
 
-        if (!FactoryPanelBlockItem.isTuned(item)) {
-            AllSoundEvents.DENY.playOnServer(pLevel, pPos);
-            pPlayer.displayClientMessage(CreateLang.translate("factory_panel.tune_before_placing")
+        if (!FactoryPanelBlockItem.isTuned(stack)) {
+            AllSoundEvents.DENY.playOnServer(level, pos);
+            player.displayClientMessage(CreateLang.translate("factory_panel.tune_before_placing")
                     .component(), true);
-            return InteractionResult.FAIL;
+            return ItemInteractionResult.FAIL;
         }
 
-        PanelSlot newSlot = getTargetedSlot(pPos, pState, location);
-        withBlockEntityDo(pLevel, pPos, fpbe -> {
-            if (!fpbe.addPanel(newSlot, LogisticallyLinkedBlockItem.networkFromStack(FactoryPanelBlockItem.fixCtrlCopiedStack(item))))
+        PanelSlot newSlot = getTargetedSlot(pos, state, location);
+        withBlockEntityDo(level, pos, fpbe -> {
+            if (!fpbe.addPanel(newSlot, LogisticallyLinkedBlockItem.networkFromStack(FactoryPanelBlockItem.fixCtrlCopiedStack(stack))))
                 return;
-            pPlayer.displayClientMessage(CreateLang.translateDirect("logistically_linked.connected"), true);
-            pLevel.playSound(null, pPos, soundType.getPlaceSound(), SoundSource.BLOCKS);
-            if (pPlayer.isCreative())
+            player.displayClientMessage(CreateLang.translateDirect("logistically_linked.connected"), true);
+            level.playSound(null, pos, soundType.getPlaceSound(), SoundSource.BLOCKS);
+            if (player.isCreative())
                 return;
-            item.shrink(1);
-            if (item.isEmpty())
-                pPlayer.setItemInHand(pHand, ItemStack.EMPTY);
+            stack.shrink(1);
+            if (stack.isEmpty())
+                player.setItemInHand(hand, ItemStack.EMPTY);
         });
-        return InteractionResult.SUCCESS;
+        return ItemInteractionResult.SUCCESS;
     }
 
     @Override
@@ -119,7 +117,7 @@ public class FactoryFluidPanelBlock extends FactoryPanelBlock {
                 return InteractionResult.SUCCESS;
 
             BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, world.getBlockState(pos), player);
-            MinecraftForge.EVENT_BUS.post(event);
+            NeoForge.EVENT_BUS.post(event);
             if (event.isCanceled())
                 return InteractionResult.SUCCESS;
 
@@ -149,7 +147,7 @@ public class FactoryFluidPanelBlock extends FactoryPanelBlock {
     }
 
     private boolean tryDestroySubPanelFirst(BlockState state, Level level, BlockPos pos, Player player) {
-        double range = player.getAttribute(ForgeMod.BLOCK_REACH.get())
+        double range = player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE)
                 .getValue() + 1;
         HitResult hitResult = player.pick(range, 1, false);
         Vec3 location = hitResult.getLocation();

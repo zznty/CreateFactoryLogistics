@@ -15,7 +15,7 @@ public class PonderPlugin implements net.createmod.ponder.api.registration.Ponde
 
     @Override
     public void registerScenes(PonderSceneRegistrationHelper<ResourceLocation> helper) {
-        PonderSceneRegistrationHelper<ItemProviderEntry<?>> registration = helper.withKeyFunction(RegistryEntry::getId);
+        PonderSceneRegistrationHelper<ItemProviderEntry<?, ?>> registration = helper.withKeyFunction(RegistryEntry::getId);
 
         registration.forComponents(FactoryBlocks.NETWORK_LINK)
                 .addStoryBoard(Scenes.MIXER_UPKEEP, Scenes::mixerUpkeep);

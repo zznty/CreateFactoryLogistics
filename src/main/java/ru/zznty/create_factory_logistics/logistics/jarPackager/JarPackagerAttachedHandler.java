@@ -12,10 +12,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.Config;
@@ -65,7 +65,7 @@ public class JarPackagerAttachedHandler implements PackagerAttachedHandler {
         if (!(box.getItem() instanceof JarPackageItem)) return false;
 
         Optional<FluidStack> source = FluidUtil.getFluidContained(box);
-        Optional<IFluidHandler> destination = FluidUtil.getFluidHandler(level, pos, side).resolve();
+        Optional<IFluidHandler> destination = FluidUtil.getFluidHandler(level, pos, side);
 
         if (source.isEmpty() || destination.isEmpty()) return false;
 
@@ -121,7 +121,7 @@ public class JarPackagerAttachedHandler implements PackagerAttachedHandler {
         IdentifiedInventory inv = new IdentifiedInventory(InventoryIdentifier.get(packagerBE.drainInventory.getWorld(), packagerBE.drainInventory.getTarget().getOpposite()), null);
         {
             IngredientIdentifiedInventory identifiedInventory = IngredientIdentifiedInventory.from(inv);
-            identifiedInventory.setCapability(ForgeCapabilities.FLUID_HANDLER, packagerBE.drainInventory.getInventory());
+            identifiedInventory.setCapability(Capabilities.FluidHandler.BLOCK, packagerBE.drainInventory.getInventory());
         }
         return inv;
     }
@@ -135,7 +135,7 @@ class JarPackageBuilder implements PackageBuilder {
         if (!(content.key() instanceof FluidIngredientKey fluidKey))
             throw new IllegalArgumentException("Unsupported content: " + content);
 
-        if (!fluidStack.isEmpty() && !fluidStack.isFluidEqual(fluidKey.stack()))
+        if (!fluidStack.isEmpty() && !FluidStack.isSameFluidSameComponents(fluidStack, fluidKey.stack()))
             return -1;
 
         if (fluidStack.isEmpty()) {

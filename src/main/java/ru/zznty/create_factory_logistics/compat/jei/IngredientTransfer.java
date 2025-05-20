@@ -11,7 +11,6 @@ import mezz.jei.api.runtime.IIngredientManager;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.world.inventory.Slot;
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeyProvider;
@@ -24,7 +23,7 @@ public final class IngredientTransfer {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static Optional<BoardIngredient> tryConvert(IIngredientManager ingredientManager, ITypedIngredient<?> typedIngredient) {
         String typeUid = typedIngredient.getType().getUid();
-        for (IngredientKeyProvider provider : IngredientRegistry.REGISTRY.get().getValues()) {
+        for (IngredientKeyProvider provider : IngredientRegistry.REGISTRY) {
             if (provider.ingredientTypeUid().equals(typeUid)) {
                 IIngredientHelper ingredientHelper = ingredientManager.getIngredientHelper(typedIngredient.getType());
                 return Optional.of(new BoardIngredient(provider.wrap(typedIngredient.getIngredient()),
@@ -48,7 +47,7 @@ public final class IngredientTransfer {
         // and also split them between "equal" groups
         Map<IRecipeSlotView, Map<MutableObject<BoardIngredient>, ArrayList<PhantomSlotState>>> relevantSlots = new IdentityHashMap<>();
 
-        Map<IRecipeSlotView, Map<String, ITypedIngredient<?>>> slotUidCache = new IdentityHashMap<>();
+        Map<IRecipeSlotView, Map<Object, ITypedIngredient<?>>> slotUidCache = new IdentityHashMap<>();
         List<IRecipeSlotView> nonEmptyRequiredStacks = requiredStacks.stream()
                 .filter(r -> !r.isEmpty())
                 .toList();
@@ -57,14 +56,14 @@ public final class IngredientTransfer {
 
         for (int i = 0; i < availableStacks.size(); i++) {
             MutableObject<BoardIngredient> availableStack = availableStacks.get(i);
-            String slotItemStackUid = getStackUid(ingredientManager, availableStack.getValue(), UidContext.Ingredient);
+            Object slotItemStackUid = getStackUid(ingredientManager, availableStack.getValue(), UidContext.Ingredient);
 
             for (IRecipeSlotView ingredient : nonEmptyRequiredStacks) {
-                Map<String, ITypedIngredient<?>> ingredientUids = slotUidCache.computeIfAbsent(ingredient, s ->
+                Map<Object, ITypedIngredient<?>> ingredientUids = slotUidCache.computeIfAbsent(ingredient, s ->
                         s.getAllIngredients()
                                 .map(typedIngredient -> {
                                     IIngredientHelper ingredientHelper1 = ingredientManager.getIngredientHelper(typedIngredient.getType());
-                                    return Pair.of(ingredientHelper1.getUniqueId(typedIngredient.getIngredient(), UidContext.Ingredient), typedIngredient);
+                                    return Pair.of(ingredientHelper1.getUid(typedIngredient.getIngredient(), UidContext.Ingredient), typedIngredient);
                                 })
                                 .collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond))
                 );
@@ -175,9 +174,9 @@ public final class IngredientTransfer {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static @NotNull String getStackUid(IIngredientManager ingredientManager, BoardIngredient availableStack, UidContext context) {
+    private static Object getStackUid(IIngredientManager ingredientManager, BoardIngredient availableStack, UidContext context) {
         IIngredientHelper ingredientHelper = ingredientManager.getIngredientHelper(ingredientManager.getIngredientTypeForUid(availableStack.key().provider().ingredientTypeUid()).orElseThrow());
-        return ingredientHelper.getUniqueId(availableStack.key().get(), context);
+        return ingredientHelper.getUid(availableStack.key().get(), context);
     }
 
     private record PhantomSlotState(int slot, MutableObject<BoardIngredient> stack,

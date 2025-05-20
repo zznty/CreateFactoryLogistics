@@ -1,11 +1,11 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient;
 
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-
-import java.util.Objects;
 
 /**
  * Immutable abstraction over stacks of items, fluids, etc.
@@ -28,35 +28,35 @@ public record BoardIngredient(IngredientKey<?> key, int amount) {
         return key.equals(otherKey);
     }
 
-    public static BoardIngredient read(FriendlyByteBuf buf) {
-        IngredientKeyProvider provider = buf.readRegistryIdSafe(IngredientKeyProvider.class);
-        return new BoardIngredient(provider.serializer().read(buf), buf.readVarInt());
+    public static BoardIngredient read(RegistryFriendlyByteBuf buf) {
+        ResourceKey<IngredientKeyProvider> provider = buf.readResourceKey(IngredientRegistry.REGISTRY.key());
+        return new BoardIngredient(IngredientRegistry.REGISTRY.get(provider).serializer().read(buf), buf.readVarInt());
     }
 
-    public static BoardIngredient read(CompoundTag tag) {
+    public static BoardIngredient read(HolderLookup.Provider levelRegistryAccess, CompoundTag tag) {
         int amount = tag.getInt("Amount");
-        IngredientKeyProvider provider = IngredientRegistry.REGISTRY.get().getValue(ResourceLocation.parse(tag.getString("id")));
+        IngredientKeyProvider provider = IngredientRegistry.REGISTRY.get(ResourceLocation.parse(tag.getString("id")));
 
-        return provider == null ? BoardIngredient.of() : new BoardIngredient(provider.serializer().read(tag.getCompound("key")), amount);
+        return provider == null ? BoardIngredient.of() : new BoardIngredient(provider.serializer().read(levelRegistryAccess, tag.getCompound("key")), amount);
     }
 
-    public void write(FriendlyByteBuf buf) {
-        buf.writeRegistryId(IngredientRegistry.REGISTRY.get(), key.provider());
+    public void write(RegistryFriendlyByteBuf buf) {
+        buf.writeResourceKey(IngredientRegistry.REGISTRY.getResourceKey(key.provider()).get());
         key.provider().serializer().write(key, buf);
         buf.writeVarInt(amount);
     }
 
-    public void write(CompoundTag tag) {
+    public void write(HolderLookup.Provider levelRegistryAccess, CompoundTag tag) {
         tag.putInt("Amount", amount);
 
-        ResourceLocation resourceLocation = IngredientRegistry.REGISTRY.get().getKey(key.provider());
+        ResourceLocation resourceLocation = IngredientRegistry.REGISTRY.getKey(key.provider());
         if (resourceLocation == null)
-            resourceLocation = Objects.requireNonNull(IngredientRegistry.REGISTRY.get().getDefaultKey());
+            resourceLocation = IngredientProviders.EMPTY.getId();
 
         tag.putString("id", resourceLocation.toString());
 
         CompoundTag keyTag = new CompoundTag();
-        key.provider().serializer().write(key, keyTag);
+        key.provider().serializer().write(levelRegistryAccess, key, keyTag);
         tag.put("key", keyTag);
     }
 

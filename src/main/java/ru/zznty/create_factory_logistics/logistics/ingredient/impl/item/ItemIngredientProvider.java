@@ -1,23 +1,35 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient.impl.item;
 
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_logistics.logistics.ingredient.CapabilityFactory;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeyProvider;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeySerializer;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkItemHandler;
+import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkMode;
 
 @ApiStatus.Internal
 public class ItemIngredientProvider implements IngredientKeyProvider {
     private final ItemKeySerializer serializer = new ItemKeySerializer();
 
-    private final CapabilityFactory<IItemHandler> capFactory = (cap, mode, behaviour) ->
-            ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new NetworkItemHandler(behaviour.freqId, mode)));
+    private final CapabilityFactory<IItemHandler> capFactory = new CapabilityFactory<>() {
+        @Override
+        public BlockCapability<IItemHandler, Direction> capability() {
+            return Capabilities.ItemHandler.BLOCK;
+        }
+
+        @Override
+        public IItemHandler create(NetworkLinkMode mode, LogisticallyLinkedBehaviour behaviour) {
+            return new NetworkItemHandler(behaviour.freqId, mode);
+        }
+    };
 
     @Override
     public <K extends IngredientKey> K defaultKey() {

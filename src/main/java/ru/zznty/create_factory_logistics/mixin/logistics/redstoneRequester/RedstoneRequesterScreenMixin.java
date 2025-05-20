@@ -7,27 +7,29 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
+import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.logistics.BigItemStack;
-import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterConfigurationPacket;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterMenu;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterScreen;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
+import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.lang.LangBuilder;
+import net.createmod.catnip.platform.services.NetworkHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.SlotItemHandler;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -40,7 +42,7 @@ import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.logistics.ingredient.*;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientGhostMenu;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequester;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequesterConfigurationPacket;
+import ru.zznty.create_factory_logistics.logistics.panel.request.RedstoneRequesterConfigurationPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,11 +51,14 @@ import java.util.Optional;
 @Mixin(RedstoneRequesterScreen.class)
 public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainerScreen<RedstoneRequesterMenu> {
 
-    @Shadow(remap = false)
+    @Shadow
     private List<Integer> amounts;
 
-    @Shadow(remap = false)
-    private EditBox addressBox;
+    @Shadow
+    private AddressEditBox addressBox;
+
+    @Shadow
+    private IconButton allowPartial;
 
     public RedstoneRequesterScreenMixin(RedstoneRequesterMenu container, Inventory inv, Component title) {
         super(container, inv, title);
@@ -76,8 +81,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;stacks()Ljava/util/List;"
-            ),
-            remap = false
+            )
     )
     private List<BigIngredientStack> getOrderAmounts(PackageOrderWithCrafts instance, Operation<List<BigItemStack>> original) {
         IngredientRedstoneRequester requester = (IngredientRedstoneRequester) menu.contentHolder;
@@ -88,9 +92,8 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             method = "renderForeground",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraftforge/items/ItemStackHandler;getStackInSlot(I)Lnet/minecraft/world/item/ItemStack;"
-            ),
-            remap = false
+                    target = "Lnet/neoforged/neoforge/items/ItemStackHandler;getStackInSlot(I)Lnet/minecraft/world/item/ItemStack;"
+            )
     )
     private ItemStack getIngredientInSlot(ItemStackHandler instance, int slot, Operation<ItemStack> original,
                                           @Share("ingredient") LocalRef<BoardIngredient> ingredient) {
@@ -129,7 +132,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             method = "mouseScrolled",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraftforge/items/ItemStackHandler;getStackInSlot(I)Lnet/minecraft/world/item/ItemStack;"
+                    target = "Lnet/neoforged/neoforge/items/ItemStackHandler;getStackInSlot(I)Lnet/minecraft/world/item/ItemStack;"
             )
     )
     private ItemStack getIngredientInSlotMouseHandler(ItemStackHandler instance, int slot, Operation<ItemStack> original,
@@ -217,7 +220,7 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
         return List.of();
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     protected void containerTick() {
         super.containerTick();
         addressBox.tick();
@@ -247,14 +250,14 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
         super.slotClicked(p_97778_, p_97779_, p_97780_, p_97781_);
     }
 
-    @ModifyExpressionValue(
+    @WrapOperation(
             method = "removed",
             at = @At(
-                    value = "NEW",
-                    target = "(Lnet/minecraft/core/BlockPos;Ljava/lang/String;ZLjava/util/List;)Lcom/simibubi/create/content/logistics/redstoneRequester/RedstoneRequesterConfigurationPacket;"
+                    value = "INVOKE",
+                    target = "Lnet/createmod/catnip/platform/services/NetworkHelper;sendToServer(Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V"
             )
     )
-    private RedstoneRequesterConfigurationPacket createPacket(RedstoneRequesterConfigurationPacket original) {
+    private void createPacket(NetworkHelper instance, CustomPacketPayload customPacketPayload, Operation<Void> original) {
         IngredientGhostMenu ghostMenu = (IngredientGhostMenu) menu;
 
         List<BoardIngredient> ingredients = ghostMenu.getIngredients();
@@ -268,9 +271,9 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             stacks.add(BigIngredientStack.of(ingredients.get(i), amounts.get(i)));
         }
 
-        IngredientRedstoneRequesterConfigurationPacket packet = (IngredientRedstoneRequesterConfigurationPacket) original;
-        packet.setStacks(stacks);
+        RedstoneRequesterConfigurationPacket packet = new RedstoneRequesterConfigurationPacket(menu.contentHolder.getBlockPos(),
+                addressBox.getValue(), allowPartial.green, stacks);
 
-        return original;
+        instance.sendToServer(packet);
     }
 }

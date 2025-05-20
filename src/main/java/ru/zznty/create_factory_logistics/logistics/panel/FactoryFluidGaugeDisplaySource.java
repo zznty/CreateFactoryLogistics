@@ -10,7 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 
 import javax.annotation.Nullable;
@@ -56,7 +56,7 @@ public class FactoryFluidGaugeDisplaySource extends ValueListDisplaySource {
 
         return IntAttached.with(panel.getLevelInStorage(), Component.literal(s + " ")
                 .withStyle(style -> style.withColor(panel.getIngredientStatusColor()))
-                .append(fluid.getDisplayName()
+                .append(fluid.getHoverName()
                         .plainCopy()
                         .withStyle(ChatFormatting.RESET)));
     }

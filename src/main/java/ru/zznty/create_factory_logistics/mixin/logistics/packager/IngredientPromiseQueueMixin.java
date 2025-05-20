@@ -24,20 +24,20 @@ public class IngredientPromiseQueueMixin implements IngredientPromiseQueue {
     @Unique
     private final Multimap<IngredientKey, RequestPromise> createFactoryLogistics$promises = HashMultimap.create();
 
-    @Shadow(remap = false)
+    @Shadow
     private Runnable onChanged;
 
-    @Overwrite(remap = false)
+    @Overwrite
     public void forceClear(ItemStack stack) {
         forceClear(new BoardIngredient(IngredientKey.of(stack), 1));
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public int getTotalPromisedAndRemoveExpired(ItemStack stack, int expiryTime) {
         return getTotalPromisedAndRemoveExpired(new BoardIngredient(IngredientKey.of(stack), 1), expiryTime);
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public void itemEnteredSystem(ItemStack stack, int amount) {
         ingredientEnteredSystem(new BoardIngredient(IngredientKey.of(stack), amount));
     }
@@ -115,7 +115,7 @@ public class IngredientPromiseQueueMixin implements IngredientPromiseQueue {
         }
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public void add(RequestPromise promise) {
         BigIngredientStack stack = (BigIngredientStack) promise.promisedStack;
 
@@ -125,17 +125,17 @@ public class IngredientPromiseQueueMixin implements IngredientPromiseQueue {
             onChanged.run();
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public void tick() {
         createFactoryLogistics$promises.forEach((key, promise) -> promise.tick());
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public boolean isEmpty() {
         return createFactoryLogistics$promises.isEmpty();
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public List<RequestPromise> flatten(boolean sorted) {
         List<RequestPromise> all = new ArrayList<>(createFactoryLogistics$promises.values());
         if (sorted)

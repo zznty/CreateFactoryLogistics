@@ -6,6 +6,9 @@ import com.simibubi.create.content.logistics.box.PackageStyles;
 import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -13,16 +16,16 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import ru.zznty.create_factory_logistics.FactoryItems;
 
 import java.util.ArrayList;
@@ -45,38 +48,43 @@ public class CompositePackageItem extends PackageItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, Level pLevel, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
-        super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
-        for (ItemStack child : getChildren(pStack)) {
-            child.getItem().appendHoverText(child, pLevel, pTooltipComponents, pIsAdvanced);
+    public void appendHoverText(ItemStack stack, TooltipContext tooltipContext, List<Component> tooltipComponents,
+                                TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, tooltipContext, tooltipComponents, tooltipFlag);
+        for (ItemStack child : getChildren(tooltipContext.registries(), stack)) {
+            child.getItem().appendHoverText(child, tooltipContext, tooltipComponents, tooltipFlag);
         }
     }
 
-    public static List<ItemStack> getChildren(ItemStack stack) {
-        if (!stack.hasTag()) return List.of();
-        return NBTHelper.readCompoundList(stack.getTag().getList(CHILDREN_TAG, Tag.TAG_COMPOUND), ItemStack::of);
+    public static List<ItemStack> getChildren(HolderLookup.Provider lookupProvider, ItemStack stack) {
+        if (!stack.has(DataComponents.CUSTOM_DATA) || !stack.get(DataComponents.CUSTOM_DATA).contains(CHILDREN_TAG))
+            return List.of();
+        ListTag listTag = stack.get(DataComponents.CUSTOM_DATA).copyTag().getList(CHILDREN_TAG, Tag.TAG_COMPOUND);
+        return NBTHelper.readCompoundList(listTag, t -> ItemStack.parseOptional(lookupProvider, t));
     }
 
-    public static ItemStack of(ItemStack box, List<ItemStack> children) {
-        ItemStack compositeBox = new ItemStack(FactoryItems.COMPOSITE_PACKAGE);
-        if (box.hasTag())
-            compositeBox.setTag(box.getTag().copy());
+    public static ItemStack of(HolderLookup.Provider lookupProvider, ItemStack box, List<ItemStack> originalChildren) {
+        ItemStack compositeBox = new ItemStack(FactoryItems.COMPOSITE_PACKAGE.get());
+        if (box.has(DataComponents.CUSTOM_DATA))
+            compositeBox.set(DataComponents.CUSTOM_DATA, box.get(DataComponents.CUSTOM_DATA));
 
-        children = new ArrayList<>(children);
+        List<ItemStack> children = new ArrayList<>(originalChildren);
 
         ItemStackHandler contents = PackageItem.getContents(compositeBox);
 
-        ListTag listTag = compositeBox.getOrCreateTag().getList(CHILDREN_TAG, Tag.TAG_COMPOUND);
+        CompoundTag tag = compositeBox.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+
+        ListTag listTag = tag.getList(CHILDREN_TAG, Tag.TAG_COMPOUND);
         if (!listTag.isEmpty()) {
-            children.addAll(getChildren(compositeBox));
+            children.addAll(getChildren(lookupProvider, compositeBox));
             listTag.clear();
         }
 
         for (int i = 0; i < children.size(); i++) {
             ItemStack child = children.get(i);
             if (child.getItem() instanceof CompositePackageItem) {
-                children.addAll(getChildren(child));
-                child.getOrCreateTag().remove(CHILDREN_TAG);
+                children.addAll(getChildren(lookupProvider, child));
+                CustomData.update(DataComponents.CUSTOM_DATA, child, childTag -> childTag.remove(CHILDREN_TAG));
                 // merge items with parent box
                 ItemStackHandler childContents = PackageItem.getContents(child);
                 boolean emptied = true;
@@ -93,14 +101,16 @@ public class CompositePackageItem extends PackageItem {
             }
         }
 
-        compositeBox.addTagElement(CHILDREN_TAG, NBTHelper.writeCompoundList(children, ItemStack::serializeNBT));
+        CustomData.update(DataComponents.CUSTOM_DATA, compositeBox, t ->
+                t.put(CHILDREN_TAG, NBTHelper.writeCompoundList(children, s -> (CompoundTag) s.saveOptional(lookupProvider))));
 
         return compositeBox;
     }
 
+    @SuppressWarnings("removal")
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer) {
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         consumer.accept(SimpleCustomRenderer.create(this, new CompositePackageRenderer()));
         super.initializeClient(consumer);
     }

@@ -3,11 +3,12 @@ package ru.zznty.create_factory_logistics;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
 import ru.zznty.create_factory_logistics.data.FactoryDataGen;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
@@ -24,17 +25,19 @@ public class CreateFactoryLogistics {
                     t -> t.icon(() -> FactoryItems.REGULAR_JAR.get().getDefaultInstance()))
             .build();
 
-    public CreateFactoryLogistics(FMLJavaModLoadingContext context) {
-        IEventBus modEventBus = context.getModEventBus();
+    public CreateFactoryLogistics(IEventBus modEventBus, ModContainer modContainer) {
 
         REGISTRATE.registerEventListeners(modEventBus);
         IngredientRegistry.BOARD_INGREDIENTS.register(modEventBus);
         FactoryRecipes.REGISTER.register(modEventBus);
         FactoryArmInteractionPointTypes.ARM_INTERACTION_POINT_TYPES.register(modEventBus);
+        FactoryDataComponents.DATA_COMPONENTS.register(modEventBus);
 
         modEventBus.addListener(FactoryEntities::registerEntityAttributes);
-        modEventBus.addListener(FactoryDataGen::gatherData);
+        modEventBus.addListener(EventPriority.HIGHEST, FactoryDataGen::gatherDataHighPriority);
+        modEventBus.addListener(EventPriority.LOWEST, FactoryDataGen::gatherData);
         modEventBus.addListener(CreateFactoryLogistics::init);
+        modEventBus.addListener(FactoryCapabilities::register);
 
         FactoryModels.register();
         FactoryItems.register();
@@ -43,9 +46,10 @@ public class CreateFactoryLogistics {
         FactoryBlocks.register();
         FactoryMenus.register();
         IngredientProviders.register();
+        FactoryPackets.register();
 
-        context.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
-        context.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
     }
 
     public static void init(final FMLCommonSetupEvent event) {

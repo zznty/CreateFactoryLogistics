@@ -4,6 +4,7 @@ import com.simibubi.create.compat.jei.StockKeeperTransferHandler;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
+import com.simibubi.create.foundation.blockEntity.LegacyRecipeWrapper;
 import com.simibubi.create.foundation.utility.CreateLang;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -18,8 +19,8 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.RecipeWrapper;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -37,14 +38,16 @@ import java.util.Optional;
 
 @Mixin(StockKeeperTransferHandler.class)
 public class StockKeeperTransferHandlerMixin {
-    @Shadow(remap = false)
+    @Shadow
     private IJeiHelpers helpers;
 
-    @Overwrite(remap = false)
-    private @Nullable IRecipeTransferError transferRecipeOnClient(StockKeeperRequestMenu container, Recipe<?> recipe,
+    @Overwrite
+    private @Nullable IRecipeTransferError transferRecipeOnClient(StockKeeperRequestMenu container, RecipeHolder<Recipe<?>> recipeHolder,
                                                                   IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
         if (!(container.screenReference instanceof StockKeeperRequestScreen screen))
             return null;
+
+        Recipe<?> recipe = recipeHolder.value();
 
         for (CraftableBigItemStack cbis : screen.recipesToOrder)
             if (cbis.recipe == recipe)
@@ -60,7 +63,7 @@ public class StockKeeperTransferHandlerMixin {
             return null;
 
         List<BoardIngredient> availableStacks = summary.get();
-        Container outputDummy = new RecipeWrapper(new ItemStackHandler(9));
+        Container outputDummy = new LegacyRecipeWrapper(new ItemStackHandler(9));
         List<Slot> craftingSlots = new ArrayList<>();
         for (int i = 0; i < outputDummy.getContainerSize(); i++)
             craftingSlots.add(new Slot(outputDummy, i, 0, 0));

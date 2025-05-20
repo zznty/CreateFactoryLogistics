@@ -24,7 +24,7 @@ public class CompositePackageRenderer extends CustomRenderedItemModelRenderer {
 
         float width = PackageItem.getWidth(stack);
 
-        List<ItemStack> children = CompositePackageItem.getChildren(stack);
+        List<ItemStack> children = CompositePackageItem.getChildren(Minecraft.getInstance().level.registryAccess(), stack);
         for (int i = 0; i < children.size(); i++) {
             ItemStack child = children.get(i);
 

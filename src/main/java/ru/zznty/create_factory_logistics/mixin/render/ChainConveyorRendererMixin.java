@@ -22,8 +22,7 @@ public class ChainConveyorRendererMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/createmod/catnip/render/SuperByteBuffer;renderInto(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;)V"
-            ),
-            remap = false
+            )
     )
     private void renderFluid(SuperByteBuffer instance, PoseStack ms, VertexConsumer vertexConsumer, Operation<Void> original,
                              @Local(argsOnly = true) MultiBufferSource buffer,
@@ -33,7 +32,7 @@ public class ChainConveyorRendererMixin {
         if (boxBuffer == instance && box.item.getItem() instanceof JarPackageItem) {
             ms.pushPose();
 
-            ms.mulPoseMatrix(instance.getTransforms().last().pose());
+            ms.mulPose(instance.getTransforms().last().pose());
 
             ms.translate(Translate.CENTER, Translate.CENTER, Translate.CENTER);
 

@@ -1,13 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_jar_packager": {
+    "has_network_link": {
       "conditions": {
         "items": [
           {
-            "items": [
-              "create:packager"
-            ]
+            "items": "create:stock_link"
           }
         ]
       },
@@ -15,21 +13,20 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create_factory_logistics:jar_packager"
+        "recipe": "create_factory_logistics:network_link"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
   },
   "requirements": [
     [
-      "has_jar_packager",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_network_link"
     ]
   ],
   "rewards": {
     "recipes": [
-      "create_factory_logistics:jar_packager"
+      "create_factory_logistics:network_link"
     ]
-  },
-  "sends_telemetry_event": false
+  }
 }

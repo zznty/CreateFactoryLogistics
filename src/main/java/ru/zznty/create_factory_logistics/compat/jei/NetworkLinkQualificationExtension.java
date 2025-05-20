@@ -4,32 +4,20 @@ import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.ICraftingGridHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICraftingCategoryExtension;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkQualificationRecipe;
 
 import java.util.List;
 
-public class NetworkLinkQualificationExtension implements ICraftingCategoryExtension {
-    private final ResourceLocation key;
-
-    public NetworkLinkQualificationExtension(ResourceLocation key) {
-        this.key = key;
-    }
-
+public class NetworkLinkQualificationExtension implements ICraftingCategoryExtension<NetworkLinkQualificationRecipe> {
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, ICraftingGridHelper craftingGridHelper, IFocusGroup focuses) {
-        craftingGridHelper.createAndSetOutputs(builder, List.of(NetworkLinkQualificationRecipe.qualifyTo(FactoryBlocks.NETWORK_LINK.asStack(), key)));
+    public void setRecipe(RecipeHolder<NetworkLinkQualificationRecipe> recipeHolder, IRecipeLayoutBuilder builder, ICraftingGridHelper craftingGridHelper, IFocusGroup focuses) {
+        craftingGridHelper.createAndSetOutputs(builder, List.of(NetworkLinkQualificationRecipe.qualifyTo(FactoryBlocks.NETWORK_LINK.asStack(), recipeHolder.value().key())));
         craftingGridHelper.createAndSetInputs(builder, List.of(
                 List.of(FactoryBlocks.NETWORK_LINK.asStack()),
-                List.of(Ingredient.of(NetworkLinkQualificationRecipe.tag(key)).getItems())
-        ), getWidth(), getHeight());
-    }
-
-    @Override
-    public @Nullable ResourceLocation getRegistryName() {
-        return key;
+                List.of(Ingredient.of(NetworkLinkQualificationRecipe.tag(recipeHolder.value().key())).getItems())
+        ), getWidth(recipeHolder), getHeight(recipeHolder));
     }
 }

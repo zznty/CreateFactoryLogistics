@@ -1,8 +1,7 @@
 package ru.zznty.create_factory_logistics.mixin.logistics.stock;
 
 import com.simibubi.create.content.logistics.BigItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -19,10 +18,10 @@ import ru.zznty.create_factory_logistics.logistics.ingredient.impl.item.ItemIngr
 @Mixin(BigItemStack.class)
 public class BigItemStackMixin implements BigIngredientStack {
 
-    @Shadow(remap = false)
+    @Shadow
     public int count;
 
-    @Shadow(remap = false)
+    @Shadow
     public ItemStack stack;
     @Unique
     private BoardIngredient ingredient;
@@ -63,41 +62,23 @@ public class BigItemStackMixin implements BigIngredientStack {
 
     @Inject(
             method = "<init>(Lnet/minecraft/world/item/ItemStack;I)V",
-            at = @At("RETURN"),
-            remap = false
+            at = @At("RETURN")
     )
     private void addIngredient(ItemStack stack, int count, CallbackInfo ci) {
         ingredient = stack == ItemStack.EMPTY ? BoardIngredient.of() : new BoardIngredient(IngredientKey.of(stack), count);
     }
 
-    @Overwrite(remap = false)
-    public CompoundTag write() {
-        CompoundTag tag = new CompoundTag();
-        ingredient.write(tag);
-        return tag;
-    }
-
-    @Overwrite(remap = false)
-    public static BigItemStack read(CompoundTag tag) {
-        return BigIngredientStack.of(BoardIngredient.read(tag)).asStack();
-    }
-
-    @Overwrite(remap = false)
-    public void send(FriendlyByteBuf buf) {
-        ingredient.write(buf);
-    }
-
-    @Overwrite(remap = false)
-    public static BigItemStack receive(FriendlyByteBuf buf) {
+    @Overwrite
+    public static BigItemStack receive(RegistryFriendlyByteBuf buf) {
         return BigIngredientStack.of(BoardIngredient.read(buf)).asStack();
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public boolean equals(final Object obj) {
         return obj instanceof BigIngredientStack ingredientStack && ingredient.equals(ingredientStack.ingredient());
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public int hashCode() {
         return ingredient.hashCode();
     }

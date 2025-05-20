@@ -32,37 +32,37 @@ import java.util.UUID;
 
 @Mixin(FactoryPanelBehaviour.class)
 public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements IngredientFilterProvider {
-    @Shadow(remap = false)
+    @Shadow
     private int lastReportedLevelInStorage, lastReportedPromises;
-    @Shadow(remap = false)
+    @Shadow
     public boolean forceClearPromises, satisfied, waitingForNetwork, redstonePowered;
-    @Shadow(remap = false)
+    @Shadow
     public RequestPromiseQueue restockerPromises;
-    @Shadow(remap = false)
+    @Shadow
     public UUID network;
-    @Shadow(remap = false)
+    @Shadow
     public Map<FactoryPanelPosition, FactoryPanelConnection> targetedBy;
 
-    @Shadow(remap = false)
+    @Shadow
     private InventorySummary getRelevantSummary() {
         return null;
     }
 
-    @Shadow(remap = false)
+    @Shadow
     public FactoryPanelBlockEntity panelBE() {
         return null;
     }
 
-    @Shadow(remap = false)
+    @Shadow
     private int getPromiseExpiryTimeInTicks() {
         return 0;
     }
 
-    @Shadow(remap = false)
+    @Shadow
     public void resetTimerSlightly() {
     }
 
-    @Shadow(remap = false)
+    @Shadow
     public boolean isMissingAddress() {
         return false;
     }
@@ -76,14 +76,13 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements In
             at = @At(
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;recipeOutput:I"
-            ),
-            remap = false
+            )
     )
     private void zeroRecipeOutputFix(FactoryPanelBehaviour instance, int value, Operation<Void> original) {
         original.call(instance, Math.max(1, value));
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public int getLevelInStorage() {
         if (blockEntity.isVirtual())
             return 1;
@@ -99,7 +98,7 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements In
         return summary.getCountOf(ingredient.key());
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public int getPromised() {
         if (getWorld().isClientSide())
             return lastReportedPromises;
@@ -135,7 +134,7 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements In
         return promises.getTotalPromisedAndRemoveExpired(ingredient, getPromiseExpiryTimeInTicks());
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public MutableComponent getLabel() {
         if (!targetedBy.isEmpty() && count == 0 && satisfied) {
             return CreateLang.translate("gui.factory_panel.no_target_amount_set")

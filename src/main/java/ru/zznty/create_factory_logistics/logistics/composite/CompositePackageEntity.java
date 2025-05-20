@@ -8,7 +8,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.PlayMessages;
 import ru.zznty.create_factory_logistics.FactoryEntities;
 import ru.zznty.create_factory_logistics.mixin.accessor.PackageEntityAccessor;
 
@@ -30,7 +29,7 @@ public class CompositePackageEntity extends PackageEntity {
     @Override
     public void setBox(ItemStack box) {
         super.setBox(box);
-        children = CompositePackageItem.getChildren(box);
+        children = CompositePackageItem.getChildren(level().registryAccess(), box);
     }
 
     public static PackageEntity fromDroppedItem(Level world, Entity originalEntity, ItemStack itemstack) {
@@ -52,18 +51,18 @@ public class CompositePackageEntity extends PackageEntity {
         return packageEntity;
     }
 
-    public static CompositePackageEntity spawn(PlayMessages.SpawnEntity spawnEntity, Level world) {
+    /*public static CompositePackageEntity spawn(PlayMessages.SpawnEntity spawnEntity, Level world) {
         CompositePackageEntity packageEntity =
                 new CompositePackageEntity(world, spawnEntity.getPosX(), spawnEntity.getPosY(), spawnEntity.getPosZ());
         packageEntity.setDeltaMovement(spawnEntity.getVelX(), spawnEntity.getVelY(), spawnEntity.getVelZ());
         packageEntity.clientPosition = packageEntity.position();
         return packageEntity;
-    }
+    }*/
 
     public static EntityType.Builder<?> build(EntityType.Builder<?> builder) {
         @SuppressWarnings("unchecked")
         EntityType.Builder<PackageEntity> boxBuilder = (EntityType.Builder<PackageEntity>) builder;
-        return boxBuilder.setCustomClientFactory(CompositePackageEntity::spawn)
-                .sized(1, 1);
+        return boxBuilder.sized(1, 1);
+        /*.setCustomClientFactory(CompositePackageEntity::spawn)*/
     }
 }

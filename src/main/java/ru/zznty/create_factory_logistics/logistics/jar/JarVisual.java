@@ -5,8 +5,8 @@ import com.simibubi.create.content.logistics.box.PackageVisual;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidUtil;
 import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.render.FluidVisual;
 

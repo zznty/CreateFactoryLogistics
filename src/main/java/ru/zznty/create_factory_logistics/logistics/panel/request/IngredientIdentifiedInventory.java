@@ -2,17 +2,17 @@ package ru.zznty.create_factory_logistics.logistics.panel.request;
 
 import com.simibubi.create.api.packager.InventoryIdentifier;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
-import net.minecraftforge.common.capabilities.Capability;
+import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.jetbrains.annotations.Nullable;
 
 public interface IngredientIdentifiedInventory {
     @Nullable InventoryIdentifier identifier();
 
-    Capability<?> capability();
+    BlockCapability<?, ?> capability();
 
     Object handler();
 
-    <T> void setCapability(Capability<T> capability, T handler);
+    <T, C> void setCapability(BlockCapability<T, C> capability, T handler);
 
     static IngredientIdentifiedInventory from(IdentifiedInventory identifiedInventory) {
         return (IngredientIdentifiedInventory) (Object) identifiedInventory;

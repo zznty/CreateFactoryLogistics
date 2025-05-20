@@ -2,7 +2,7 @@ package ru.zznty.create_factory_logistics.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -18,7 +18,7 @@ public class SlotAmountRenderer {
         RenderSystem.disableBlend();
         final int X = (int) ((x + offset + 16f - font.width(text) * scale) * inverseScaleFactor);
         final int Y = (int) ((y + offset + 16f - 8f * scale) * inverseScaleFactor);
-        MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+        MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
         font.drawInBatch(text, X, Y, 0xffffff, true, ps.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, 15728880);
         buffer.endBatch();
         RenderSystem.enableBlend();

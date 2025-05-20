@@ -4,21 +4,22 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
-import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
-import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
-import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
-import com.simibubi.create.content.logistics.stockTicker.StockTickerBlockEntity;
+import com.simibubi.create.content.logistics.stockTicker.*;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.element.GuiGameElement;
+import net.createmod.catnip.platform.services.NetworkHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.Blocks;
@@ -33,6 +34,7 @@ import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.CraftableIngredientStack;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientGui;
 import ru.zznty.create_factory_logistics.logistics.ingredient.impl.fluid.FluidIngredientKey;
+import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
 import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 import java.util.*;
@@ -44,28 +46,28 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         super(container, inv, title);
     }
 
-    @Shadow(remap = false)
+    @Shadow
     private InventorySummary forcedEntries;
 
-    @Shadow(remap = false)
+    @Shadow
     public List<BigItemStack> itemsToOrder;
 
-    @Shadow(remap = false)
+    @Shadow
     StockTickerBlockEntity blockEntity;
 
-    @Shadow(remap = false)
+    @Shadow
     public List<List<BigItemStack>> currentItemSource;
 
-    @Shadow(remap = false)
+    @Shadow
     public List<CraftableBigItemStack> recipesToOrder;
 
-    @Shadow(remap = false)
-    private boolean canRequestCraftingPackage;
+    @Shadow
+    private boolean canRequestCraftingPackage, encodeRequester;
 
     @Shadow
-    private int orderY;
+    public AddressEditBox addressBox;
 
-    @Shadow(remap = false)
+    @Shadow
     private Pair<Integer, List<List<BigItemStack>>> maxCraftable(CraftableBigItemStack cbis, InventorySummary summary,
                                                                  Function<ItemStack, Integer> countModifier, int newTypeLimit) {
         return null;
@@ -160,8 +162,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/content/logistics/stockTicker/StockKeeperRequestScreen;getOrderForItem(Lnet/minecraft/world/item/ItemStack;)Lcom/simibubi/create/content/logistics/BigItemStack;"
-            ),
-            remap = false
+            )
     )
     private BigItemStack getExistingOrderInRender(StockKeeperRequestScreen instance, ItemStack $, @Local(argsOnly = true) BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
@@ -194,7 +195,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         return order == null ? null : order.asStack();
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     private void revalidateOrders() {
         Set<BigItemStack> invalid = new HashSet<>(itemsToOrder);
         IngredientInventorySummary summary = (IngredientInventorySummary) blockEntity.getLastClientsideStockSnapshotAsSummary();
@@ -239,10 +240,10 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             method = "renderForeground",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/item/ItemStack;getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;"
+                    target = "Lnet/minecraft/world/item/ItemStack;getTooltipLines(Lnet/minecraft/world/item/Item$TooltipContext;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;"
             )
     )
-    private List<Component> getCraftableTooltip(ItemStack instance, Player player, TooltipFlag flag, @Local BigItemStack itemStack) {
+    private List<Component> getCraftableTooltip(ItemStack instance, Item.TooltipContext i, Player list, TooltipFlag tooltipFlag, @Local BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
         return IngredientGui.tooltipBuilder(stack.ingredient().key(), stack.ingredient().amount());
     }
@@ -253,8 +254,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             at = @At(
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/BigItemStack;stack:Lnet/minecraft/world/item/ItemStack;"
-            ),
-            remap = false
+            )
     )
     private ItemStack fluidStackSearchPlaceholder(BigItemStack instance, Operation<ItemStack> original) {
         BigIngredientStack stack = (BigIngredientStack) instance;
@@ -269,8 +269,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/createmod/catnip/gui/element/GuiGameElement;of(Lnet/minecraft/world/item/ItemStack;)Lnet/createmod/catnip/gui/element/GuiGameElement$GuiRenderBuilder;"
-            ),
-            remap = false
+            )
     )
     private GuiGameElement.GuiRenderBuilder renderIngredientEntry(ItemStack itemStack, @Local(argsOnly = true) BigItemStack entry, @Local(argsOnly = true) GuiGraphics graphics) {
         BigIngredientStack stack = (BigIngredientStack) entry;
@@ -283,8 +282,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/content/logistics/stockTicker/StockKeeperRequestScreen;drawItemCount(Lnet/minecraft/client/gui/GuiGraphics;II)V"
-            ),
-            remap = false
+            )
     )
     private void renderIngredientEntryAmount(StockKeeperRequestScreen instance, GuiGraphics graphics, int count, int customCount,
                                              @Local(argsOnly = true) BigItemStack entry,
@@ -359,8 +357,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/stockTicker/CraftableBigItemStack;count:I",
                     ordinal = 2
-            ),
-            remap = false
+            )
     )
     private void updateOrderCountCraftable(CraftableBigItemStack instance, int count) {
         BigIngredientStack stack = (BigIngredientStack) instance;
@@ -374,8 +371,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
                     ordinal = 3
-            ),
-            remap = false
+            )
     )
     private void decreaseOrderCountCraftable(BigItemStack instance, int count) {
         BigIngredientStack stack = (BigIngredientStack) instance;
@@ -389,8 +385,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
                     ordinal = 6
-            ),
-            remap = false
+            )
     )
     private void increaseOrderCountCraftable(BigItemStack instance, int count) {
         BigIngredientStack stack = (BigIngredientStack) instance;
@@ -398,7 +393,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         stack.setCount(count);
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     private void updateCraftableAmounts() {
         InventorySummary usedItems = new InventorySummary();
         InventorySummary availableItems = new InventorySummary();
@@ -463,9 +458,23 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         canRequestCraftingPackage = true;
     }
 
+    @WrapOperation(
+            method = "sendIt",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/createmod/catnip/platform/services/NetworkHelper;sendToServer(Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V"
+            )
+    )
+    private void sendRequest(NetworkHelper instance, CustomPacketPayload customPacketPayload, Operation<Void> original, @Local PackageOrderWithCrafts order) {
+        ru.zznty.create_factory_logistics.logistics.panel.request.PackageOrderRequestPacket packet =
+                new ru.zznty.create_factory_logistics.logistics.panel.request.PackageOrderRequestPacket(
+                        blockEntity.getBlockPos(), IngredientOrder.of(order), addressBox.getValue(), encodeRequester);
+
+        instance.sendToServer(packet);
+    }
+
     @WrapMethod(
-            method = "requestCraftable",
-            remap = false
+            method = "requestCraftable"
     )
     private void requestIngredients(CraftableBigItemStack cbis, int requestedDifference, Operation<Void> original) {
         CraftableIngredientStack stack = (CraftableIngredientStack) cbis;

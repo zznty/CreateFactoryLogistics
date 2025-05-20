@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import ru.zznty.create_factory_logistics.logistics.composite.CompositePackageEntity;
 import ru.zznty.create_factory_logistics.logistics.composite.CompositePackageEntityRender;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageEntity;

@@ -1,13 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_factory_fluid_gauge": {
+    "has_jar_packager": {
       "conditions": {
         "items": [
           {
-            "items": [
-              "create:factory_gauge"
-            ]
+            "items": "create:packager"
           }
         ]
       },
@@ -15,21 +13,20 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create_factory_logistics:factory_fluid_gauge"
+        "recipe": "create_factory_logistics:jar_packager"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
   },
   "requirements": [
     [
-      "has_factory_fluid_gauge",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_jar_packager"
     ]
   ],
   "rewards": {
     "recipes": [
-      "create_factory_logistics:factory_fluid_gauge"
+      "create_factory_logistics:jar_packager"
     ]
-  },
-  "sends_telemetry_event": false
+  }
 }

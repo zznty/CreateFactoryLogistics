@@ -1,7 +1,8 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient.impl.item;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeySerializer;
@@ -9,22 +10,23 @@ import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeySeria
 @ApiStatus.Internal
 public class ItemKeySerializer implements IngredientKeySerializer<ItemIngredientKey> {
     @Override
-    public void write(ItemIngredientKey key, CompoundTag tag) {
-        key.stack().save(tag);
+    public void write(HolderLookup.Provider levelRegistryAccess, ItemIngredientKey key, CompoundTag tag) {
+        if (!key.stack().isEmpty())
+            key.stack().save(levelRegistryAccess, tag);
     }
 
     @Override
-    public void write(ItemIngredientKey key, FriendlyByteBuf buf) {
-        buf.writeItem(key.stack());
+    public void write(ItemIngredientKey key, RegistryFriendlyByteBuf buf) {
+        ItemStack.STREAM_CODEC.encode(buf, key.stack());
     }
 
     @Override
-    public ItemIngredientKey read(CompoundTag tag) {
-        return new ItemIngredientKey(ItemStack.of(tag));
+    public ItemIngredientKey read(HolderLookup.Provider levelRegistryAccess, CompoundTag tag) {
+        return new ItemIngredientKey(ItemStack.parseOptional(levelRegistryAccess, tag));
     }
 
     @Override
-    public ItemIngredientKey read(FriendlyByteBuf buf) {
-        return new ItemIngredientKey(buf.readItem());
+    public ItemIngredientKey read(RegistryFriendlyByteBuf buf) {
+        return new ItemIngredientKey(ItemStack.STREAM_CODEC.decode(buf));
     }
 }

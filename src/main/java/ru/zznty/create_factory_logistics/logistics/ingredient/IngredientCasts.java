@@ -2,7 +2,7 @@ package ru.zznty.create_factory_logistics.logistics.ingredient;
 
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_logistics.logistics.ingredient.impl.fluid.FluidIngredientKey;
 import ru.zznty.create_factory_logistics.logistics.ingredient.impl.item.ItemIngredientKey;

@@ -2,6 +2,7 @@ package ru.zznty.create_factory_logistics.data;
 
 import com.simibubi.create.AllBlocks;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagsProvider;
@@ -10,9 +11,8 @@ import net.minecraft.tags.TagEntry;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
@@ -41,7 +41,7 @@ public class RecipeQualifierTagsProvider extends TagsProvider<Item> {
     }
 
     private ResourceKey<Item> asKey(ItemLike item) {
-        return ForgeRegistries.ITEMS.getResourceKey(item.asItem()).get();
+        return BuiltInRegistries.ITEM.getResourceKey(item.asItem()).get();
     }
 
     @Override

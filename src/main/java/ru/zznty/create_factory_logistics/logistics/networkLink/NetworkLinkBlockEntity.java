@@ -2,7 +2,6 @@ package ru.zznty.create_factory_logistics.logistics.networkLink;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
-import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
@@ -12,6 +11,7 @@ import net.createmod.catnip.math.AngleHelper;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -20,11 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.zznty.create_factory_logistics.logistics.ingredient.CapabilityFactory;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeyProvider;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 
@@ -51,29 +47,25 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         if (tag.contains(NetworkLinkBlock.INGREDIENT_TYPE, CompoundTag.TAG_STRING))
-            provider = IngredientRegistry.REGISTRY.get().getValue(ResourceLocation.parse(tag.getString(NetworkLinkBlock.INGREDIENT_TYPE)));
+            provider = IngredientRegistry.REGISTRY.get(ResourceLocation.parse(tag.getString(NetworkLinkBlock.INGREDIENT_TYPE)));
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         if (provider != null)
-            tag.putString(NetworkLinkBlock.INGREDIENT_TYPE, IngredientRegistry.REGISTRY.get().getKey(provider).toString());
+            tag.putString(NetworkLinkBlock.INGREDIENT_TYPE, IngredientRegistry.REGISTRY.getKey(provider).toString());
     }
 
-    @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (provider != null && (side == null || PackagerLinkBlock.getConnectedDirection(getBlockState())
-                .getOpposite() == side)) {
-            CapabilityFactory<T> factory = provider.capabilityFactory();
-            LazyOptional<T> optional = factory.create(cap, scroll.get(), link);
-            if (optional.isPresent())
-                return optional;
-        }
-        return super.getCapability(cap, side);
+    public NetworkLinkMode mode() {
+        return scroll.get();
+    }
+
+    public IngredientKeyProvider provider() {
+        return provider;
     }
 
     private static class ValueBox extends ValueBoxTransform.Sided {

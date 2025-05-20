@@ -1,6 +1,5 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient.impl;
 
-import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_logistics.logistics.ingredient.CapabilityFactory;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
@@ -36,7 +35,7 @@ public class EmptyIngredientProvider implements IngredientKeyProvider {
 
     @Override
     public <T> CapabilityFactory<T> capabilityFactory() {
-        return (cap, mode, behaviour) -> LazyOptional.empty();
+        return null;
     }
 
     @Override

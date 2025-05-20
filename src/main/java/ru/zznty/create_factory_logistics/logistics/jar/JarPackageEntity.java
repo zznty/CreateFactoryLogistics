@@ -4,6 +4,7 @@ import com.simibubi.create.content.logistics.box.PackageEntity;
 import com.simibubi.create.content.logistics.chute.ChuteBlock;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -11,8 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.network.PlayMessages;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import ru.zznty.create_factory_logistics.FactoryEntities;
 import ru.zznty.create_factory_logistics.mixin.accessor.PackageEntityAccessor;
 
@@ -38,9 +39,9 @@ public class JarPackageEntity extends PackageEntity {
     @Override
     public void setBox(ItemStack box) {
         super.setBox(box);
-        box.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).ifPresent(item -> {
-            fluidLevel.chase(item.getFluidInTank(0).getAmount(), .5, LerpedFloat.Chaser.EXP);
-        });
+        IFluidHandlerItem capability = box.getCapability(Capabilities.FluidHandler.ITEM);
+        if (capability != null)
+            fluidLevel.chase(capability.getFluidInTank(0).getAmount(), .5, LerpedFloat.Chaser.EXP);
     }
 
     @Override
@@ -48,7 +49,7 @@ public class JarPackageEntity extends PackageEntity {
     }
 
     @Override
-    protected void dropAllDeathLoot(DamageSource pDamageSource) {
+    protected void dropAllDeathLoot(ServerLevel level, DamageSource pDamageSource) {
     }
 
     public static JarPackageEntity fromDroppedItem(Level world, Entity originalEntity, ItemStack itemstack) {
@@ -70,18 +71,18 @@ public class JarPackageEntity extends PackageEntity {
         return jarEntity;
     }
 
-    public static JarPackageEntity spawn(PlayMessages.SpawnEntity spawnEntity, Level world) {
+    /*public static JarPackageEntity spawn(PlayMessages.SpawnEntity spawnEntity, Level world) {
         JarPackageEntity jarPackageEntity =
                 new JarPackageEntity(world, spawnEntity.getPosX(), spawnEntity.getPosY(), spawnEntity.getPosZ());
         jarPackageEntity.setDeltaMovement(spawnEntity.getVelX(), spawnEntity.getVelY(), spawnEntity.getVelZ());
         jarPackageEntity.clientPosition = jarPackageEntity.position();
         return jarPackageEntity;
-    }
+    }*/
 
     public static EntityType.Builder<?> build(EntityType.Builder<?> builder) {
         @SuppressWarnings("unchecked")
         EntityType.Builder<PackageEntity> boxBuilder = (EntityType.Builder<PackageEntity>) builder;
-        return boxBuilder.setCustomClientFactory(JarPackageEntity::spawn)
-                .sized(1, 1);
+        return boxBuilder.sized(1, 1);
+        /*.setCustomClientFactory(JarPackageEntity::spawn)*/
     }
 }

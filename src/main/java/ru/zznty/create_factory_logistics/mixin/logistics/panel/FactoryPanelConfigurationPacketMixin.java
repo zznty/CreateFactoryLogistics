@@ -10,12 +10,11 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(FactoryPanelConfigurationPacket.class)
 public class FactoryPanelConfigurationPacketMixin {
     @WrapOperation(
-            method = "applySettings(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBlockEntity;)V",
+            method = "applySettings(Lnet/minecraft/server/level/ServerPlayer;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBlockEntity;)V",
             at = @At(
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelConnection;amount:I"
-            ),
-            remap = false
+            )
     )
     private void zeroRecipeInputFix(FactoryPanelConnection instance, int value, Operation<Void> original) {
         original.call(instance, Math.max(1, value));

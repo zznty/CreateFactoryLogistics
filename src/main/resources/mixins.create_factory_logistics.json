@@ -19,7 +19,6 @@
     "logistics.panel.LogisticallyLinkedIngredientBehaviourMixin",
     "logistics.redstoneRequester.JeiCompatMixin",
     "logistics.redstoneRequester.RedstoneRequesterBlockEntityMixin",
-    "logistics.redstoneRequester.RedstoneRequesterConfigurationPacketMixin",
     "logistics.redstoneRequester.RedstoneRequesterMenuMixin",
     "logistics.repackager.RepackagerBlockEntityMixin",
     "logistics.stock.BigItemStackMixin",

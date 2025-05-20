@@ -1,29 +1,40 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient.impl.fluid;
 
-import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.registries.ForgeRegistries;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_logistics.logistics.ingredient.CapabilityFactory;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeyProvider;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeySerializer;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkFluidHandler;
+import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkMode;
 
 @ApiStatus.Internal
 public class FluidIngredientProvider implements IngredientKeyProvider {
     private final FluidKeySerializer serializer = new FluidKeySerializer();
 
-    private final CapabilityFactory<IFluidHandler> capFactory = (cap, mode, behaviour) ->
-            ForgeCapabilities.FLUID_HANDLER.orEmpty(cap, LazyOptional.of(() -> new NetworkFluidHandler(behaviour.freqId, mode)));
+    private final CapabilityFactory<IFluidHandler> capFactory = new CapabilityFactory<>() {
+        @Override
+        public BlockCapability<IFluidHandler, Direction> capability() {
+            return Capabilities.FluidHandler.BLOCK;
+        }
+
+        @Override
+        public IFluidHandler create(NetworkLinkMode mode, LogisticallyLinkedBehaviour behaviour) {
+            return new NetworkFluidHandler(behaviour.freqId, mode);
+        }
+    };
 
     @Override
     public <K extends IngredientKey> K defaultKey() {
         //noinspection unchecked
-        return (K) new FluidIngredientKey(Fluids.EMPTY, null);
+        return (K) new FluidIngredientKey(FluidStack.EMPTY.getFluidHolder(), null);
     }
 
     @Override
@@ -43,7 +54,7 @@ public class FluidIngredientProvider implements IngredientKeyProvider {
     public <K extends IngredientKey> int compare(K a, K b) {
         FluidIngredientKey key1 = (FluidIngredientKey) a;
         FluidIngredientKey key2 = (FluidIngredientKey) b;
-        return ForgeRegistries.FLUIDS.getKey(key1.fluid()).compareTo(ForgeRegistries.FLUIDS.getKey(key2.fluid()));
+        return BuiltInRegistries.FLUID.getKey(key1.fluid().value()).compareTo(BuiltInRegistries.FLUID.getKey(key2.fluid().value()));
     }
 
     @Override

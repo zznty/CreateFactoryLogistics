@@ -6,13 +6,14 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -33,19 +34,17 @@ public class NetworkLinkBlockItem extends LogisticallyLinkedBlockItem {
     }
 
     public static boolean isTuned(ItemStack pStack) {
-        if (!pStack.hasTag()) return false;
-        CompoundTag tag = pStack.getTagElement(BLOCK_ENTITY_TAG);
-        return tag != null && tag.contains("Freq");
+        return pStack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Freq");
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, Level pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
-        super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
-        CompoundTag tag = pStack.getTagElement(BLOCK_ENTITY_TAG);
-        if (tag == null || !tag.contains(NetworkLinkBlock.INGREDIENT_TYPE, CompoundTag.TAG_STRING))
+    public void appendHoverText(ItemStack pStack, TooltipContext tooltipContext, List<Component> pTooltip, TooltipFlag pFlag) {
+        super.appendHoverText(pStack, tooltipContext, pTooltip, pFlag);
+        CustomData tag = pStack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+        if (!tag.contains(NetworkLinkBlock.INGREDIENT_TYPE))
             return;
 
-        ResourceLocation ingredientType = ResourceLocation.parse(tag.getString(NetworkLinkBlock.INGREDIENT_TYPE));
+        ResourceLocation ingredientType = ResourceLocation.parse(tag.copyTag().getString(NetworkLinkBlock.INGREDIENT_TYPE));
 
         if (ingredientType.getPath().equals(IngredientRegistry.EMPTY_KEY))
             return;
@@ -94,8 +93,7 @@ public class NetworkLinkBlockItem extends LogisticallyLinkedBlockItem {
 
     // thank create for static method
     public static void assignFrequency(ItemStack stack, Player player, UUID frequency) {
-        CompoundTag teTag = stack.getOrCreateTagElement(BLOCK_ENTITY_TAG);
-        teTag.putUUID("Freq", frequency);
+        CustomData.update(DataComponents.BLOCK_ENTITY_DATA, stack, t -> t.putUUID("Freq", frequency));
 
         player.displayClientMessage(CreateLang.translateDirect("logistically_linked.tuned"), true);
     }

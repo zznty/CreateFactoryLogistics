@@ -1,18 +1,19 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 
 /**
  * Provides serialization logic for the specific implementation of IngredientKey
  * Type matching is handled by the registry
  */
 public interface IngredientKeySerializer<Key extends IngredientKey> {
-    void write(Key key, CompoundTag tag);
+    void write(HolderLookup.Provider levelRegistryAccess, Key key, CompoundTag tag);
 
-    void write(Key key, FriendlyByteBuf buf);
+    void write(Key key, RegistryFriendlyByteBuf buf);
 
-    Key read(CompoundTag tag);
+    Key read(HolderLookup.Provider levelRegistryAccess, CompoundTag tag);
 
-    Key read(FriendlyByteBuf buf);
+    Key read(RegistryFriendlyByteBuf buf);
 }

@@ -7,18 +7,17 @@ import com.simibubi.create.content.logistics.stockTicker.StockCheckingBlockEntit
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientLogisticsManager;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
 
 import javax.annotation.Nullable;
 
 @Mixin(StockCheckingBlockEntity.class)
 public class StockCheckingBlockEntityMixin {
-    @Shadow(remap = false)
+    @Shadow
     public LogisticallyLinkedBehaviour behaviour;
 
-    @Overwrite(remap = false)
+    @Overwrite
     public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order, @Nullable IdentifiedInventory ignoredHandler, String address) {
-        return IngredientLogisticsManager.broadcastPackageRequest(behaviour.freqId, type, IngredientOrder.of(order), ignoredHandler, address);
+        throw new UnsupportedOperationException("Not implemented");
+//        return IngredientLogisticsManager.broadcastPackageRequest(behaviour.freqId, type, IngredientOrder.of(order), ignoredHandler, address);
     }
 }

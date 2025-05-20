@@ -3,7 +3,6 @@ package ru.zznty.create_factory_logistics.mixin.logistics.panel;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.factoryBoard.*;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
@@ -16,6 +15,8 @@ import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
+import net.createmod.catnip.platform.CatnipServices;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Math;
@@ -40,56 +41,56 @@ import java.util.*;
 
 @Mixin(FactoryPanelBehaviour.class)
 public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implements MenuProvider {
-    @Shadow(remap = false)
+    @Shadow
     public Map<FactoryPanelPosition, FactoryPanelConnection> targetedBy;
 
     public FactoryPanelRequestMixin(SmartBlockEntity be, ValueBoxTransform slot) {
         super(be, slot);
     }
 
-    @Shadow(remap = false)
+    @Shadow
     public FactoryPanelBlockEntity panelBE() {
         return null;
     }
 
-    @Shadow(remap = false)
+    @Shadow
     public void resetTimer() {
     }
 
-    @Shadow(remap = false)
+    @Shadow
     public FactoryPanelPosition getPanelPosition() {
         return null;
     }
 
-    @Shadow(remap = false)
+    @Shadow
     public RequestPromiseQueue restockerPromises;
 
-    @Shadow(remap = false)
+    @Shadow
     public int getLevelInStorage() {
         return 0;
     }
 
-    @Shadow(remap = false)
+    @Shadow
     public int getPromised() {
         return 0;
     }
 
-    @Shadow(remap = false)
+    @Shadow
     public boolean satisfied, promisedSatisfied, waitingForNetwork, redstonePowered;
 
-    @Shadow(remap = false)
+    @Shadow
     private int timer, recipeOutput;
 
-    @Shadow(remap = false)
+    @Shadow
     public String recipeAddress;
 
-    @Shadow(remap = false)
+    @Shadow
     public List<ItemStack> activeCraftingArrangement;
 
-    @Shadow(remap = false)
+    @Shadow
     public UUID network;
 
-    @Shadow(remap = false)
+    @Shadow
     private int getConfigRequestIntervalInTicks() {
         return 0;
     }
@@ -99,8 +100,9 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 
     @Unique
     private void createFactoryLogistics$sendEffect(FactoryPanelPosition fromPos, FactoryPanelPosition toPos, boolean success) {
-        AllPackets.sendToNear(getWorld(), getPos(), 64,
-                new FactoryPanelEffectPacket(fromPos, toPos, success));
+        if (getWorld() instanceof ServerLevel serverLevel)
+            CatnipServices.NETWORK.sendToClientsAround(serverLevel, getPos(), 64,
+                    new FactoryPanelEffectPacket(fromPos, toPos, success));
     }
 
     @Unique
@@ -109,13 +111,13 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         PackagerBlockEntity packager = panelBE.getRestockedPackager();
         if (packager == null)
             return;
-        Optional<PackagerAttachedHandler> handler = packager.getCapability(FactoryCapabilities.PACKAGER_ATTACHED).resolve();
-        if (handler.isEmpty())
+        PackagerAttachedHandler handler = packager.getLevel().getCapability(FactoryCapabilities.PACKAGER_ATTACHED, packager.getBlockPos());
+        if (handler == null)
             return;
 
         BoardIngredient ingredient = BoardIngredient.of((FactoryPanelBehaviour) (Object) this);
 
-        IdentifiedInventory identifiedInventory = handler.get().identifiedInventory();
+        IdentifiedInventory identifiedInventory = handler.identifiedInventory();
 
         if (identifiedInventory == null)
             return;
@@ -186,7 +188,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         return true;
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     private void tickRequests() {
         FactoryPanelBlockEntity panelBE = panelBE();
         if (targetedBy.isEmpty() && !panelBE.restocker)
@@ -279,8 +281,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
     @ModifyVariable(
             method = "tickStorageMonitor",
             at = @At("STORE"),
-            ordinal = 0,
-            remap = false
+            ordinal = 0
     )
     private boolean setSatisfied(boolean value, @Local(ordinal = 1) int promised) {
         return value && promised == 0;

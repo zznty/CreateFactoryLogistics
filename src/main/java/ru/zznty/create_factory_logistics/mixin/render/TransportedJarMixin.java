@@ -13,8 +13,7 @@ public class TransportedJarMixin {
     @Inject(
             method = "isItemUpright",
             at = @At("HEAD"),
-            cancellable = true,
-            remap = false
+            cancellable = true
     )
     private static void createFactoryLogistics$isItemUpright(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (PackageItem.isPackage(stack)) {

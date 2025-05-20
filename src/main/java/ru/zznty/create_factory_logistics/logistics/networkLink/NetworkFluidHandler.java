@@ -1,8 +1,8 @@
 package ru.zznty.create_factory_logistics.logistics.networkLink;
 
 import com.simibubi.create.foundation.fluid.FluidHelper;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientCasts;
@@ -31,7 +31,7 @@ public class NetworkFluidHandler extends BaseNetworkHandler implements IFluidHan
 
     @Override
     public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
-        return IngredientCasts.asFluidStack(summary().get(tank)).isFluidEqual(stack);
+        return FluidStack.isSameFluidSameComponents(IngredientCasts.asFluidStack(summary().get(tank)), stack);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class NetworkFluidHandler extends BaseNetworkHandler implements IFluidHan
         int amount = 0;
         for (BoardIngredient ingredient : summary()) {
             FluidStack stack = IngredientCasts.asFluidStack(ingredient);
-            if (stack.isFluidEqual(resource))
+            if (FluidStack.isSameFluidSameComponents(stack, resource))
                 amount += Math.min(stack.getAmount(), resource.getAmount() - amount);
             if (amount >= resource.getAmount()) break;
         }

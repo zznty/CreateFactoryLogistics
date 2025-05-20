@@ -7,9 +7,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(PackageEntity.class)
 public interface PackageEntityAccessor {
-    @Accessor(remap = false)
+    @Accessor()
     Entity getOriginalEntity();
 
-    @Accessor(remap = false)
+    @Accessor()
     void setOriginalEntity(Entity entity);
 }

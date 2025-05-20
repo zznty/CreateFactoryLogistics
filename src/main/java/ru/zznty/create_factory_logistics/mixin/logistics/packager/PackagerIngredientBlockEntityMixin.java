@@ -1,6 +1,9 @@
 package ru.zznty.create_factory_logistics.mixin.logistics.packager;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.BigItemStack;
@@ -19,13 +22,16 @@ import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.InvManipulationBehaviour;
 import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -33,6 +39,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_logistics.FactoryCapabilities;
+import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
 import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
 import ru.zznty.create_factory_logistics.logistics.ingredient.capability.PackageBuilder;
 import ru.zznty.create_factory_logistics.logistics.ingredient.capability.PackageMeasureResult;
@@ -45,39 +52,37 @@ import ru.zznty.create_factory_logistics.logistics.panel.request.PackagerIngredi
 import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static com.simibubi.create.content.logistics.packager.PackagerBlockEntity.CYCLE;
 
 @Mixin(PackagerBlockEntity.class)
 public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntity implements PackagerIngredientBlockEntity {
-    @Shadow(remap = false)
+    @Shadow
     public InvManipulationBehaviour targetInventory;
-    @Shadow(remap = false)
+    @Shadow
     public String signBasedAddress;
-    @Shadow(remap = false)
+    @Shadow
     public List<BigItemStack> queuedExitingPackages;
-    @Shadow(remap = false)
+    @Shadow
     public ItemStack heldBox, previouslyUnwrapped;
-    @Shadow(remap = false)
+    @Shadow
     public int animationTicks, buttonCooldown;
-    @Shadow(remap = false)
+    @Shadow
     public boolean animationInward;
-    @Shadow(remap = false)
+    @Shadow
     private AdvancementBehaviour advancements;
-    @Shadow(remap = false)
+    @Shadow
     private InventorySummary availableItems;
 
-    @Shadow(remap = false)
+    @Shadow
     public void triggerStockCheck() {
     }
 
-    @Shadow(remap = false)
+    @Shadow
     private BlockPos getLinkPos() {
         return null;
     }
-
-    @Shadow
-    public abstract <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side);
 
     public PackagerIngredientBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -94,17 +99,17 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
         return new IngredientPackagerItemHandler(blockEntity);
     }
 
-    @Overwrite(remap = false)
-    public InventorySummary getAvailableItems(boolean scanInputSlots) {
-        Optional<PackagerAttachedHandler> handler = getCapability(FactoryCapabilities.PACKAGER_ATTACHED).resolve();
+    @Overwrite
+    public InventorySummary getAvailableItems() {
+        PackagerAttachedHandler handler = level.getCapability(FactoryCapabilities.PACKAGER_ATTACHED, worldPosition);
 
-        if (availableItems != null && handler.isPresent() && !handler.get().hasChanges())
+        if (availableItems != null && handler != null && !handler.hasChanges())
             return availableItems;
 
         InventorySummary available = new InventorySummary();
 
-        if (handler.isPresent()) {
-            handler.get().collectAvailable(scanInputSlots, (IngredientInventorySummary) available);
+        if (handler != null) {
+            handler.collectAvailable(true, (IngredientInventorySummary) available);
             createFactoryLogistics$submitNewArrivals((IngredientInventorySummary) availableItems, (IngredientInventorySummary) available);
         }
 
@@ -140,15 +145,15 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
 
         Objects.requireNonNull(level);
 
-        Optional<PackagerAttachedHandler> handler = getCapability(FactoryCapabilities.PACKAGER_ATTACHED).resolve();
-        if (handler.isEmpty()) return promiseQueues;
+        PackagerAttachedHandler handler = level.getCapability(FactoryCapabilities.PACKAGER_ATTACHED, worldPosition);
+        if (handler == null) return promiseQueues;
 
         for (Direction d : Iterate.directions) {
             if (!level.isLoaded(worldPosition.relative(d)))
                 continue;
 
             BlockState adjacentState = level.getBlockState(worldPosition.relative(d));
-            if (adjacentState.is(handler.get().supportedGauge())) {
+            if (adjacentState.is(handler.supportedGauge())) {
                 if (FactoryPanelBlock.connectedDirection(adjacentState) != d)
                     continue;
                 if (!(level.getBlockEntity(worldPosition.relative(d)) instanceof FactoryPanelBlockEntity fpbe))
@@ -177,7 +182,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
         return promiseQueues;
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public boolean unwrapBox(ItemStack box, boolean simulate) {
         if (animationTicks > 0)
             return false;
@@ -191,7 +196,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
 
         ItemStack originalBox = box.copy();
 
-        boolean unpacked = getCapability(FactoryCapabilities.PACKAGER_ATTACHED).map(handler ->
+        boolean unpacked = Optional.ofNullable(level.getCapability(FactoryCapabilities.PACKAGER_ATTACHED, worldPosition)).map(handler ->
                         handler.unwrap(level, target, targetState, facing, orderContext, box, simulate))
                 .orElse(false);
 
@@ -205,7 +210,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
         return unpacked;
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public void attemptToSend(List<PackagingRequest> queuedRequests) {
         if (queuedRequests == null && (!heldBox.isEmpty() || animationTicks != 0 || buttonCooldown > 0))
             return;
@@ -269,12 +274,12 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
         int fixedOrderId = 0;
         String fixedAddress = null;
 
-        Optional<PackagerAttachedHandler> target = getCapability(FactoryCapabilities.PACKAGER_ATTACHED).resolve();
-        if (target.isEmpty())
+        PackagerAttachedHandler target = level.getCapability(FactoryCapabilities.PACKAGER_ATTACHED, worldPosition);
+        if (target == null)
             return Pair.of(ItemStack.EMPTY, null);
 
         boolean anyItemPresent = false;
-        PackageBuilder extractedPackage = target.get().newPackage();
+        PackageBuilder extractedPackage = target.newPackage();
         IngredientRequest nextRequest = null;
         Iterator<IngredientRequest> requestIterator = null;
 
@@ -298,9 +303,9 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
             while (continuePacking) {
                 continuePacking = false;
 
-                for (int slot = 0; slot < target.get().slotCount(); slot++) {
+                for (int slot = 0; slot < target.slotCount(); slot++) {
                     int initialAmount = requestQueue ? Math.min(extractedPackage.maxPerSlot(), nextRequest.getCount()) : extractedPackage.maxPerSlot();
-                    BoardIngredient extracted = target.get().extract(slot, initialAmount, true);
+                    BoardIngredient extracted = target.extract(slot, initialAmount, true);
                     if (extracted.isEmpty())
                         continue;
                     if (requestQueue && !nextRequest.ingredient().canStack(extracted))
@@ -316,7 +321,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
                     if (leftovers < 0) continue;
 
                     int transferred = extracted.amount() - leftovers;
-                    if (target.get().extract(slot, transferred, false).isEmpty())
+                    if (target.extract(slot, transferred, false).isEmpty())
                         continue;
                     anyItemPresent = true;
 
@@ -372,7 +377,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
         if (fixedAddress != null)
             PackageItem.addAddress(box, fixedAddress);
         if (requestQueue)
-            IngredientOrder.set(box, fixedOrderId, linkIndexInOrder, finalLinkInOrder, packageIndexAtLink, finalPackageAtLink, orderContext);
+            IngredientOrder.set(level.registryAccess(), box, fixedOrderId, linkIndexInOrder, finalLinkInOrder, packageIndexAtLink, finalPackageAtLink, orderContext);
         if (!requestQueue && !signBasedAddress.isBlank())
             PackageItem.addAddress(box, signBasedAddress);
 
@@ -382,5 +387,55 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
     @Override
     public BlockPos getLink() {
         return getLinkPos();
+    }
+
+    @WrapOperation(
+            method = "read",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/createmod/catnip/nbt/NBTHelper;readCompoundList(Lnet/minecraft/nbt/ListTag;Ljava/util/function/Function;)Ljava/util/List;"
+            )
+    )
+    private List<BigItemStack> readQueuedExitingPackages(ListTag listNBT, Function<CompoundTag, BigItemStack> deserializer, Operation<List<BigItemStack>> original) {
+        return NBTHelper.readCompoundList(listNBT, t ->
+                BigIngredientStack.of(BoardIngredient.read(level.registryAccess(), t)).asStack());
+    }
+
+    @WrapOperation(
+            method = "write",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/createmod/catnip/nbt/NBTHelper;writeCompoundList(Ljava/lang/Iterable;Ljava/util/function/Function;)Lnet/minecraft/nbt/ListTag;"
+            )
+    )
+    private ListTag writeQueuedExitingPackages(Iterable<BigItemStack> list, Function<BigItemStack, CompoundTag> serializer, Operation<ListTag> original) {
+        return NBTHelper.writeCompoundList(list, t -> {
+            CompoundTag tag = new CompoundTag();
+            ((BigIngredientStack) t).ingredient().write(level.registryAccess(), tag);
+            return tag;
+        });
+    }
+
+    @WrapOperation(
+            method = "read",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/createmod/catnip/codecs/CatnipCodecUtils;decode(Lcom/mojang/serialization/Codec;Lnet/minecraft/core/HolderLookup$Provider;Lnet/minecraft/nbt/Tag;)Ljava/util/Optional;"
+            )
+    )
+    private Optional<InventorySummary> readLastSummary(Codec<InventorySummary> codec, HolderLookup.Provider registries, Tag tag, Operation<Optional<InventorySummary>> original) {
+        return Optional.of(IngredientInventorySummary.read(registries, (CompoundTag) tag));
+    }
+
+    @WrapOperation(
+            method = "write",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/createmod/catnip/codecs/CatnipCodecUtils;encode(Lcom/mojang/serialization/Codec;Lnet/minecraft/core/HolderLookup$Provider;Ljava/lang/Object;)Ljava/util/Optional;"
+            )
+    )
+    private Optional<Tag> writeLastSummary(Codec<InventorySummary> codec, HolderLookup.Provider registries, Object t, Operation<Optional<Tag>> original) {
+        IngredientInventorySummary summary = (IngredientInventorySummary) t;
+        return Optional.of(summary.write(registries));
     }
 }

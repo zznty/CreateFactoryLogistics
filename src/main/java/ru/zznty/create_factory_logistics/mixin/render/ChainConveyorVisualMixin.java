@@ -16,8 +16,8 @@ import dev.engine_room.flywheel.api.visual.DynamicVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import dev.engine_room.flywheel.lib.transform.Translate;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -43,8 +43,7 @@ public class ChainConveyorVisualMixin {
 
     @Inject(
             method = "beginFrame",
-            at = @At("HEAD"),
-            remap = false
+            at = @At("HEAD")
     )
     private void begin(DynamicVisual.Context ctx, CallbackInfo ci) {
         createFactoryLogistics$fluidVisual.begin();
@@ -52,8 +51,7 @@ public class ChainConveyorVisualMixin {
 
     @Inject(
             method = "_delete",
-            at = @At("RETURN"),
-            remap = false
+            at = @At("RETURN")
     )
     private void delete(CallbackInfo ci) {
         createFactoryLogistics$fluidVisual.delete();
@@ -61,8 +59,7 @@ public class ChainConveyorVisualMixin {
 
     @Inject(
             method = "beginFrame",
-            at = @At("RETURN"),
-            remap = false
+            at = @At("RETURN")
     )
     private void end(DynamicVisual.Context ctx, CallbackInfo ci) {
         createFactoryLogistics$fluidVisual.end();
@@ -72,8 +69,7 @@ public class ChainConveyorVisualMixin {
     @Expression("new TransformedInstance[]{?,?}")
     @ModifyExpressionValue(
             method = "setupBoxVisual",
-            at = @At("MIXINEXTRAS:EXPRESSION"),
-            remap = false
+            at = @At("MIXINEXTRAS:EXPRESSION")
     )
     private TransformedInstance[] setupFluidBuffers(TransformedInstance[] original,
                                                     @Local(argsOnly = true) ChainConveyorPackage box,
@@ -96,8 +92,7 @@ public class ChainConveyorVisualMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Ldev/engine_room/flywheel/lib/instance/TransformedInstance;uncenter()Ldev/engine_room/flywheel/lib/transform/Translate;"
-            ),
-            remap = false
+            )
     )
     private Translate setupFluidVisual(TransformedInstance instance, Operation<Translate> original,
                                        @Local(ordinal = 0) TransformedInstance rigBuffer,

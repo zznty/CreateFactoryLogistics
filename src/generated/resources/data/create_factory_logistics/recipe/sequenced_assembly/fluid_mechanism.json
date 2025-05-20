@@ -7,34 +7,34 @@
   "results": [
     {
       "chance": 250.0,
-      "item": "create_factory_logistics:fluid_mechanism"
+      "id": "create_factory_logistics:fluid_mechanism"
     },
     {
       "chance": 8.0,
-      "item": "create:copper_sheet"
+      "id": "create:copper_sheet"
     },
     {
       "chance": 8.0,
-      "item": "create:andesite_alloy"
+      "id": "create:andesite_alloy"
     },
     {
       "chance": 5.0,
-      "item": "create:cogwheel"
+      "id": "create:cogwheel"
     },
     {
       "chance": 2.0,
-      "item": "minecraft:gold_nugget"
+      "id": "minecraft:gold_nugget"
     },
     {
       "chance": 2.0,
-      "item": "create:shaft"
+      "id": "create:shaft"
     },
     {
       "chance": 2.0,
-      "item": "create:crushed_raw_copper"
+      "id": "create:crushed_raw_copper"
     },
     {
-      "item": "create:mechanical_pump"
+      "id": "create:mechanical_pump"
     }
   ],
   "sequence": [
@@ -50,7 +50,7 @@
       ],
       "results": [
         {
-          "item": "create_factory_logistics:incomplete_fluid_mechanism"
+          "id": "create_factory_logistics:incomplete_fluid_mechanism"
         }
       ]
     },
@@ -66,7 +66,7 @@
       ],
       "results": [
         {
-          "item": "create_factory_logistics:incomplete_fluid_mechanism"
+          "id": "create_factory_logistics:incomplete_fluid_mechanism"
         }
       ]
     },
@@ -82,12 +82,12 @@
       ],
       "results": [
         {
-          "item": "create_factory_logistics:incomplete_fluid_mechanism"
+          "id": "create_factory_logistics:incomplete_fluid_mechanism"
         }
       ]
     }
   ],
-  "transitionalItem": {
-    "item": "create_factory_logistics:incomplete_fluid_mechanism"
+  "transitional_item": {
+    "id": "create_factory_logistics:incomplete_fluid_mechanism"
   }
 }

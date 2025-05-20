@@ -5,7 +5,7 @@ import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
@@ -14,8 +14,7 @@ import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 public class JarDrainMixin {
     @ModifyReturnValue(
             method = "emptyItem",
-            at = @At("RETURN"),
-            remap = false
+            at = @At("RETURN")
     )
     private static Pair<FluidStack, ItemStack> removeEmptyJar(Pair<FluidStack, ItemStack> original, Level world) {
         // prevent item drain leaving empty jars

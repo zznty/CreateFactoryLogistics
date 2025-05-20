@@ -1,12 +1,12 @@
 package ru.zznty.create_factory_logistics.logistics.panel;
 
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsPacket;
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.gui.UIRenderHelper;
 import net.createmod.catnip.gui.widget.AbstractSimiWidget;
 import net.createmod.catnip.lang.LangNumberFormat;
+import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.CommonComponents;
 
@@ -42,9 +42,8 @@ public class FactoryFluidPanelScreen extends FactoryPanelScreen {
                 return;
             }
 
-            AllPackets.getChannel()
-                    .sendToServer(new ValueSettingsPacket(behaviour.blockEntity.getBlockPos(), 0, value, null, null,
-                            behaviour.blockEntity.getBlockState().getValue(FactoryFluidPanelBlock.FACING), false, behaviour.netId()));
+            CatnipServices.NETWORK.sendToServer(new ValueSettingsPacket(behaviour.blockEntity.getBlockPos(), 0, value, null, null,
+                    behaviour.blockEntity.getBlockState().getValue(FactoryFluidPanelBlock.FACING), false, behaviour.netId()));
         });
         amountBox.setTextColor(UIRenderHelper.COLOR_TEXT.getFirst().getRGB());
         amountBox.setValue(FactoryFluidPanelBehaviour.formatLevel(behaviour.ingredient().amount(), false).string());
