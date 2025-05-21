@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientIdentifiedInventory;
 
 import java.util.List;
@@ -27,8 +28,13 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
 
-        behaviours.add(drainInventory = new TankManipulationBehaviour(this, CapManipulationBehaviourBase.InterfaceProvider.oppositeOfBlockFacing())
-                .withFilter(this::supportsBlockEntity));
+        if (Config.jarPackagerPrefersOutputs) {
+            drainInventory = new OutputOnlyTankManipulationBehaviour(this, CapManipulationBehaviourBase.InterfaceProvider.oppositeOfBlockFacing());
+        } else {
+            drainInventory = new TankManipulationBehaviour(this, CapManipulationBehaviourBase.InterfaceProvider.oppositeOfBlockFacing());
+        }
+        
+        behaviours.add(drainInventory.withFilter(this::supportsBlockEntity));
     }
 
     private boolean supportsBlockEntity(BlockEntity target) {
