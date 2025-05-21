@@ -4,6 +4,10 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
+import net.createmod.catnip.nbt.NBTHelper;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -141,5 +145,31 @@ public class IngredientPromiseQueueMixin implements IngredientPromiseQueue {
         if (sorted)
             all.sort(RequestPromise.ageComparator());
         return all;
+    }
+
+    @Overwrite
+    public static RequestPromiseQueue read(CompoundTag tag, HolderLookup.Provider registries, Runnable onChanged) {
+        RequestPromiseQueue queue = new RequestPromiseQueue(onChanged);
+        ListTag listTag = tag.getList("List", CompoundTag.TAG_COMPOUND);
+        NBTHelper.iterateCompoundList(listTag,
+                compoundTag -> {
+                    queue.add(new RequestPromise(compoundTag.getInt("ticks_existed"),
+                            BigIngredientStack.of(BoardIngredient.read(registries, compoundTag.getCompound("promised_stack"))).asStack()));
+                });
+        return queue;
+    }
+
+    @Overwrite
+    public CompoundTag write(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        tag.put("List", NBTHelper.writeCompoundList(createFactoryLogistics$promises.values(), promise -> {
+            CompoundTag compoundTag = new CompoundTag();
+            compoundTag.putInt("ticks_existed", promise.ticksExisted);
+            CompoundTag stackTag = new CompoundTag();
+            ((BigIngredientStack) promise.promisedStack).ingredient().write(registries, stackTag);
+            compoundTag.put("promised_stack", stackTag);
+            return compoundTag;
+        }));
+        return tag;
     }
 }

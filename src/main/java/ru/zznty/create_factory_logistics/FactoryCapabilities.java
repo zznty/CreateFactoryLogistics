@@ -1,7 +1,6 @@
 package ru.zznty.create_factory_logistics;
 
 import com.simibubi.create.AllBlockEntityTypes;
-import com.simibubi.create.content.logistics.packager.PackagerItemHandler;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlock;
 import net.neoforged.neoforge.capabilities.BlockCapability;
@@ -47,6 +46,6 @@ public final class FactoryCapabilities {
         // i hate neoforge for that
         // should have left capability providers in place
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FactoryBlockEntities.JAR_PACKAGER.get(),
-                (be, unused) -> new PackagerItemHandler(be));
+                (be, unused) -> be.inventory);
     }
 }

@@ -20,7 +20,7 @@ public class FluidKeySerializer implements IngredientKeySerializer<FluidIngredie
         ResourceLocation resourceLocation = BuiltInRegistries.FLUID.getKey(key.fluid().value());
         tag.putString("id", resourceLocation.toString());
         if (key.components() != null)
-            tag.put("Tag", PatchedDataComponentMap.CODEC.encode(key.components(),
+            tag.put("Tag", DataComponentPatch.CODEC.encode(key.components().asPatch(),
                     levelRegistryAccess.createSerializationContext(NbtOps.INSTANCE),
                     new CompoundTag()).getOrThrow());
     }
@@ -36,7 +36,7 @@ public class FluidKeySerializer implements IngredientKeySerializer<FluidIngredie
         String key = tag.getString("id");
         return key.isEmpty() ? new FluidIngredientKey(FluidStack.EMPTY.getFluidHolder(), null) :
                 new FluidIngredientKey(levelRegistryAccess.holderOrThrow(BuiltInRegistries.FLUID.getResourceKey(BuiltInRegistries.FLUID.get(ResourceLocation.parse(key))).get()),
-                        tag.contains("Tag") ? (PatchedDataComponentMap) PatchedDataComponentMap.CODEC.decode(NbtOps.INSTANCE, tag.getCompound("Tag")).getOrThrow().getFirst() : null);
+                        tag.contains("Tag") ? PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, tag.getCompound("Tag")).getOrThrow().getFirst()) : null);
     }
 
     @Override
