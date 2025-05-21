@@ -473,6 +473,22 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         instance.sendToServer(packet);
     }
 
+    @WrapOperation(
+            method = "removed",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/createmod/catnip/platform/services/NetworkHelper;sendToServer(Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V",
+                    ordinal = 0
+            )
+    )
+    private void sendEmptyRequest(NetworkHelper instance, CustomPacketPayload customPacketPayload, Operation<Void> original) {
+        ru.zznty.create_factory_logistics.logistics.panel.request.PackageOrderRequestPacket packet =
+                new ru.zznty.create_factory_logistics.logistics.panel.request.PackageOrderRequestPacket(
+                        blockEntity.getBlockPos(), IngredientOrder.empty(), addressBox.getValue(), encodeRequester);
+
+        instance.sendToServer(packet);
+    }
+
     @WrapMethod(
             method = "requestCraftable"
     )

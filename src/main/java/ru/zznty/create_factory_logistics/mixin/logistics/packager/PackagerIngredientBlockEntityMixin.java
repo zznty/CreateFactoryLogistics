@@ -16,7 +16,6 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBeha
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlock;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlockEntity;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
@@ -189,7 +188,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
 
         Objects.requireNonNull(this.level);
 
-        PackageOrderWithCrafts orderContext = PackageItem.getOrderContext(box);
+        IngredientOrder orderContext = IngredientOrder.of(level.registryAccess(), box);
         Direction facing = getBlockState().getOptionalValue(PackagerBlock.FACING).orElse(Direction.UP);
         BlockPos target = worldPosition.relative(facing.getOpposite());
         BlockState targetState = level.getBlockState(target);
@@ -197,7 +196,7 @@ public abstract class PackagerIngredientBlockEntityMixin extends SmartBlockEntit
         ItemStack originalBox = box.copy();
 
         boolean unpacked = Optional.ofNullable(level.getCapability(FactoryCapabilities.PACKAGER_ATTACHED, worldPosition)).map(handler ->
-                        handler.unwrap(level, target, targetState, facing, orderContext, box, simulate))
+                        handler.unwrap(level, target, targetState, facing, orderContext == null ? null : orderContext.asCrafting(), box, simulate))
                 .orElse(false);
 
         if (unpacked && !simulate) {

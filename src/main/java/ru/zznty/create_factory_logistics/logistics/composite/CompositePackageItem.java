@@ -65,8 +65,8 @@ public class CompositePackageItem extends PackageItem {
 
     public static ItemStack of(HolderLookup.Provider lookupProvider, ItemStack box, List<ItemStack> originalChildren) {
         ItemStack compositeBox = new ItemStack(FactoryItems.COMPOSITE_PACKAGE.get());
-        if (box.has(DataComponents.CUSTOM_DATA))
-            compositeBox.set(DataComponents.CUSTOM_DATA, box.get(DataComponents.CUSTOM_DATA));
+
+        compositeBox.applyComponents(box.getComponents());
 
         List<ItemStack> children = new ArrayList<>(originalChildren);
 

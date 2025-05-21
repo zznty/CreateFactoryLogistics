@@ -62,6 +62,10 @@ public record IngredientOrder(List<BigIngredientStack> stacks, List<PackageOrder
         return stacks.isEmpty();
     }
 
+    public PackageOrderWithCrafts asCrafting() {
+        return new PackageOrderWithCrafts(new PackageOrder(stacks.stream().map(BigIngredientStack::asStack).toList()), crafts);
+    }
+
     public static IngredientOrder read(HolderLookup.Provider levelRegistryAccess, CompoundTag tag) {
         ListTag listTag = tag.getList("Entries", Tag.TAG_COMPOUND);
         List<BigIngredientStack> stacks = new ArrayList<>(listTag.size());
@@ -126,5 +130,15 @@ public record IngredientOrder(List<BigIngredientStack> stacks, List<PackageOrder
 
     public static IngredientOrder of(PackageOrderWithCrafts orderWithCrafts) {
         return new IngredientOrder(orderWithCrafts.stacks().stream().map(it -> (BigIngredientStack) it).toList(), orderWithCrafts.orderedCrafts());
+    }
+
+    public static IngredientOrder of(HolderLookup.Provider levelRegistryAccess, ItemStack box) {
+        CustomData data = box.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        if (!data.contains("Fragment"))
+            return null;
+        CompoundTag frag = data.copyTag().getCompound("Fragment");
+        if (!frag.contains("OrderContext"))
+            return null;
+        return IngredientOrder.read(levelRegistryAccess, frag.getCompound("OrderContext"));
     }
 }

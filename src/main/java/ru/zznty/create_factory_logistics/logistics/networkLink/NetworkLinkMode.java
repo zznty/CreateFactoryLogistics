@@ -15,7 +15,8 @@ public enum NetworkLinkMode implements INamedIconOptions {
 
     NetworkLinkMode(AllIcons icon) {
         this.icon = icon;
-        translationKey = "gui.network_link.mode." + Lang.asId(name());
+        // it is autoprefixed with create. on 1.20.1 so i decided to not introduce a new prefix
+        translationKey = "create.gui.network_link.mode." + Lang.asId(name());
     }
 
     @Override

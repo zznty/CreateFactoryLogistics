@@ -25,6 +25,7 @@
     "logistics.stock.CraftableBigItemStackMixin",
     "logistics.stock.IdentifiedInventoryMixin",
     "logistics.stock.InventorySummaryMixin",
+    "logistics.stock.PackageOrderDataMixin",
     "logistics.stock.StockCheckingBlockEntityMixin",
     "logistics.stockLink.PackagerIngredientLinkBlockEntityMixin"
   ],

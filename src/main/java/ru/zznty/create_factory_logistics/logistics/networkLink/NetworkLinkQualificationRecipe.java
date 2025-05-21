@@ -14,9 +14,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
+import ru.zznty.create_factory_logistics.FactoryBlockEntities;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.FactoryRecipes;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
@@ -90,8 +92,10 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     public static @NotNull ItemStack qualifyTo(ItemStack link, ResourceLocation qualifier) {
         link = link.copy();
 
-        CustomData.update(DataComponents.BLOCK_ENTITY_DATA, link, t ->
-                t.putString(NetworkLinkBlock.INGREDIENT_TYPE, qualifier.toString()));
+        CustomData.update(DataComponents.BLOCK_ENTITY_DATA, link, t -> {
+            BlockEntity.addEntityType(t, FactoryBlockEntities.NETWORK_LINK.get());
+            t.putString(NetworkLinkBlock.INGREDIENT_TYPE, qualifier.toString());
+        });
         return link;
     }
 

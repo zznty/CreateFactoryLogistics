@@ -6,7 +6,6 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.utility.CreateLang;
-import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.ScreenOpener;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.ChatFormatting;
@@ -39,16 +38,9 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
 
     @Override
     public boolean setFilter(ItemStack stack) {
-        if (!stack.isEmpty()) {
-            if (!GenericItemEmptying.canItemBeEmptied(blockEntity.getLevel(), stack))
-                return false;
+        // i use original stack as filter because on 1.21 potions dont return their bottles as fluid bucket for some reason
 
-            Pair<FluidStack, ItemStack> emptyResult = GenericItemEmptying.emptyItem(blockEntity.getLevel(), stack, true);
-
-            if (emptyResult.getFirst().isEmpty()) return false;
-
-            stack = emptyResult.getFirst().getFluid().getBucket().getDefaultInstance();
-        }
+        if (!stack.isEmpty() && !GenericItemEmptying.canItemBeEmptied(blockEntity.getLevel(), stack)) return false;
 
         return super.setFilter(stack);
     }
