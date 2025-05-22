@@ -12,7 +12,7 @@ public class ClientConfig {
 
     private static final ForgeConfigSpec.EnumValue<FontStyle> FONT_STYLE = BUILDER
             .comment("Style of font rendered inside stock keeper ui")
-            .defineEnum("fontStyle", FontStyle.LARGE);
+            .defineEnum("fontStyle", FontStyle.CREATE);
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -27,6 +27,6 @@ public class ClientConfig {
     public enum FontStyle {
         SMALL,
         LARGE,
-        // CREATE // todo maybe later
+        CREATE
     }
 }
