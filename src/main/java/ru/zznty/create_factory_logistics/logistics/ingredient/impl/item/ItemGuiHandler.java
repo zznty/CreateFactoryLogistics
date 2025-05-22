@@ -18,7 +18,7 @@ public class ItemGuiHandler implements IngredientGuiHandler<ItemIngredientKey> {
     @Override
     public void renderDecorations(GuiGraphics graphics, ItemIngredientKey key, int amount, int x, int y) {
         graphics.renderItemDecorations(Minecraft.getInstance().font, key.stack(), x, y, "");
-        SlotAmountRenderer.render(graphics, Minecraft.getInstance().font, x, y, formatValue(amount));
+        SlotAmountRenderer.render(graphics, x, y, formatValue(amount));
     }
 
     @Override

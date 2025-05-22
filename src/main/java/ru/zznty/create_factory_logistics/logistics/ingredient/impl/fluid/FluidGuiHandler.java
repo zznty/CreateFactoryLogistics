@@ -3,7 +3,6 @@ package ru.zznty.create_factory_logistics.logistics.ingredient.impl.fluid;
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientGuiHandler;
@@ -17,7 +16,7 @@ import java.util.List;
 public class FluidGuiHandler implements IngredientGuiHandler<FluidIngredientKey> {
     @Override
     public void renderDecorations(GuiGraphics graphics, FluidIngredientKey key, int amount, int x, int y) {
-        SlotAmountRenderer.render(graphics, Minecraft.getInstance().font, x, y, formatValue(amount));
+        SlotAmountRenderer.render(graphics, x, y, formatValue(amount));
     }
 
     @Override
