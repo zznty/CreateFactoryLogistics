@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics.render;
+package ru.zznty.create_factory_abstractions.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
-import ru.zznty.create_factory_logistics.ClientConfig;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.NUMBERS;
 
@@ -29,13 +28,12 @@ public class SlotAmountRenderer {
 
     public static void render(GuiGraphics graphics, float x, float y,
                               String text) {
-        if (ClientConfig.fontStyle == ClientConfig.FontStyle.CREATE && Minecraft.getInstance().screen instanceof StockKeeperRequestScreen) {
+        if (Minecraft.getInstance().screen instanceof StockKeeperRequestScreen) {
             renderCreate(graphics, text, x, y);
             return;
         }
 
-        // TODO think if we should leave large font for other screens even when create one is selected
-        render(graphics, Minecraft.getInstance().font, x, y, text, ClientConfig.fontStyle != ClientConfig.FontStyle.SMALL);
+        render(graphics, Minecraft.getInstance().font, x, y, text, true);
     }
 
     public static void render(GuiGraphics graphics, Font font, float x, float y, String text,
@@ -96,7 +94,7 @@ public class SlotAmountRenderer {
 
             RenderSystem.enableBlend();
             graphics.blit(NUMBERS.location, 14 + x, 10, 0, NUMBERS.getStartX() + xOffset, NUMBERS.getStartY(),
-                    spriteWidth, NUMBERS.getHeight(), 256, 256);
+                          spriteWidth, NUMBERS.getHeight(), 256, 256);
             x += spriteWidth - 1;
         }
     }
