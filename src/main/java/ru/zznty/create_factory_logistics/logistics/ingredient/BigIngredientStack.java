@@ -24,6 +24,7 @@ public interface BigIngredientStack {
     BigItemStack asStack();
 
     Comparator<BigIngredientStack> COMPARATOR = Comparator.comparingInt(BigIngredientStack::getCount)
+            .reversed()
             .thenComparing((a, b) -> IngredientKey.COMPARATOR.compare(a.ingredient().key(), b.ingredient().key()));
 
     static BigIngredientStack of(BoardIngredient ingredient) {
