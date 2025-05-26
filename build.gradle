@@ -105,6 +105,12 @@ repositories {
     //     dir 'libs'
     // }
 
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
     maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
     maven { url = "https://mvn.devos.one/snapshots" } // Registrate
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
@@ -154,6 +160,8 @@ dependencies {
     if (!Boolean.getBoolean('idea.sync.active')) {
 //        annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
     }
+
+    localRuntime "curse.maven:create-vibrant-vaults-1251719:6463890"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

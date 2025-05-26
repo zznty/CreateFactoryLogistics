@@ -20,8 +20,9 @@ import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkQualif
 
 import java.util.concurrent.CompletableFuture;
 
-public class RecipeQualifierTagsProvider extends TagsProvider<Item> {
-    public RecipeQualifierTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
+public class ItemTagsProvider extends TagsProvider<Item> {
+    public ItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider,
+                            @Nullable ExistingFileHelper existingFileHelper) {
         super(output, Registries.ITEM, lookupProvider, CreateFactoryLogistics.MODID, existingFileHelper);
     }
 
