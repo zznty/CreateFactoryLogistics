@@ -4,9 +4,9 @@ import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
+import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,17 +17,18 @@ import java.util.UUID;
 abstract class BaseNetworkHandler {
     protected final UUID network;
     private final NetworkLinkMode mode;
-    private List<BoardIngredient> cachedIngredients = null;
+    private List<GenericStack> cachedIngredients = null;
 
     BaseNetworkHandler(UUID network, NetworkLinkMode mode) {
         this.network = network;
         this.mode = mode;
     }
 
-    protected List<BoardIngredient> summary() {
+    protected List<GenericStack> summary() {
         if (cachedIngredients == null) {
             if (mode.includesStored()) {
-                IngredientInventorySummary summary = (IngredientInventorySummary) LogisticsManager.getSummaryOfNetwork(network, true);
+                GenericInventorySummary summary = GenericInventorySummary.of(
+                        LogisticsManager.getSummaryOfNetwork(network, true));
                 cachedIngredients = summary.get();
             } else {
                 cachedIngredients = new ArrayList<>();
@@ -37,10 +38,10 @@ abstract class BaseNetworkHandler {
                 RequestPromiseQueue queue = Create.LOGISTICS.getQueuedPromises(network);
                 if (queue != null)
                     for (RequestPromise promise : queue.flatten(false)) {
-                        BigIngredientStack stack = (BigIngredientStack) promise.promisedStack;
+                        BigGenericStack stack = BigGenericStack.of(promise.promisedStack);
 
-                        if (!stack.ingredient().isEmpty())
-                            cachedIngredients.add(stack.ingredient());
+                        if (!stack.get().isEmpty())
+                            cachedIngredients.add(stack.get());
                     }
             }
         }

@@ -14,6 +14,7 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.library.transfer.RecipeTransferErrorMissingSlots;
 import mezz.jei.library.transfer.RecipeTransferErrorTooltip;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
@@ -24,12 +25,13 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericIngredient;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.support.CraftableGenericStack;
+import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 import ru.zznty.create_factory_logistics.compat.jei.IngredientTransfer;
 import ru.zznty.create_factory_logistics.compat.jei.TransferOperation;
 import ru.zznty.create_factory_logistics.compat.jei.TransferOperationsResult;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.CraftableIngredientStack;
-import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,54 +44,60 @@ public class StockKeeperTransferHandlerMixin {
 
     @Overwrite(remap = false)
     private @Nullable IRecipeTransferError transferRecipeOnClient(StockKeeperRequestMenu container, Recipe<?> recipe,
-                                                                  IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+                                                                  IRecipeSlotsView recipeSlots, Player player,
+                                                                  boolean maxTransfer, boolean doTransfer) {
         if (!(container.screenReference instanceof StockKeeperRequestScreen screen))
             return null;
 
         for (CraftableBigItemStack cbis : screen.recipesToOrder)
             if (cbis.recipe == recipe)
                 return new RecipeTransferErrorTooltip(CreateLang.translate("gui.stock_keeper.already_ordering_recipe")
-                        .component());
+                                                              .component());
 
         if (screen.itemsToOrder.size() >= 9)
             return new RecipeTransferErrorTooltip(CreateLang.translate("gui.stock_keeper.slots_full")
-                    .component());
+                                                          .component());
 
-        IngredientInventorySummary summary = (IngredientInventorySummary) screen.getMenu().contentHolder.getLastClientsideStockSnapshotAsSummary();
+        GenericInventorySummary summary = GenericInventorySummary.of(
+                screen.getMenu().contentHolder.getLastClientsideStockSnapshotAsSummary());
         if (summary == null)
             return null;
 
-        List<BoardIngredient> availableStacks = summary.get();
+        List<GenericStack> availableStacks = summary.get();
         Container outputDummy = new RecipeWrapper(new ItemStackHandler(9));
         List<Slot> craftingSlots = new ArrayList<>();
         for (int i = 0; i < outputDummy.getContainerSize(); i++)
             craftingSlots.add(new Slot(outputDummy, i, 0, 0));
 
-        TransferOperationsResult transferOperations = IngredientTransfer.getRecipeTransferOperations(helpers.getIngredientManager(),
+        TransferOperationsResult transferOperations = IngredientTransfer.getRecipeTransferOperations(
+                helpers.getIngredientManager(),
                 availableStacks, recipeSlots.getSlotViews(RecipeIngredientRole.INPUT), craftingSlots);
 
         if (!transferOperations.missingItems().isEmpty())
             return new RecipeTransferErrorMissingSlots(CreateLang.translate("gui.stock_keeper.not_in_stock")
-                    .component(), transferOperations.missingItems());
+                                                               .component(), transferOperations.missingItems());
 
-        if (screen.itemsToOrder.size() + transferOperations.results().size() >= 9)
+        if (screen.itemsToOrder.size() + transferOperations.results().stream().mapToInt(
+                TransferOperation::from).distinct().count() >= 9)
             return new RecipeTransferErrorTooltip(CreateLang.translate("gui.stock_keeper.slots_full")
-                    .component());
+                                                          .component());
 
         if (!doTransfer)
             return null;
 
-        CraftableBigItemStack cbis = new CraftableBigItemStack(recipe.getResultItem(player.level()
-                .registryAccess()), recipe);
+        RegistryAccess registryAccess = player.level().registryAccess();
+        CraftableBigItemStack cbis = new CraftableBigItemStack(recipe.getResultItem(registryAccess), recipe);
 
         {
-            CraftableIngredientStack ingredientStack = (CraftableIngredientStack) cbis;
+            CraftableGenericStack ingredientStack = CraftableGenericStack.of(cbis);
 
-            ingredientStack.setCount(0);
+            ingredientStack.setAmount(0);
 
             for (TransferOperation operation : transferOperations.results()) {
-                IIngredientHelper helper = helpers.getIngredientManager().getIngredientHelper(operation.selectedIngredient().getType());
-                ingredientStack.ingredients().add(availableStacks.get(operation.from()).withAmount((int) helper.getAmount(operation.selectedIngredient().getIngredient())));
+                IIngredientHelper helper = helpers.getIngredientManager().getIngredientHelper(
+                        operation.selectedIngredient().getType());
+                ingredientStack.ingredients().add(GenericIngredient.of(availableStacks.get(operation.from()).withAmount(
+                        (int) helper.getAmount(operation.selectedIngredient().getIngredient()))));
             }
 
             // TODO think about cases where multiple results are defined per slot
@@ -97,14 +105,15 @@ public class StockKeeperTransferHandlerMixin {
             for (IRecipeSlotView slotView : recipeSlots.getSlotViews(RecipeIngredientRole.OUTPUT)) {
                 Optional<ITypedIngredient<?>> displayedIngredient = slotView.getDisplayedIngredient();
                 if (displayedIngredient.isEmpty()) continue;
-                Optional<BoardIngredient> ingredient = IngredientTransfer.tryConvert(helpers.getIngredientManager(), displayedIngredient.get());
+                Optional<GenericStack> ingredient = IngredientTransfer.tryConvert(helpers.getIngredientManager(),
+                                                                                  displayedIngredient.get());
                 if (ingredient.isEmpty()) continue; // TODO maybe display a warning?
 
-                ingredientStack.results().add(ingredient.get());
+                ingredientStack.results(registryAccess).add(ingredient.get());
             }
 
-            if (cbis.stack.isEmpty() && !ingredientStack.results().isEmpty()) {
-                ingredientStack.setIngredient(ingredientStack.results().get(0).withAmount(0));
+            if (cbis.stack.isEmpty() && !ingredientStack.results(registryAccess).isEmpty()) {
+                ingredientStack.set(ingredientStack.results(registryAccess).get(0).withAmount(0));
             }
         }
 

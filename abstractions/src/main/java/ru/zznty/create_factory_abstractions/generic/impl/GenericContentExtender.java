@@ -13,8 +13,11 @@ import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.registries.RegistryBuilder;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.*;
 import ru.zznty.create_factory_abstractions.api.generic.key.*;
+import ru.zznty.create_factory_abstractions.generic.key.EmptyKey;
+import ru.zznty.create_factory_abstractions.generic.key.EmptyKeyClientProvider;
 import ru.zznty.create_factory_abstractions.generic.key.EmptyKeyProvider;
 import ru.zznty.create_factory_abstractions.generic.key.EmptyKeySerializer;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
@@ -35,15 +38,20 @@ public final class GenericContentExtender {
     public static Map<Class<?>, GenericKeyRegistration> REGISTRATIONS = new HashMap<>(); // <key, provider>
 
     public static void enqueueExtension(String modId, GenericContentExtension extension) {
-        EXTENSIONS.putIfAbsent(modId, extension);
+        if (CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE)
+            EXTENSIONS.putIfAbsent(modId, extension);
     }
 
     public static void register(IEventBus bus) {
         bus.register(GenericContentExtender.class);
     }
 
+    public static GenericKeyRegistration registrationOf(GenericKey instance) {
+        return REGISTRATIONS.get(instance.getClass());
+    }
+
     @SubscribeEvent
-    private static void onRegistry(NewRegistryEvent event) {
+    public static void onRegistry(NewRegistryEvent event) {
         REGISTRY = event.create(new RegistryBuilder<GenericKeyRegistration>()
                                         .setName(ResourceLocation.fromNamespaceAndPath(ID, "generic_keys"))
                                         .setDefaultKey(ResourceLocation.fromNamespaceAndPath(ID, "empty"))
@@ -53,8 +61,14 @@ public final class GenericContentExtender {
     }
 
     private static void fillKeys(IForgeRegistry<GenericKeyRegistration> registry) {
+        Registration<EmptyKey> emptyKeyRegistration = new Registration<>(new EmptyKeyProvider(),
+                                                                         new EmptyKeySerializer(),
+                                                                         DistExecutor.safeCallWhenOn(Dist.CLIENT,
+                                                                                                     () -> EmptyKeyClientProvider::new));
         registry.register(ResourceLocation.fromNamespaceAndPath(ID, "empty"),
-                          new Registration<>(new EmptyKeyProvider(), new EmptyKeySerializer(), null));
+                          emptyKeyRegistration);
+        REGISTRATIONS.put(EmptyKey.class, emptyKeyRegistration);
+
         Registration<ItemKey> itemKeyRegistration = new Registration<>(new ItemKeyProvider(), new ItemKeySerializer(),
                                                                        DistExecutor.safeCallWhenOn(Dist.CLIENT,
                                                                                                    () -> ItemKeyClientProvider::new));
@@ -64,7 +78,7 @@ public final class GenericContentExtender {
     }
 
     @SubscribeEvent
-    private static void onRegisterExtensions(RegisterEvent event) {
+    public static void onRegisterExtensions(RegisterEvent event) {
         event.register(REGISTRY.get().getRegistryKey(), helper -> {
             for (Map.Entry<String, GenericContentExtension> entry : EXTENSIONS.entrySet()) {
                 GenericContentExtension extension = entry.getValue();
@@ -75,24 +89,29 @@ public final class GenericContentExtender {
                     public <Key extends GenericKey> void register(String id,
                                                                   Class<Key> keyClass,
                                                                   Consumer<CommonRegistrationBuilder<Key>> builder) {
-                        CommonRegistrationBuilderImpl<Key> registrationBuilder = new CommonRegistrationBuilderImpl<>();
+                        CommonRegistrationBuilderImpl<Key> registrationBuilder = new CommonRegistrationBuilderImpl<>(
+                                keyClass);
                         builder.accept(registrationBuilder);
                         registrations.putIfAbsent(id, Pair.of(registrationBuilder, null));
                         keyClasses.putIfAbsent(id, keyClass);
                     }
                 });
 
-                DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> () -> {
-                    extension.registerClient(new ClientContentRegistration() {
-                        @Override
-                        public <Key extends GenericKey> void register(String id,
-                                                                      Consumer<ClientRegistrationBuilder<Key>> builder) {
-                            ClientRegistrationBuilderImpl<Key> registrationBuilder = new ClientRegistrationBuilderImpl<>();
-                            builder.accept(registrationBuilder);
-                            registrations.computeIfPresent(id,
-                                                           (s, pair) -> Pair.of(pair.getFirst(), registrationBuilder));
-                        }
-                    });
+                DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> new DistExecutor.SafeRunnable() {
+                    @Override
+                    public void run() {
+                        extension.registerClient(new ClientContentRegistration() {
+                            @Override
+                            public <Key extends GenericKey> void register(String id,
+                                                                          Consumer<ClientRegistrationBuilder<Key>> builder) {
+                                ClientRegistrationBuilderImpl<Key> registrationBuilder = new ClientRegistrationBuilderImpl<>();
+                                builder.accept(registrationBuilder);
+                                registrations.computeIfPresent(id,
+                                                               (s, pair) -> Pair.of(pair.getFirst(),
+                                                                                    registrationBuilder));
+                            }
+                        });
+                    }
                 });
 
                 for (Map.Entry<String, Pair<CommonRegistrationBuilderImpl<?>, ClientRegistrationBuilderImpl<?>>> pairEntry : registrations.entrySet()) {

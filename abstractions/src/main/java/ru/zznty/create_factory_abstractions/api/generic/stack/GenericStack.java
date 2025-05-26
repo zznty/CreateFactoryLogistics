@@ -1,6 +1,8 @@
 package ru.zznty.create_factory_abstractions.api.generic.stack;
 
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import net.minecraft.world.item.ItemStack;
+import ru.zznty.create_factory_abstractions.api.generic.GenericFilterProvider;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
 
@@ -12,7 +14,6 @@ public record GenericStack(GenericKey key, int amount) {
     }
 
     public GenericStack withAmount(int amount) {
-        if (key == GenericKey.EMPTY) return EMPTY;
         return new GenericStack(key, amount);
     }
 
@@ -25,6 +26,12 @@ public record GenericStack(GenericKey key, int amount) {
     }
 
     public static GenericStack wrap(ItemStack stack) {
+        if (stack.isEmpty()) return EMPTY;
         return new GenericStack(new ItemKey(stack), stack.getCount());
+    }
+
+    public static GenericStack of(FactoryPanelBehaviour behaviour) {
+        GenericFilterProvider filterProvider = (GenericFilterProvider) behaviour;
+        return filterProvider.filter();
     }
 }

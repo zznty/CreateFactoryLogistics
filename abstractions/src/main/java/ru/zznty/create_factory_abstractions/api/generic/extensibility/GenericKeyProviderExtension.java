@@ -12,4 +12,6 @@ public interface GenericKeyProviderExtension<Key extends GenericKey, Value> exte
     Key wrapGeneric(Value value);
 
     Value unwrap(Key key);
+
+    String ingredientTypeUid();
 }

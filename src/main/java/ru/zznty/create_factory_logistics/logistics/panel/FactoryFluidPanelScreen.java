@@ -30,8 +30,8 @@ public class FactoryFluidPanelScreen extends FactoryPanelScreen {
         int y = guiTop;
 
         amountBox = behaviour.panelBE().restocker ?
-                new EditBox(font, x + windowWidth - 80, y + 11, 60, 15, CommonComponents.EMPTY) :
-                new EditBox(font, x + windowWidth - 60, y + windowHeight - 90, 45, 15, CommonComponents.EMPTY);
+                    new EditBox(font, x + windowWidth - 80, y + 11, 60, 15, CommonComponents.EMPTY) :
+                    new EditBox(font, x + windowWidth - 60, y + windowHeight - 90, 45, 15, CommonComponents.EMPTY);
         amountBox.setResponder(s -> {
             int value;
             try {
@@ -44,10 +44,12 @@ public class FactoryFluidPanelScreen extends FactoryPanelScreen {
 
             AllPackets.getChannel()
                     .sendToServer(new ValueSettingsPacket(behaviour.blockEntity.getBlockPos(), 0, value, null, null,
-                            behaviour.blockEntity.getBlockState().getValue(FactoryFluidPanelBlock.FACING), false, behaviour.netId()));
+                                                          behaviour.blockEntity.getBlockState().getValue(
+                                                                  FactoryFluidPanelBlock.FACING), false,
+                                                          behaviour.netId()));
         });
         amountBox.setTextColor(UIRenderHelper.COLOR_TEXT.getFirst().getRGB());
-        amountBox.setValue(FactoryFluidPanelBehaviour.formatLevel(behaviour.ingredient().amount(), false).string());
+        amountBox.setValue(FactoryFluidPanelBehaviour.formatLevel(behaviour.filter().amount(), false).string());
         addRenderableWidget(amountBox);
     }
 

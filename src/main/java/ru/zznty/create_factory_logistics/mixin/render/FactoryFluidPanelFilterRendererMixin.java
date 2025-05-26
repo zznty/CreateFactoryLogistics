@@ -11,8 +11,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientPackageRender;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 
 @Mixin(FilteringRenderer.class)
 public class FactoryFluidPanelFilterRendererMixin {
@@ -25,10 +25,13 @@ public class FactoryFluidPanelFilterRendererMixin {
             ),
             remap = false
     )
-    private static void renderFilter(ItemStack filter, PoseStack ms, MultiBufferSource buffer, int light, int overlay, Operation<Void> original, @Local FilteringBehaviour behaviour) {
+    private static void renderFilter(ItemStack filter, PoseStack ms, MultiBufferSource buffer, int light, int overlay,
+                                     Operation<Void> original, @Local FilteringBehaviour behaviour) {
         if (behaviour instanceof FactoryPanelBehaviour panelBehaviour) {
-            BoardIngredient ingredient = BoardIngredient.of(panelBehaviour);
-            IngredientPackageRender.renderPanelFilter(ingredient.key(), ms, buffer, light, overlay);
+            GenericStack stack = GenericStack.of(panelBehaviour);
+            GenericContentExtender.registrationOf(stack.key())
+                    .clientProvider().renderHandler()
+                    .renderPanelFilter(stack.key(), ms, buffer, light, overlay);
             return;
         }
 

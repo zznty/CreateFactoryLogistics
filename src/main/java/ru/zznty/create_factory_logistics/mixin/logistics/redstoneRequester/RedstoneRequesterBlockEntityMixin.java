@@ -3,7 +3,6 @@ package ru.zznty.create_factory_logistics.mixin.logistics.redstoneRequester;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.simibubi.create.AllPackets;
-import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterBlockEntity;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterEffectPacket;
@@ -18,17 +17,16 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientLogisticsManager;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRedstoneRequester;
-import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
+import ru.zznty.create_factory_abstractions.generic.support.GenericLogisticsManager;
+import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
+import ru.zznty.create_factory_abstractions.generic.support.GenericRedstoneRequester;
 
 @Mixin(RedstoneRequesterBlockEntity.class)
-public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlockEntity implements IngredientRedstoneRequester {
+public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlockEntity implements GenericRedstoneRequester {
     @Unique
-    public IngredientOrder createFactoryLogistics$encodedRequest = IngredientOrder.empty();
+    public GenericOrder createFactoryLogistics$encodedRequest = GenericOrder.empty();
 
     @Shadow(remap = false)
     public boolean allowPartialRequests, lastRequestSucceeded;
@@ -46,29 +44,29 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
 
         boolean anySucceeded = false;
 
-        IngredientInventorySummary summaryOfOrder = (IngredientInventorySummary) new InventorySummary();
-        for (BigIngredientStack stack : createFactoryLogistics$encodedRequest.stacks()) {
-            summaryOfOrder.add(stack.ingredient());
+        GenericInventorySummary summaryOfOrder = GenericInventorySummary.empty();
+        for (GenericStack stack : createFactoryLogistics$encodedRequest.stacks()) {
+            summaryOfOrder.add(stack);
         }
 
-        IngredientInventorySummary summary = (IngredientInventorySummary) getAccurateSummary();
-        for (BoardIngredient ingredient : summaryOfOrder.get()) {
-            if (summary.getCountOf(ingredient.key()) >= ingredient.amount()) {
+        GenericInventorySummary summary = GenericInventorySummary.of(getAccurateSummary());
+        for (GenericStack stack : summaryOfOrder.get()) {
+            if (summary.getCountOf(stack.key()) >= stack.amount()) {
                 anySucceeded = true;
                 continue;
             }
             if (!allowPartialRequests) {
                 AllPackets.sendToNear(level, worldPosition, 32,
-                        new RedstoneRequesterEffectPacket(worldPosition, false));
+                                      new RedstoneRequesterEffectPacket(worldPosition, false));
                 return;
             }
         }
 
-        IngredientLogisticsManager.broadcastPackageRequest(behaviour.freqId,
-                LogisticallyLinkedBehaviour.RequestType.REDSTONE,
-                createFactoryLogistics$encodedRequest,
-                null,
-                encodedTargetAdress);
+        GenericLogisticsManager.broadcastPackageRequest(behaviour.freqId,
+                                                        LogisticallyLinkedBehaviour.RequestType.REDSTONE,
+                                                        createFactoryLogistics$encodedRequest,
+                                                        null,
+                                                        encodedTargetAdress);
 
         AllPackets.sendToNear(level, worldPosition, 32, new RedstoneRequesterEffectPacket(worldPosition, anySucceeded));
         lastRequestSucceeded = true;
@@ -84,7 +82,7 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
             remap = false
     )
     private PackageOrderWithCrafts readRequest(CompoundTag tag, Operation<PackageOrderWithCrafts> original) {
-        createFactoryLogistics$encodedRequest = IngredientOrder.read(tag);
+        createFactoryLogistics$encodedRequest = GenericOrder.read(tag);
 
         return PackageOrderWithCrafts.empty();
     }
@@ -116,12 +114,12 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
     }
 
     @Override
-    public IngredientOrder getOrder() {
+    public GenericOrder getOrder() {
         return createFactoryLogistics$encodedRequest;
     }
 
     @Override
-    public void setOrder(IngredientOrder order) {
+    public void setOrder(GenericOrder order) {
         createFactoryLogistics$encodedRequest = order;
     }
 }

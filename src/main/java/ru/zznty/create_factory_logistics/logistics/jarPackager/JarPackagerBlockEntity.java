@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_abstractions.generic.support.GenericIdentifiedInventory;
 import ru.zznty.create_factory_logistics.Config;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientIdentifiedInventory;
 
 import java.util.List;
 
@@ -29,11 +29,13 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
         super.addBehaviours(behaviours);
 
         if (Config.jarPackagerPrefersOutputs) {
-            drainInventory = new OutputOnlyTankManipulationBehaviour(this, CapManipulationBehaviourBase.InterfaceProvider.oppositeOfBlockFacing());
+            drainInventory = new OutputOnlyTankManipulationBehaviour(this,
+                                                                     CapManipulationBehaviourBase.InterfaceProvider.oppositeOfBlockFacing());
         } else {
-            drainInventory = new TankManipulationBehaviour(this, CapManipulationBehaviourBase.InterfaceProvider.oppositeOfBlockFacing());
+            drainInventory = new TankManipulationBehaviour(this,
+                                                           CapManipulationBehaviourBase.InterfaceProvider.oppositeOfBlockFacing());
         }
-        
+
         behaviours.add(drainInventory.withFilter(this::supportsBlockEntity));
     }
 
@@ -49,7 +51,7 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
         if (!drainInventory.hasInventory())
             return false;
 
-        IngredientIdentifiedInventory inv = IngredientIdentifiedInventory.from(inventory);
+        GenericIdentifiedInventory inv = GenericIdentifiedInventory.from(inventory);
         if (inv.handler() == drainInventory.getInventory())
             return true;
 

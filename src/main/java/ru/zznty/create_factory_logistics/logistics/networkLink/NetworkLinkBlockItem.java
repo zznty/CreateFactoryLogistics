@@ -17,7 +17,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 
 import java.util.List;
 import java.util.UUID;
@@ -47,7 +46,7 @@ public class NetworkLinkBlockItem extends LogisticallyLinkedBlockItem {
 
         ResourceLocation ingredientType = ResourceLocation.parse(tag.getString(NetworkLinkBlock.INGREDIENT_TYPE));
 
-        if (ingredientType.getPath().equals(IngredientRegistry.EMPTY_KEY))
+        if (ingredientType.getPath().equals("empty"))
             return;
 
         CreateLang.builder(ingredientType.getNamespace())
@@ -88,7 +87,8 @@ public class NetworkLinkBlockItem extends LogisticallyLinkedBlockItem {
             return useOn;
 
         player.displayClientMessage(tuned ? CreateLang.translateDirect("logistically_linked.connected")
-                : CreateLang.translateDirect("logistically_linked.new_network_started"), true);
+                                          : CreateLang.translateDirect("logistically_linked.new_network_started"),
+                                    true);
         return useOn;
     }
 

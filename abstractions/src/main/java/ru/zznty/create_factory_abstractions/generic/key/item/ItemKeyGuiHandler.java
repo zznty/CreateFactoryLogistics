@@ -59,7 +59,7 @@ class ItemKeyGuiHandler implements GenericKeyClientGuiHandler<ItemKey> {
     }
 
     private static String formatValue(int count) {
-        if (count == BigItemStack.INF) return "\u221E";
+        if (count >= BigItemStack.INF) return "\u221E";
 
         return count >= 1000000 ? (count / 1000000) + "m"
                                 : count >= 10000 ?

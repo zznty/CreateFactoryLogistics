@@ -17,11 +17,11 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
+import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.FactoryRecipes;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,8 @@ import static net.minecraft.world.item.BlockItem.BLOCK_ENTITY_TAG;
 public class NetworkLinkQualificationRecipe extends CustomRecipe {
     private final ResourceLocation key;
 
-    public NetworkLinkQualificationRecipe(ResourceLocation p_252125_, ResourceLocation key, CraftingBookCategory p_249010_) {
+    public NetworkLinkQualificationRecipe(ResourceLocation p_252125_, ResourceLocation key,
+                                          CraftingBookCategory p_249010_) {
         super(p_252125_, p_249010_);
         this.key = key;
     }
@@ -41,11 +42,12 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     public boolean matches(CraftingContainer p_44002_, Level p_44003_) {
         List<ItemStack> list = new ArrayList<>(p_44002_.getItems());
         list.removeIf(ItemStack::isEmpty);
-        boolean isEmpty = key.equals(IngredientProviders.EMPTY.getId());
+        boolean isEmpty = key.equals(ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "empty"));
         if (list.size() != (isEmpty ? 1 : 2))
             return false;
-        
-        return (isEmpty || list.stream().anyMatch(Ingredient.of(tag(key)))) && list.stream().anyMatch(Ingredient.of(FactoryBlocks.NETWORK_LINK));
+
+        return (isEmpty || list.stream().anyMatch(Ingredient.of(tag(key)))) && list.stream().anyMatch(
+                Ingredient.of(FactoryBlocks.NETWORK_LINK));
     }
 
     private @Nullable ResourceLocation test(ItemStack item) {
@@ -53,10 +55,11 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     }
 
     public static TagKey<Item> tag(ResourceLocation location) {
-        if (!IngredientRegistry.REGISTRY.get().containsKey(location))
+        if (!GenericContentExtender.REGISTRY.get().containsKey(location))
             throw new IllegalArgumentException("Location" + location + " does not belong to ingredient types registry");
         return TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(),
-                CreateFactoryLogistics.resource("network_link_qualifier/" + location.getNamespace() + "/" + location.getPath()));
+                             CreateFactoryLogistics.resource(
+                                     "network_link_qualifier/" + location.getNamespace() + "/" + location.getPath()));
     }
 
     @Override
@@ -79,7 +82,7 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
         }
 
         if (air)
-            qualifier = IngredientRegistry.REGISTRY.get().getDefaultKey();
+            qualifier = GenericContentExtender.REGISTRY.get().getDefaultKey();
 
         if (link == null || qualifier == null) return ItemStack.EMPTY;
 
@@ -116,12 +119,17 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     public static class Serializer implements RecipeSerializer<NetworkLinkQualificationRecipe> {
         @Override
         public NetworkLinkQualificationRecipe fromJson(ResourceLocation p_44103_, JsonObject p_44104_) {
-            return new NetworkLinkQualificationRecipe(p_44103_, ResourceLocation.parse(p_44104_.get("key").getAsString()), CraftingBookCategory.CODEC.byName(p_44104_.get("category").getAsString()));
+            return new NetworkLinkQualificationRecipe(p_44103_,
+                                                      ResourceLocation.parse(p_44104_.get("key").getAsString()),
+                                                      CraftingBookCategory.CODEC.byName(
+                                                              p_44104_.get("category").getAsString()));
         }
 
         @Override
-        public @Nullable NetworkLinkQualificationRecipe fromNetwork(ResourceLocation p_44105_, FriendlyByteBuf p_44106_) {
-            return new NetworkLinkQualificationRecipe(p_44105_, p_44106_.readResourceLocation(), p_44106_.readEnum(CraftingBookCategory.class));
+        public @Nullable NetworkLinkQualificationRecipe fromNetwork(ResourceLocation p_44105_,
+                                                                    FriendlyByteBuf p_44106_) {
+            return new NetworkLinkQualificationRecipe(p_44105_, p_44106_.readResourceLocation(),
+                                                      p_44106_.readEnum(CraftingBookCategory.class));
         }
 
         @Override

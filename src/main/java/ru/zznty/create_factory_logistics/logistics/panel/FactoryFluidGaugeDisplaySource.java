@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -39,9 +39,9 @@ public class FactoryFluidGaugeDisplaySource extends ValueListDisplaySource {
             return null;
 
         FluidStack fluid = fluidPanel.getFluid();
-        BoardIngredient ingredient = BoardIngredient.of(fluidPanel);
+        GenericStack stack = GenericStack.of(fluidPanel);
 
-        int demand = ingredient.amount();
+        int demand = stack.amount();
         String s = " ";
 
         if (demand != 0) {
@@ -57,8 +57,8 @@ public class FactoryFluidGaugeDisplaySource extends ValueListDisplaySource {
         return IntAttached.with(panel.getLevelInStorage(), Component.literal(s + " ")
                 .withStyle(style -> style.withColor(panel.getIngredientStatusColor()))
                 .append(fluid.getDisplayName()
-                        .plainCopy()
-                        .withStyle(ChatFormatting.RESET)));
+                                .plainCopy()
+                                .withStyle(ChatFormatting.RESET)));
     }
 
     @Override
@@ -70,13 +70,16 @@ public class FactoryFluidGaugeDisplaySource extends ValueListDisplaySource {
     @Override
     public List<MutableComponent> provideText(DisplayLinkContext context, DisplayTargetStats stats) {
         List<MutableComponent> result = new ArrayList<>();
-        for (Iterator<IntAttached<MutableComponent>> it = provideEntries(context, stats.maxRows()).iterator(); it.hasNext(); ) {
+        for (Iterator<IntAttached<MutableComponent>> it = provideEntries(context,
+                                                                         stats.maxRows()).iterator(); it.hasNext(); ) {
             IntAttached<MutableComponent> entry = it.next();
 
-            result.add((shortenNumbers(context) ? FactoryFluidPanelBehaviour.formatLevelShort(entry.getFirst()) : FactoryFluidPanelBehaviour.formatLevel(entry.getFirst()))
-                    .space()
-                    .add(entry.getValue())
-                    .component());
+            result.add((shortenNumbers(context) ?
+                        FactoryFluidPanelBehaviour.formatLevelShort(entry.getFirst()) :
+                        FactoryFluidPanelBehaviour.formatLevel(entry.getFirst()))
+                               .space()
+                               .add(entry.getValue())
+                               .component());
         }
 
         return result;
@@ -85,13 +88,16 @@ public class FactoryFluidGaugeDisplaySource extends ValueListDisplaySource {
     @Override
     public List<List<MutableComponent>> provideFlapDisplayText(DisplayLinkContext context, DisplayTargetStats stats) {
         List<List<MutableComponent>> result = new ArrayList<>();
-        for (Iterator<IntAttached<MutableComponent>> it = provideEntries(context, stats.maxRows()).iterator(); it.hasNext(); ) {
+        for (Iterator<IntAttached<MutableComponent>> it = provideEntries(context,
+                                                                         stats.maxRows()).iterator(); it.hasNext(); ) {
             IntAttached<MutableComponent> entry = it.next();
 
-            result.add(List.of((shortenNumbers(context) ? FactoryFluidPanelBehaviour.formatLevelShort(entry.getFirst()) : FactoryFluidPanelBehaviour.formatLevel(entry.getFirst()))
-                    .space()
-                    .add(entry.getValue())
-                    .component()));
+            result.add(List.of((shortenNumbers(context) ?
+                                FactoryFluidPanelBehaviour.formatLevelShort(entry.getFirst()) :
+                                FactoryFluidPanelBehaviour.formatLevel(entry.getFirst()))
+                                       .space()
+                                       .add(entry.getValue())
+                                       .component()));
         }
 
         return result;

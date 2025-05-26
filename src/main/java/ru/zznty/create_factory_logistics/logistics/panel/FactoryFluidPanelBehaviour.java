@@ -21,13 +21,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientFilterProvider;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
+import ru.zznty.create_factory_abstractions.api.generic.GenericFilterProvider;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_logistics.logistics.generic.FluidGenericStack;
 
 import java.util.List;
 
-public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements IngredientFilterProvider {
+public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements GenericFilterProvider {
     public FactoryFluidPanelBehaviour(FactoryFluidPanelBlockEntity be, FactoryFluidPanelBlock.PanelSlot slot) {
         super(be, slot);
     }
@@ -43,7 +43,8 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
             if (!GenericItemEmptying.canItemBeEmptied(blockEntity.getLevel(), stack))
                 return false;
 
-            Pair<FluidStack, ItemStack> emptyResult = GenericItemEmptying.emptyItem(blockEntity.getLevel(), stack, true);
+            Pair<FluidStack, ItemStack> emptyResult = GenericItemEmptying.emptyItem(blockEntity.getLevel(), stack,
+                                                                                    true);
 
             if (emptyResult.getFirst().isEmpty()) return false;
 
@@ -85,9 +86,9 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
                 .color(satisfied ? 0xD7FFA8 : promisedSatisfied ? 0xffcd75 : 0xFFBFA8)
                 .add(CreateLang.text(promised == 0 ? "" : "\u23F6"))
                 .add(CreateLang.text("/")
-                        .style(ChatFormatting.WHITE))
+                             .style(ChatFormatting.WHITE))
                 .add(formatLevel(count)
-                        .color(0xF1EFE8))
+                             .color(0xF1EFE8))
                 .component();
     }
 
@@ -104,12 +105,12 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
     public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
         int maxAmount = 100;
         return new ValueSettingsBoard(CreateLang.translate("factory_panel.target_amount")
-                .component(), maxAmount, 10,
-                List.of(CreateLang.translate("schedule.condition.threshold.buckets")
-                                .component(),
-                        CreateLang.translate("schedule.condition.threshold.buckets")
-                                .component()),
-                new ValueSettingsFormatter(this::formatValue));
+                                              .component(), maxAmount, 10,
+                                      List.of(CreateLang.translate("schedule.condition.threshold.buckets")
+                                                      .component(),
+                                              CreateLang.translate("schedule.condition.threshold.buckets")
+                                                      .component()),
+                                      new ValueSettingsFormatter(this::formatValue));
     }
 
     public static LangBuilder formatLevel(int level) {
@@ -123,7 +124,8 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
         if (level < 100)
             return CreateLang.number(level).add(CreateLang.translate("generic.unit.millibuckets"));
 
-        return CreateLang.number(Math.round((float) level / 100) / 10.).add(CreateLang.translate("generic.unit.buckets"));
+        return CreateLang.number(Math.round((float) level / 100) / 10.).add(
+                CreateLang.translate("generic.unit.buckets"));
     }
 
     public static LangBuilder formatLevel(int level, boolean round) {
@@ -147,9 +149,9 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
     }
 
     @Override
-    public BoardIngredient ingredient() {
+    public GenericStack filter() {
         // fluid panel doesnt use upTo field
-        return new BoardIngredient(IngredientKey.of(getFluid()), count);
+        return FluidGenericStack.wrap(getFluid()).withAmount(count);
     }
 
     @Override

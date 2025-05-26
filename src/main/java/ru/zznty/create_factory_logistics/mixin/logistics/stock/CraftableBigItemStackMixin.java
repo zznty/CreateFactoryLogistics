@@ -1,30 +1,32 @@
 package ru.zznty.create_factory_logistics.mixin.logistics.stock;
 
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.CraftableIngredientStack;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericIngredient;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.support.CraftableGenericStack;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(CraftableBigItemStack.class)
-public abstract class CraftableBigItemStackMixin implements CraftableIngredientStack {
+public abstract class CraftableBigItemStackMixin implements CraftableGenericStack {
     @Unique
-    private final List<BoardIngredient> createFactoryLogistics$ingredients = new ArrayList<>();
+    private final List<GenericIngredient> createFactoryLogistics$ingredients = new ArrayList<>();
 
     @Unique
-    private final List<BoardIngredient> createFactoryLogistics$results = new ArrayList<>();
+    private final List<GenericStack> createFactoryLogistics$results = new ArrayList<>();
 
     @Override
-    public List<BoardIngredient> ingredients() {
+    public List<GenericIngredient> ingredients() {
         return createFactoryLogistics$ingredients;
     }
 
     @Override
-    public List<BoardIngredient> results() {
+    public List<GenericStack> results(RegistryAccess registryAccess) {
         return createFactoryLogistics$results;
     }
 
@@ -32,9 +34,9 @@ public abstract class CraftableBigItemStackMixin implements CraftableIngredientS
     public int outputCount(Level level) {
         int outputCount = asStack().getOutputCount(level);
         if (outputCount > 0) return outputCount;
-        if (results().isEmpty())
+        if (results(level.registryAccess()).isEmpty())
             throw new IllegalStateException("No results for " + this);
-        return results().get(0).amount();
+        return results(level.registryAccess()).get(0).amount();
     }
 
     @Override
