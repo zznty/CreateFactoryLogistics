@@ -24,16 +24,15 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.zznty.create_factory_logistics.logistics.ingredient.CapabilityFactory;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeyProvider;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistration;
+import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 
 import java.util.List;
 
 public class NetworkLinkBlockEntity extends SmartBlockEntity {
     private LogisticallyLinkedBehaviour link;
     @Nullable
-    private IngredientKeyProvider provider;
+    private GenericKeyRegistration registration;
     private ScrollOptionBehaviour<NetworkLinkMode> scroll;
 
     public NetworkLinkBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -44,8 +43,8 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         behaviours.add(link = new LogisticallyLinkedBehaviour(this, false));
         scroll = new ScrollOptionBehaviour<>(NetworkLinkMode.class,
-                Component.translatable("create_factory_logistics.gui.network_link.mode"),
-                this, new ValueBox());
+                                             Component.translatable("create_factory_logistics.gui.network_link.mode"),
+                                             this, new ValueBox());
 
         behaviours.add(scroll);
     }
@@ -54,24 +53,26 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         if (tag.contains(NetworkLinkBlock.INGREDIENT_TYPE, CompoundTag.TAG_STRING))
-            provider = IngredientRegistry.REGISTRY.get().getValue(ResourceLocation.parse(tag.getString(NetworkLinkBlock.INGREDIENT_TYPE)));
+            registration = GenericContentExtender.REGISTRY.get().getValue(
+                    ResourceLocation.parse(tag.getString(NetworkLinkBlock.INGREDIENT_TYPE)));
     }
 
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        if (provider != null)
-            tag.putString(NetworkLinkBlock.INGREDIENT_TYPE, IngredientRegistry.REGISTRY.get().getKey(provider).toString());
+        if (registration != null)
+            tag.putString(NetworkLinkBlock.INGREDIENT_TYPE,
+                          GenericContentExtender.REGISTRY.get().getKey(registration).toString());
     }
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (provider != null && (side == null || PackagerLinkBlock.getConnectedDirection(getBlockState())
+        if (registration != null && (side == null || PackagerLinkBlock.getConnectedDirection(getBlockState())
                 .getOpposite() == side)) {
-            CapabilityFactory<T> factory = provider.capabilityFactory();
-            LazyOptional<T> optional = factory.create(cap, scroll.get(), link);
-            if (optional.isPresent())
-                return optional;
+//            CapabilityFactory<T> factory = registration.capabilityFactory();
+//            LazyOptional<T> optional = factory.create(cap, scroll.get(), link);
+//            if (optional.isPresent())
+//                return optional;
         }
         return super.getCapability(cap, side);
     }
@@ -79,7 +80,9 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
     private static class ValueBox extends ValueBoxTransform.Sided {
         @Override
         public void rotate(LevelAccessor level, BlockPos pos, BlockState state, PoseStack ms) {
-            float yRot = AngleHelper.horizontalAngle(state.getValue(NetworkLinkBlock.FACE) == AttachFace.FLOOR ? state.getValue(NetworkLinkBlock.FACING) : getSide().getOpposite());
+            float yRot = AngleHelper.horizontalAngle(state.getValue(NetworkLinkBlock.FACE) == AttachFace.FLOOR ?
+                                                     state.getValue(NetworkLinkBlock.FACING) :
+                                                     getSide().getOpposite());
             float xRot = AngleHelper.verticalAngle(getSide().getOpposite());
             TransformStack.of(ms)
                     .rotateYDegrees(yRot)
@@ -91,7 +94,8 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
             Vec3 location;
             if (state.getValue(NetworkLinkBlock.FACE) == AttachFace.FLOOR) {
                 location = VecHelper.voxelSpace(8, 6, 5);
-                location = VecHelper.rotateCentered(location, AngleHelper.horizontalAngle(state.getValue(NetworkLinkBlock.FACING)), Direction.Axis.Y);
+                location = VecHelper.rotateCentered(location, AngleHelper.horizontalAngle(
+                        state.getValue(NetworkLinkBlock.FACING)), Direction.Axis.Y);
             } else {
                 location = VecHelper.voxelSpace(8, 5, 6);
                 location = VecHelper.rotateCentered(location, AngleHelper.verticalAngle(getSide()), Direction.Axis.X);

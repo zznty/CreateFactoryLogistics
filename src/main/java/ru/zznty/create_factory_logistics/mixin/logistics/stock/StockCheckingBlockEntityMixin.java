@@ -7,8 +7,8 @@ import com.simibubi.create.content.logistics.stockTicker.StockCheckingBlockEntit
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientLogisticsManager;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
+import ru.zznty.create_factory_abstractions.generic.support.GenericLogisticsManager;
+import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
 import javax.annotation.Nullable;
 
@@ -18,7 +18,9 @@ public class StockCheckingBlockEntityMixin {
     public LogisticallyLinkedBehaviour behaviour;
 
     @Overwrite(remap = false)
-    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order, @Nullable IdentifiedInventory ignoredHandler, String address) {
-        return IngredientLogisticsManager.broadcastPackageRequest(behaviour.freqId, type, IngredientOrder.of(order), ignoredHandler, address);
+    public boolean broadcastPackageRequest(LogisticallyLinkedBehaviour.RequestType type, PackageOrderWithCrafts order,
+                                           @Nullable IdentifiedInventory ignoredHandler, String address) {
+        return GenericLogisticsManager.broadcastPackageRequest(behaviour.freqId, type, GenericOrder.of(order),
+                                                               ignoredHandler, address);
     }
 }

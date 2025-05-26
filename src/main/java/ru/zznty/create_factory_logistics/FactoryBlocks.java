@@ -16,7 +16,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
+import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlock;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerGenerator;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlock;
@@ -33,21 +33,22 @@ import static ru.zznty.create_factory_logistics.CreateFactoryLogistics.REGISTRAT
 
 @SuppressWarnings("removal")
 public class FactoryBlocks {
-    public static final BlockEntry<JarPackagerBlock> JAR_PACKAGER = REGISTRATE.block("jar_packager", JarPackagerBlock::new)
+    public static final BlockEntry<JarPackagerBlock> JAR_PACKAGER = REGISTRATE.block("jar_packager",
+                                                                                     JarPackagerBlock::new)
             .transform(BuilderTransformers.packager())
             .blockstate(new JarPackagerGenerator()::generate)
             .recipe((c, b) ->
-                    ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.JAR_PACKAGER)
-                            .unlockedBy("has_" + b.safeName(c.getId()),
-                                    DataIngredient.items(AllBlocks.PACKAGER.asItem()).getCritereon(b))
-                            .pattern(" c ")
-                            .pattern("cCc")
-                            .pattern("rir")
-                            .define('c', Items.COPPER_INGOT)
-                            .define('C', AllBlocks.COPPER_CASING)
-                            .define('r', Items.REDSTONE)
-                            .define('i', Items.IRON_INGOT)
-                            .save(b))
+                            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.JAR_PACKAGER)
+                                    .unlockedBy("has_" + b.safeName(c.getId()),
+                                                DataIngredient.items(AllBlocks.PACKAGER.asItem()).getCritereon(b))
+                                    .pattern(" c ")
+                                    .pattern("cCc")
+                                    .pattern("rir")
+                                    .define('c', Items.COPPER_INGOT)
+                                    .define('C', AllBlocks.COPPER_CASING)
+                                    .define('r', Items.REDSTONE)
+                                    .define('i', Items.IRON_INGOT)
+                                    .save(b))
             .register();
 
     public static final BlockEntry<FactoryFluidPanelBlock> FACTORY_FLUID_GAUGE =
@@ -64,12 +65,14 @@ public class FactoryBlocks {
                     .item(FactoryFluidPanelBlockItem::new)
                     .model(AssetLookup::customItemModel)
                     .recipe((c, b) ->
-                            ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, FactoryBlocks.FACTORY_FLUID_GAUGE, 2)
-                                    .unlockedBy("has_" + b.safeName(c.getId()),
-                                            DataIngredient.items(AllBlocks.FACTORY_GAUGE.asItem()).getCritereon(b))
-                                    .requires(AllBlocks.STOCK_LINK)
-                                    .requires(FactoryItems.FLUID_MECHANISM)
-                                    .save(b))
+                                    ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC,
+                                                                     FactoryBlocks.FACTORY_FLUID_GAUGE, 2)
+                                            .unlockedBy("has_" + b.safeName(c.getId()),
+                                                        DataIngredient.items(
+                                                                AllBlocks.FACTORY_GAUGE.asItem()).getCritereon(b))
+                                            .requires(AllBlocks.STOCK_LINK)
+                                            .requires(FactoryItems.FLUID_MECHANISM)
+                                            .save(b))
                     .build()
                     .register();
 
@@ -82,12 +85,13 @@ public class FactoryBlocks {
                     .blockstate(new NetworkLinkGenerator()::generate)
                     .item(NetworkLinkBlockItem::new)
                     .recipe((c, b) -> {
-                        for (ResourceLocation key : IngredientRegistry.REGISTRY.get().getKeys()) {
-                            new NetworkLinkQualificationRecipeBuilder(FactoryRecipes.NETWORK_LINK_QUALIFICATION.get()).save(b, key);
+                        for (ResourceLocation key : GenericContentExtender.REGISTRY.get().getKeys()) {
+                            new NetworkLinkQualificationRecipeBuilder(
+                                    FactoryRecipes.NETWORK_LINK_QUALIFICATION.get()).save(b, key);
                         }
                         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.NETWORK_LINK, 2)
                                 .unlockedBy("has_" + b.safeName(c.getId()),
-                                        DataIngredient.items(AllBlocks.STOCK_LINK.asItem()).getCritereon(b))
+                                            DataIngredient.items(AllBlocks.STOCK_LINK.asItem()).getCritereon(b))
                                 .pattern("t")
                                 .pattern("C")
                                 .define('t', AllBlocks.STOCK_LINK)

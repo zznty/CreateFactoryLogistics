@@ -31,6 +31,11 @@ public class EmptyKeyProvider implements GenericKeyProvider<EmptyKey> {
     }
 
     @Override
+    public String ingredientTypeUid() {
+        return "empty";
+    }
+
+    @Override
     public int compare(EmptyKey o1, EmptyKey o2) {
         return 0;
     }

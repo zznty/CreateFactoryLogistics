@@ -10,8 +10,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import ru.zznty.create_factory_logistics.data.FactoryDataGen;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 
 @Mod(CreateFactoryLogistics.MODID)
 public class CreateFactoryLogistics {
@@ -21,14 +19,15 @@ public class CreateFactoryLogistics {
 
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MODID)
             .defaultCreativeTab("create_factory_logistics_tab",
-                    t -> t.icon(() -> FactoryItems.REGULAR_JAR.get().getDefaultInstance()))
+                                t -> t.icon(() -> FactoryItems.REGULAR_JAR.get().getDefaultInstance()))
             .build();
 
     public CreateFactoryLogistics(FMLJavaModLoadingContext context) {
+        FactoryGenericExtension.register();
+
         IEventBus modEventBus = context.getModEventBus();
 
         REGISTRATE.registerEventListeners(modEventBus);
-        IngredientRegistry.BOARD_INGREDIENTS.register(modEventBus);
         FactoryRecipes.REGISTER.register(modEventBus);
         FactoryArmInteractionPointTypes.ARM_INTERACTION_POINT_TYPES.register(modEventBus);
 
@@ -42,7 +41,6 @@ public class CreateFactoryLogistics {
         FactoryBlockEntities.register();
         FactoryBlocks.register();
         FactoryMenus.register();
-        IngredientProviders.register();
 
         context.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
         context.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);

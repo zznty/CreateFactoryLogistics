@@ -16,10 +16,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_abstractions.api.generic.AbstractionsCapabilities;
+import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttachedHandler;
+import ru.zznty.create_factory_abstractions.generic.impl.BuiltInPackagerAttachedHandler;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
-import ru.zznty.create_factory_logistics.FactoryCapabilities;
-import ru.zznty.create_factory_logistics.logistics.ingredient.capability.PackagerAttachedHandler;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerAttachedHandler;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlockEntity;
 
@@ -42,7 +43,7 @@ public final class CapabilityAttacher {
 
         @Override
         public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-            return FactoryCapabilities.PACKAGER_ATTACHED.orEmpty(cap, handler);
+            return AbstractionsCapabilities.PACKAGER_ATTACHED.orEmpty(cap, handler);
         }
     }
 
@@ -59,7 +60,7 @@ public final class CapabilityAttacher {
 
         @Override
         public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-            return FactoryCapabilities.PACKAGER_ATTACHED.orEmpty(cap, handler);
+            return AbstractionsCapabilities.PACKAGER_ATTACHED.orEmpty(cap, handler);
         }
     }
 

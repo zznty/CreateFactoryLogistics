@@ -4,7 +4,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.NotNull;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientCasts;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
 
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ public class NetworkItemHandler extends BaseNetworkHandler implements IItemHandl
 
     @Override
     public @NotNull ItemStack getStackInSlot(int slot) {
-        return IngredientCasts.asItemStack(summary().get(slot));
+        return asItem(summary().get(slot));
     }
 
     @Override
@@ -47,6 +48,12 @@ public class NetworkItemHandler extends BaseNetworkHandler implements IItemHandl
 
     @Override
     public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-        return ItemHandlerHelper.canItemStacksStack(IngredientCasts.asItemStack(summary().get(slot)), stack);
+        return ItemHandlerHelper.canItemStacksStack(asItem(summary().get(slot)), stack);
+    }
+
+    private static ItemStack asItem(GenericStack stack) {
+        if (stack.key() instanceof ItemKey itemKey)
+            return itemKey.stack().copyWithCount(stack.amount());
+        return ItemStack.EMPTY;
     }
 }

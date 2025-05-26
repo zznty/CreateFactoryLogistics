@@ -10,10 +10,10 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientIdentifiedInventory;
+import ru.zznty.create_factory_abstractions.generic.support.GenericIdentifiedInventory;
 
 @Mixin(IdentifiedInventory.class)
-public class IdentifiedInventoryMixin implements IngredientIdentifiedInventory {
+public class IdentifiedInventoryMixin implements GenericIdentifiedInventory {
     @Final
     @Shadow(remap = false)
     @Nullable

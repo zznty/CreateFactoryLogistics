@@ -195,6 +195,10 @@ dependencies {
         }
     }
 
+    jarJar(implementation(project(":CreateFactoryAbstractions"))) {
+        transitive = false
+    }
+
     if (!Boolean.getBoolean('idea.sync.active')) {
         annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
     }

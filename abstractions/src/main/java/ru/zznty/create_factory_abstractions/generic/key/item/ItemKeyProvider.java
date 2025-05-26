@@ -20,6 +20,8 @@ public class ItemKeyProvider implements GenericKeyProvider<ItemKey> {
 
     @Override
     public <T> ItemKey wrapGeneric(T value) {
+        if (value instanceof ItemKey itemKey)
+            return itemKey;
         if (value instanceof ItemStack itemStack)
             return new ItemKey(new ItemStack(itemStack.getItemHolder()));
         throw new IllegalArgumentException("Expected ItemStack, got " + value.getClass());
@@ -29,6 +31,11 @@ public class ItemKeyProvider implements GenericKeyProvider<ItemKey> {
     public <T> T unwrap(ItemKey key) {
         //noinspection unchecked
         return (T) key.stack();
+    }
+
+    @Override
+    public String ingredientTypeUid() {
+        return "item_stack";
     }
 
     @Override

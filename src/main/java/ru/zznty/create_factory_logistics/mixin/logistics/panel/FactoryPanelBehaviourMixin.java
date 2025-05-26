@@ -20,18 +20,18 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientFilterProvider;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientGui;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientPromiseQueue;
-import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
+import ru.zznty.create_factory_abstractions.api.generic.GenericFilterProvider;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
+import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
+import ru.zznty.create_factory_abstractions.generic.support.GenericPromiseQueue;
 
 import java.util.Map;
 import java.util.UUID;
 
 @Mixin(FactoryPanelBehaviour.class)
-public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements IngredientFilterProvider {
+public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements GenericFilterProvider {
     @Shadow(remap = false)
     private int lastReportedLevelInStorage, lastReportedPromises;
     @Shadow(remap = false)
@@ -90,13 +90,12 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements In
         if (getWorld().isClientSide())
             return lastReportedLevelInStorage;
 
-        BoardIngredient ingredient = BoardIngredient.of((FactoryPanelBehaviour) (Object) this);
+        GenericStack stack = filter();
 
-        if (ingredient.key() == IngredientKey.EMPTY)
+        if (stack.key() == GenericKey.EMPTY)
             return 0;
 
-        IngredientInventorySummary summary = (IngredientInventorySummary) getRelevantSummary();
-        return summary.getCountOf(ingredient.key());
+        return GenericInventorySummary.of(getRelevantSummary()).getCountOf(stack.key());
     }
 
     @Overwrite(remap = false)
@@ -104,35 +103,35 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements In
         if (getWorld().isClientSide())
             return lastReportedPromises;
 
-        BoardIngredient ingredient = BoardIngredient.of((FactoryPanelBehaviour) (Object) this);
+        GenericStack stack = filter();
 
-        if (ingredient.key() == IngredientKey.EMPTY)
+        if (stack.key() == GenericKey.EMPTY)
             return 0;
 
         if (panelBE().restocker) {
-            IngredientPromiseQueue restockerPromiseQueue = (IngredientPromiseQueue) restockerPromises;
+            GenericPromiseQueue restockerPromiseQueue = (GenericPromiseQueue) restockerPromises;
 
             if (forceClearPromises) {
 
-                restockerPromiseQueue.forceClear(ingredient);
+                restockerPromiseQueue.forceClear(stack);
 
                 resetTimerSlightly();
             }
             forceClearPromises = false;
-            return restockerPromiseQueue.getTotalPromisedAndRemoveExpired(ingredient, getPromiseExpiryTimeInTicks());
+            return restockerPromiseQueue.getTotalPromisedAndRemoveExpired(stack, getPromiseExpiryTimeInTicks());
         }
 
-        IngredientPromiseQueue promises = (IngredientPromiseQueue) Create.LOGISTICS.getQueuedPromises(network);
+        GenericPromiseQueue promises = (GenericPromiseQueue) Create.LOGISTICS.getQueuedPromises(network);
         if (promises == null)
             return 0;
 
         if (forceClearPromises) {
-            promises.forceClear(ingredient);
+            promises.forceClear(stack);
             resetTimerSlightly();
         }
         forceClearPromises = false;
 
-        return promises.getTotalPromisedAndRemoveExpired(ingredient, getPromiseExpiryTimeInTicks());
+        return promises.getTotalPromisedAndRemoveExpired(stack, getPromiseExpiryTimeInTicks());
     }
 
     @Overwrite(remap = false)
@@ -149,18 +148,20 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements In
                     .component();
         }
 
-        BoardIngredient ingredient = BoardIngredient.of((FactoryPanelBehaviour) (Object) this);
+        GenericStack stack = filter();
 
         LangBuilder result;
         // we dont want to compare count here
-        if (ingredient.key() == IngredientKey.EMPTY)
+        if (stack.key() == GenericKey.EMPTY)
             result = CreateLang.translate("factory_panel.new_factory_task");
         else if (waitingForNetwork)
             result = CreateLang.translate("factory_panel.some_links_unloaded");
         else if ((getAmount() == 0 || targetedBy.isEmpty()) && satisfied)
-            result = IngredientGui.nameBuilder(ingredient.key());
+            result = GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler().nameBuilder(
+                    stack.key());
         else {
-            result = IngredientGui.nameBuilder(ingredient.key());
+            result = GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler().nameBuilder(
+                    stack.key());
             if (redstonePowered)
                 result.space()
                         .add(CreateLang.translate("factory_panel.redstone_paused"));
@@ -173,7 +174,7 @@ public class FactoryPanelBehaviourMixin extends FilteringBehaviour implements In
     }
 
     @Override
-    public BoardIngredient ingredient() {
-        return new BoardIngredient(IngredientKey.of(getFilter()), count * (upTo ? 1 : getFilter().getMaxStackSize()));
+    public GenericStack filter() {
+        return GenericStack.wrap(getFilter()).withAmount(count * (upTo ? 1 : getFilter().getMaxStackSize()));
     }
 }

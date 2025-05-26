@@ -21,13 +21,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientFilterProvider;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
+import ru.zznty.create_factory_abstractions.api.generic.GenericFilterProvider;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_logistics.logistics.generic.FluidGenericStack;
 
 import java.util.List;
 
-public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements IngredientFilterProvider {
+public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements GenericFilterProvider {
     public FactoryFluidPanelBehaviour(FactoryFluidPanelBlockEntity be, FactoryFluidPanelBlock.PanelSlot slot) {
         super(be, slot);
     }
@@ -149,9 +149,9 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
     }
 
     @Override
-    public BoardIngredient ingredient() {
+    public GenericStack filter() {
         // fluid panel doesnt use upTo field
-        return new BoardIngredient(IngredientKey.of(getFluid()), count);
+        return FluidGenericStack.wrap(getFluid()).withAmount(count);
     }
 
     @Override
