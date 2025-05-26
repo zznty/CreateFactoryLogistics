@@ -11,10 +11,15 @@ import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeySerializer
 import java.util.function.Supplier;
 
 class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonRegistrationBuilder<Key> {
+    private final Class<Key> keyClass;
     @Nullable
     private Supplier<GenericKeyProvider<Key>> provider;
     @Nullable
     private Supplier<GenericKeySerializer<Key>> serializer;
+
+    public CommonRegistrationBuilderImpl(Class<Key> keyClass) {
+        this.keyClass = keyClass;
+    }
 
     @Override
     public <Value> CommonRegistrationBuilder<Key> provider(Supplier<GenericKeyProviderExtension<Key, Value>> provider) {
@@ -29,15 +34,19 @@ class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonReg
                 return extension.defaultKey();
             }
 
+            @SuppressWarnings("unchecked")
             @Override
             public <T> Key wrap(T value) {
-                //noinspection unchecked
+                if (keyClass.isInstance(value))
+                    return (Key) value;
                 return extension.wrap((Value) value);
             }
 
+            @SuppressWarnings("unchecked")
             @Override
             public <T> Key wrapGeneric(T value) {
-                //noinspection unchecked
+                if (keyClass.isInstance(value))
+                    return (Key) value;
                 return extension.wrapGeneric((Value) value);
             }
 
@@ -45,6 +54,11 @@ class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonReg
             public <T> T unwrap(Key key) {
                 //noinspection unchecked
                 return (T) extension.unwrap(key);
+            }
+
+            @Override
+            public String ingredientTypeUid() {
+                return extension.ingredientTypeUid();
             }
 
             @Override

@@ -23,10 +23,10 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
+import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientGui;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
 
@@ -70,11 +70,12 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     ordinal = 1
             )
     )
-    private GuiGameElement.GuiRenderBuilder filterItem(ItemStack stack, Operation<GuiGameElement.GuiRenderBuilder> original) {
+    private GuiGameElement.GuiRenderBuilder filterItem(ItemStack stack,
+                                                       Operation<GuiGameElement.GuiRenderBuilder> original) {
         // todo provider for block filter render
         return behaviour instanceof FactoryFluidPanelBehaviour ?
-                GuiGameElement.of(Blocks.AIR) :
-                original.call(stack);
+               GuiGameElement.of(Blocks.AIR) :
+               original.call(stack);
     }
 
     @Redirect(
@@ -86,9 +87,10 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private void renderOutputConfig(GuiGraphics instance, ItemStack p_281978_, int p_282647_, int p_281944_) {
-        BoardIngredient ingredient = BoardIngredient.of(behaviour);
+        GenericStack stack = GenericStack.of(behaviour);
 
-        IngredientGui.renderSlot(instance, ingredient.key(), p_282647_, p_281944_);
+        GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler()
+                .renderSlot(instance, stack.key(), p_282647_, p_281944_);
     }
 
     /*@Definition(id = "behaviour", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelScreen;behaviour:Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;")
@@ -110,22 +112,30 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private LangBuilder promiseTipValueFormat(String text) {
-        BoardIngredient ingredient = BoardIngredient.of(behaviour);
+        GenericStack stack = GenericStack.of(behaviour);
 
-        return IngredientGui.nameBuilder(ingredient.withAmount(behaviour.getPromised()));
+        return GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler()
+                .nameBuilder(stack.key(), behaviour.getPromised());
     }
 
-    @Definition(id = "itemName", method = "Lcom/simibubi/create/foundation/utility/CreateLang;itemName(Lnet/minecraft/world/item/ItemStack;)Lnet/createmod/catnip/lang/LangBuilder;")
-    @Definition(id = "add", method = "Lnet/createmod/catnip/lang/LangBuilder;add(Lnet/createmod/catnip/lang/LangBuilder;)Lnet/createmod/catnip/lang/LangBuilder;")
+    @Definition(
+            id = "itemName",
+            method = "Lcom/simibubi/create/foundation/utility/CreateLang;itemName(Lnet/minecraft/world/item/ItemStack;)Lnet/createmod/catnip/lang/LangBuilder;"
+    )
+    @Definition(
+            id = "add",
+            method = "Lnet/createmod/catnip/lang/LangBuilder;add(Lnet/createmod/catnip/lang/LangBuilder;)Lnet/createmod/catnip/lang/LangBuilder;"
+    )
     @Expression("itemName(?).add(?)")
     @Redirect(
             method = "renderWindow",
             at = @At("MIXINEXTRAS:EXPRESSION")
     )
     private LangBuilder outputConfigTipFormat(LangBuilder instance, LangBuilder otherBuilder) {
-        BoardIngredient ingredient = BoardIngredient.of(behaviour);
+        GenericStack stack = GenericStack.of(behaviour);
 
-        return IngredientGui.nameBuilder(ingredient.withAmount(outputConfig.count));
+        return GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler()
+                .nameBuilder(stack.key(), outputConfig.count);
     }
 
     @Redirect(
@@ -137,9 +147,10 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private void renderPromised(GuiGraphics instance, Font l, ItemStack i, int j, int k, String i1) {
-        BoardIngredient ingredient = BoardIngredient.of(behaviour);
+        GenericStack stack = GenericStack.of(behaviour);
 
-        IngredientGui.renderDecorations(instance, ingredient.withAmount(behaviour.getPromised()), j, k);
+        GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler()
+                .renderDecorations(instance, stack.key(), behaviour.getPromised(), j, k);
     }
 
     @Redirect(
@@ -151,9 +162,10 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private void outputConfigAmount(GuiGraphics instance, Font l, ItemStack i, int j, int k, String i1) {
-        BigIngredientStack stack = (BigIngredientStack) outputConfig;
+        GenericStack stack = BigGenericStack.of(outputConfig).get();
 
-        IngredientGui.renderDecorations(instance, stack.ingredient(), j, k);
+        GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler()
+                .renderDecorations(instance, stack.key(), stack.amount(), j, k);
     }
 
     @Redirect(
@@ -165,20 +177,31 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private LangBuilder inputConfigRestockerTipFormat(ItemStack $, @Local(argsOnly = true) BigItemStack itemStack) {
-        BigIngredientStack stack = (BigIngredientStack) itemStack;
-        return IngredientGui.nameBuilder(stack.ingredient().key());
+        GenericStack stack = BigGenericStack.of(itemStack).get();
+
+        return GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler()
+                .nameBuilder(stack.key());
     }
 
-    @Definition(id = "itemName", method = "Lcom/simibubi/create/foundation/utility/CreateLang;itemName(Lnet/minecraft/world/item/ItemStack;)Lnet/createmod/catnip/lang/LangBuilder;")
-    @Definition(id = "add", method = "Lnet/createmod/catnip/lang/LangBuilder;add(Lnet/createmod/catnip/lang/LangBuilder;)Lnet/createmod/catnip/lang/LangBuilder;")
+    @Definition(
+            id = "itemName",
+            method = "Lcom/simibubi/create/foundation/utility/CreateLang;itemName(Lnet/minecraft/world/item/ItemStack;)Lnet/createmod/catnip/lang/LangBuilder;"
+    )
+    @Definition(
+            id = "add",
+            method = "Lnet/createmod/catnip/lang/LangBuilder;add(Lnet/createmod/catnip/lang/LangBuilder;)Lnet/createmod/catnip/lang/LangBuilder;"
+    )
     @Expression("itemName(?).add(?)")
     @Redirect(
             method = "renderInputItem",
             at = @At("MIXINEXTRAS:EXPRESSION")
     )
-    private LangBuilder inputConfigTipFormat(LangBuilder instance, LangBuilder otherBuilder, @Local(argsOnly = true) BigItemStack itemStack) {
-        BigIngredientStack stack = (BigIngredientStack) itemStack;
-        return IngredientGui.nameBuilder(stack.ingredient());
+    private LangBuilder inputConfigTipFormat(LangBuilder instance, LangBuilder otherBuilder,
+                                             @Local(argsOnly = true) BigItemStack itemStack) {
+        GenericStack stack = BigGenericStack.of(itemStack).get();
+
+        return GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler()
+                .nameBuilder(stack.key());
     }
 
     @Redirect(
@@ -188,9 +211,12 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     target = "Lnet/minecraft/client/gui/GuiGraphics;renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V"
             )
     )
-    private void inputConfigAmount(GuiGraphics instance, Font l, ItemStack i, int j, int k, String i1, @Local(argsOnly = true) BigItemStack itemStack) {
-        BigIngredientStack stack = (BigIngredientStack) itemStack;
-        IngredientGui.renderDecorations(instance, stack.ingredient(), j, k);
+    private void inputConfigAmount(GuiGraphics instance, Font l, ItemStack i, int j, int k, String i1,
+                                   @Local(argsOnly = true) BigItemStack itemStack) {
+        GenericStack stack = BigGenericStack.of(itemStack).get();
+
+        GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler()
+                .renderDecorations(instance, stack.key(), stack.amount(), j, k);
     }
 
     @Redirect(
@@ -200,10 +226,12 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     target = "Lnet/minecraft/client/gui/GuiGraphics;renderItem(Lnet/minecraft/world/item/ItemStack;II)V"
             )
     )
-    private void renderInputFluid(GuiGraphics instance, ItemStack p_281978_, int p_282647_, int p_281944_, @Local(argsOnly = true) BigItemStack itemStack) {
-        BigIngredientStack stack = (BigIngredientStack) itemStack;
+    private void renderInputFluid(GuiGraphics instance, ItemStack p_281978_, int p_282647_, int p_281944_,
+                                  @Local(argsOnly = true) BigItemStack itemStack) {
+        GenericStack stack = BigGenericStack.of(itemStack).get();
 
-        IngredientGui.renderSlot(instance, stack.ingredient().key(), p_282647_, p_281944_);
+        GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler()
+                .renderSlot(instance, stack.key(), p_282647_, p_281944_);
     }
 
     @Overwrite
@@ -212,7 +240,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
         if (b == null)
             return new BigItemStack(ItemStack.EMPTY, 0);
 
-        return BigIngredientStack.of(BoardIngredient.of(b), connection.amount).asStack();
+        return BigGenericStack.of(GenericStack.of(b).withAmount(connection.amount)).asStack();
     }
 
     @Redirect(
@@ -223,7 +251,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private BigItemStack setOutputConfig(ItemStack stack, int count) {
-        return BigIngredientStack.of(BoardIngredient.of(behaviour), count).asStack();
+        return BigGenericStack.of(GenericStack.of(behaviour).withAmount(count)).asStack();
     }
 
     @Redirect(
@@ -234,9 +262,9 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private boolean isInputIngredientEmpty(ItemStack instance, @Local(argsOnly = true) BigItemStack itemStack) {
-        BigIngredientStack stack = (BigIngredientStack) itemStack;
+        BigGenericStack stack = BigGenericStack.of(itemStack);
 
-        return stack.ingredient().isEmpty();
+        return stack.get().isEmpty();
     }
 
     @Redirect(
@@ -247,36 +275,9 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private boolean isInputIngredientEmptyScroll(ItemStack instance, @Local BigItemStack itemStack) {
-        BigIngredientStack stack = (BigIngredientStack) itemStack;
+        BigGenericStack stack = BigGenericStack.of(itemStack);
 
-        return stack.ingredient().isEmpty();
-    }
-
-    @Redirect(
-            method = "mouseScrolled",
-            at = @At(
-                    value = "FIELD",
-                    target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
-                    ordinal = 0
-            )
-    )
-    private int getInputIngredientCount(BigItemStack instance) {
-        BigIngredientStack stack = (BigIngredientStack) instance;
-
-        return stack.getCount();
-    }
-
-    @Redirect(
-            method = "mouseScrolled",
-            at = @At(
-                    value = "FIELD",
-                    target = "Lcom/simibubi/create/content/logistics/BigItemStack;count:I",
-                    ordinal = 2
-            )
-    )
-    private int getOutputIngredientCount(BigItemStack instance) {
-        BigIngredientStack stack = (BigIngredientStack) instance;
-        return stack.getCount();
+        return stack.get().isEmpty();
     }
 
     @Redirect(
@@ -288,9 +289,9 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private void setInputIngredientCount(BigItemStack instance, int value) {
-        BigIngredientStack stack = (BigIngredientStack) instance;
+        BigGenericStack stack = BigGenericStack.of(instance);
 
-        stack.setCount(value);
+        stack.setAmount(value);
     }
 
     @Redirect(
@@ -302,9 +303,9 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private void setOutputIngredientCount(BigItemStack instance, int value) {
-        BigIngredientStack stack = (BigIngredientStack) instance;
+        BigGenericStack stack = BigGenericStack.of(instance);
 
-        stack.setCount(value);
+        stack.setAmount(value);
     }
 
     @WrapOperation(
@@ -313,13 +314,14 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     value = "INVOKE",
                     target = "Lnet/minecraft/util/Mth;clamp(III)I",
                     ordinal = 0
-            ),
-            remap = true
+            )
     )
-    private int scrollInputClampRemoval(int value, int min, int max, Operation<Integer> original, @Local BigItemStack itemStack) {
-        BigIngredientStack stack = (BigIngredientStack) itemStack;
+    private int scrollInputClampRemoval(int value, int min, int max, Operation<Integer> original,
+                                        @Local BigItemStack itemStack) {
+        BigGenericStack stack = BigGenericStack.of(itemStack);
 
-        int maxStackSize = IngredientGui.maxStackSize(stack.ingredient().key());
+        int maxStackSize = GenericContentExtender.registrationOf(stack.get().key()).clientProvider().guiHandler()
+                .maxStackSize(stack.get().key());
 
         if (maxStackSize < 0)
             return Math.max(1, value);
@@ -333,13 +335,13 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     value = "INVOKE",
                     target = "Lnet/minecraft/util/Mth;clamp(III)I",
                     ordinal = 1
-            ),
-            remap = true
+            )
     )
     private int scrollOutputClampRemoval(int value, int min, int max, Operation<Integer> original) {
-        BigIngredientStack stack = (BigIngredientStack) outputConfig;
+        BigGenericStack stack = BigGenericStack.of(outputConfig);
 
-        int maxStackSize = IngredientGui.maxStackSize(stack.ingredient().key());
+        int maxStackSize = GenericContentExtender.registrationOf(stack.get().key()).clientProvider().guiHandler()
+                .maxStackSize(stack.get().key());
 
         if (maxStackSize < 0)
             return Math.max(1, value);

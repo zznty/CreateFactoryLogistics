@@ -12,22 +12,25 @@ import net.createmod.catnip.data.Pair;
 import net.minecraft.world.inventory.Slot;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeyProvider;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyProvider;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistration;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public final class IngredientTransfer {
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static Optional<BoardIngredient> tryConvert(IIngredientManager ingredientManager, ITypedIngredient<?> typedIngredient) {
+    public static Optional<GenericStack> tryConvert(IIngredientManager ingredientManager,
+                                                    ITypedIngredient<?> typedIngredient) {
         String typeUid = typedIngredient.getType().getUid();
-        for (IngredientKeyProvider provider : IngredientRegistry.REGISTRY) {
-            if (provider.ingredientTypeUid().equals(typeUid)) {
+        for (GenericKeyRegistration registration : GenericContentExtender.REGISTRATIONS.values()) {
+            if (registration.provider().ingredientTypeUid().equals(typeUid)) {
                 IIngredientHelper ingredientHelper = ingredientManager.getIngredientHelper(typedIngredient.getType());
-                return Optional.of(new BoardIngredient(provider.wrap(typedIngredient.getIngredient()),
-                        (int) ingredientHelper.getAmount(typedIngredient.getIngredient())));
+                return Optional.of(new GenericStack(registration.provider().wrap(typedIngredient.getIngredient()),
+                                                    (int) ingredientHelper.getAmount(typedIngredient.getIngredient())));
             }
         }
 
@@ -37,7 +40,7 @@ public final class IngredientTransfer {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static TransferOperationsResult getRecipeTransferOperations(
             IIngredientManager ingredientManager,
-            List<BoardIngredient> availableIngredients,
+            List<GenericStack> availableIngredients,
             List<IRecipeSlotView> requiredStacks,
             List<Slot> craftingSlots
     ) {
@@ -45,17 +48,18 @@ public final class IngredientTransfer {
 
         // Find groups of slots for each recipe input, so each ingredient knows list of slots it can take item from
         // and also split them between "equal" groups
-        Map<IRecipeSlotView, Map<MutableObject<BoardIngredient>, ArrayList<PhantomSlotState>>> relevantSlots = new IdentityHashMap<>();
+        Map<IRecipeSlotView, Map<MutableObject<GenericStack>, ArrayList<PhantomSlotState>>> relevantSlots = new IdentityHashMap<>();
 
         Map<IRecipeSlotView, Map<Object, ITypedIngredient<?>>> slotUidCache = new IdentityHashMap<>();
         List<IRecipeSlotView> nonEmptyRequiredStacks = requiredStacks.stream()
                 .filter(r -> !r.isEmpty())
                 .toList();
 
-        List<MutableObject<BoardIngredient>> availableStacks = availableIngredients.stream().map(MutableObject::new).toList();
+        List<MutableObject<GenericStack>> availableStacks = availableIngredients.stream().map(
+                MutableObject::new).toList();
 
         for (int i = 0; i < availableStacks.size(); i++) {
-            MutableObject<BoardIngredient> availableStack = availableStacks.get(i);
+            MutableObject<GenericStack> availableStack = availableStacks.get(i);
             Object slotItemStackUid = getStackUid(ingredientManager, availableStack.getValue(), UidContext.Ingredient);
 
             for (IRecipeSlotView ingredient : nonEmptyRequiredStacks) {
@@ -71,19 +75,23 @@ public final class IngredientTransfer {
                 ITypedIngredient<?> selectedIngredient = ingredientUids.get(slotItemStackUid);
                 if (selectedIngredient != null) {
                     relevantSlots
-                            .computeIfAbsent(ingredient, it -> new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<>() {
-                                @Override
-                                public int hashCode(MutableObject<BoardIngredient> o) {
-                                    return o.getValue().key().hashCode();
-                                }
+                            .computeIfAbsent(ingredient,
+                                             it -> new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<>() {
+                                                 @Override
+                                                 public int hashCode(MutableObject<GenericStack> o) {
+                                                     return o.getValue().key().hashCode();
+                                                 }
 
-                                @Override
-                                public boolean equals(MutableObject<BoardIngredient> a, MutableObject<BoardIngredient> b) {
-                                    if (a == null || b == null) return false;
-                                    return getStackUid(ingredientManager, a.getValue(), UidContext.Ingredient)
-                                            .equals(getStackUid(ingredientManager, b.getValue(), UidContext.Ingredient));
-                                }
-                            }))
+                                                 @Override
+                                                 public boolean equals(MutableObject<GenericStack> a,
+                                                                       MutableObject<GenericStack> b) {
+                                                     if (a == null || b == null) return false;
+                                                     return getStackUid(ingredientManager, a.getValue(),
+                                                                        UidContext.Ingredient)
+                                                             .equals(getStackUid(ingredientManager, b.getValue(),
+                                                                                 UidContext.Ingredient));
+                                                 }
+                                             }))
                             .computeIfAbsent(availableStack, it -> new ArrayList<>())
                             .add(new PhantomSlotState(i, availableStack, selectedIngredient));
                 }
@@ -104,10 +112,10 @@ public final class IngredientTransfer {
 
         Map<IRecipeSlotView, ArrayList<PhantomSlotStateList>> bestMatches = new Object2ObjectArrayMap<>();
 
-        for (Map.Entry<IRecipeSlotView, Map<MutableObject<BoardIngredient>, ArrayList<PhantomSlotState>>> entry : relevantSlots.entrySet()) {
+        for (Map.Entry<IRecipeSlotView, Map<MutableObject<GenericStack>, ArrayList<PhantomSlotState>>> entry : relevantSlots.entrySet()) {
             ArrayList<PhantomSlotStateList> countedAndSorted = new ArrayList<>();
 
-            for (Map.Entry<MutableObject<BoardIngredient>, ArrayList<PhantomSlotState>> foundSlots : entry.getValue().entrySet()) {
+            for (Map.Entry<MutableObject<GenericStack>, ArrayList<PhantomSlotState>> foundSlots : entry.getValue().entrySet()) {
                 // Ascending sort
                 // if counts are equal, push slots with lesser index to top
                 foundSlots.getValue().sort((o1, o2) -> {
@@ -166,7 +174,8 @@ public final class IngredientTransfer {
                 transferOperations.missingItems().add(requiredStack);
             } else {
                 matching.stack.setValue(matching.stack.getValue().withAmount(matching.stack.getValue().amount() - 1));
-                transferOperations.results().add(new TransferOperation(matching.slot, craftingSlot.index, matching.typedIngredient));
+                transferOperations.results().add(
+                        new TransferOperation(matching.slot, craftingSlot.index, matching.typedIngredient));
             }
         }
 
@@ -174,12 +183,17 @@ public final class IngredientTransfer {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static Object getStackUid(IIngredientManager ingredientManager, BoardIngredient availableStack, UidContext context) {
-        IIngredientHelper ingredientHelper = ingredientManager.getIngredientHelper(ingredientManager.getIngredientTypeForUid(availableStack.key().provider().ingredientTypeUid()).orElseThrow());
-        return ingredientHelper.getUid(availableStack.key().get(), context);
+    private static Object getStackUid(IIngredientManager ingredientManager, GenericStack availableStack, UidContext context) {
+        GenericKeyProvider<GenericKey> provider = GenericContentExtender.registrationOf(
+                availableStack.key()).provider();
+
+        IIngredientHelper ingredientHelper = ingredientManager.getIngredientHelper(
+                ingredientManager.getIngredientTypeForUid(
+                        provider.ingredientTypeUid()).orElseThrow());
+        return ingredientHelper.getUid(provider.unwrap(availableStack.key()), context);
     }
 
-    private record PhantomSlotState(int slot, MutableObject<BoardIngredient> stack,
+    private record PhantomSlotState(int slot, MutableObject<GenericStack> stack,
                                     ITypedIngredient<?> typedIngredient) {
     }
 

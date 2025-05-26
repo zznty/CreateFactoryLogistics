@@ -16,7 +16,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
+import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlock;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerGenerator;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlock;
@@ -33,7 +33,8 @@ import static ru.zznty.create_factory_logistics.CreateFactoryLogistics.REGISTRAT
 
 @SuppressWarnings("removal")
 public class FactoryBlocks {
-    public static final BlockEntry<JarPackagerBlock> JAR_PACKAGER = REGISTRATE.block("jar_packager", JarPackagerBlock::new)
+    public static final BlockEntry<JarPackagerBlock> JAR_PACKAGER = REGISTRATE.block("jar_packager",
+                                                                                     JarPackagerBlock::new)
             .transform(BuilderTransformers.packager())
             .blockstate(new JarPackagerGenerator()::generate)
             .recipe((c, b) ->
@@ -82,7 +83,7 @@ public class FactoryBlocks {
                     .blockstate(new NetworkLinkGenerator()::generate)
                     .item(NetworkLinkBlockItem::new)
                     .recipe((c, b) -> {
-                        for (ResourceLocation key : IngredientRegistry.REGISTRY.keySet()) {
+                        for (ResourceLocation key : GenericContentExtender.REGISTRY.keySet()) {
                             new NetworkLinkQualificationRecipeBuilder().save(b, key);
                         }
                         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, FactoryBlocks.NETWORK_LINK, 2)

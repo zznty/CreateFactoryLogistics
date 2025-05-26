@@ -27,17 +27,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import ru.zznty.create_factory_abstractions.api.generic.AbstractionsCapabilities;
+import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttachedHandler;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.support.*;
 import ru.zznty.create_factory_logistics.Config;
-import ru.zznty.create_factory_logistics.FactoryCapabilities;
-import ru.zznty.create_factory_logistics.compat.extra_gauges.AbstractPanelBehaviourStub;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BigIngredientStack;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.capability.PackagerAttachedHandler;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientLogisticsManager;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientOrder;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientRequest;
-import ru.zznty.create_factory_logistics.logistics.panel.request.PanelRequestedIngredients;
-import ru.zznty.create_factory_logistics.logistics.stock.IngredientInventorySummary;
 
 import java.util.*;
 
@@ -113,18 +107,18 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         PackagerBlockEntity packager = panelBE.getRestockedPackager();
         if (packager == null)
             return;
-        PackagerAttachedHandler handler = packager.getLevel().getCapability(FactoryCapabilities.PACKAGER_ATTACHED, packager.getBlockPos());
+        PackagerAttachedHandler handler = packager.getLevel().getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED, packager.getBlockPos());
         if (handler == null)
             return;
 
-        BoardIngredient ingredient = BoardIngredient.of((FactoryPanelBehaviour) (Object) this);
+        GenericStack stack = GenericStack.of((FactoryPanelBehaviour) (Object) this);
 
         IdentifiedInventory identifiedInventory = handler.identifiedInventory();
 
         if (identifiedInventory == null)
             return;
 
-        int availableOnNetwork = IngredientLogisticsManager.getStockOf(network, ingredient, identifiedInventory);
+        int availableOnNetwork = GenericLogisticsManager.getStockOf(network, stack, identifiedInventory);
         if (availableOnNetwork == 0) {
             sendEffect(getPanelPosition(), false);
             return;
@@ -132,25 +126,24 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 
         int inStorage = getLevelInStorage();
         int promised = getPromised();
-        int demand = ingredient.amount();
+        int demand = stack.amount();
         int amountToOrder = java.lang.Math.max(0, demand - promised - inStorage);
 
-        BigIngredientStack orderedIngredient = BigIngredientStack.of(ingredient, java.lang.Math.min(amountToOrder,
-                                                                                                    availableOnNetwork));
-        IngredientOrder order = IngredientOrder.order(List.of(orderedIngredient));
+        GenericStack orderedStack = stack.withAmount(java.lang.Math.min(amountToOrder, availableOnNetwork));
+        GenericOrder order = GenericOrder.order(List.of(orderedStack));
 
         sendEffect(getPanelPosition(), true);
 
-        if (!IngredientLogisticsManager.broadcastPackageRequest(network,
-                                                                LogisticallyLinkedBehaviour.RequestType.RESTOCK, order,
-                                                                identifiedInventory, recipeAddress))
+        if (!GenericLogisticsManager.broadcastPackageRequest(network, LogisticallyLinkedBehaviour.RequestType.RESTOCK,
+                                                             order,
+                                                             identifiedInventory, recipeAddress))
             return;
 
-        restockerPromises.add(new RequestPromise(orderedIngredient.asStack()));
+        restockerPromises.add(new RequestPromise(BigGenericStack.of(orderedStack).asStack()));
     }
 
     @Unique
-    private boolean createFactoryLogistics$requestDependent(Multimap<UUID, PanelRequestedIngredients> toRequest,
+    private boolean createFactoryLogistics$requestDependent(Multimap<UUID, PanelRequestedStacks> toRequest,
                                                             FactoryPanelConnection sourceConnection,
                                                             FactoryPanelBehaviour context,
                                                             Set<FactoryPanelPosition> visited) {
@@ -163,9 +156,9 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 //            return false;
         }
 
-        BoardIngredient ingredient = BoardIngredient.of(source).withAmount(sourceConnection.amount);
-        IngredientInventorySummary summary = (IngredientInventorySummary) LogisticsManager.getSummaryOfNetwork(
-                source.network, true);
+        GenericStack ingredient = GenericStack.of(source).withAmount(sourceConnection.amount);
+        GenericInventorySummary summary = GenericInventorySummary.of(
+                LogisticsManager.getSummaryOfNetwork(source.network, true));
 
         if (ingredient.isEmpty() || summary.isEmpty()) {
             createFactoryLogistics$sendEffect(sourceConnection.from, context.getPanelPosition(), false);
@@ -190,7 +183,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
             return false;
         }
 
-        toRequest.put(source.network, PanelRequestedIngredients.of(source));
+        toRequest.put(source.network, PanelRequestedStacks.of(source));
 
         createFactoryLogistics$sendEffect(sourceConnection.from, context.getPanelPosition(), true);
         return true;
@@ -229,7 +222,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
             return;
         }
 
-        Multimap<UUID, PanelRequestedIngredients> toRequest = HashMultimap.create();
+        Multimap<UUID, PanelRequestedStacks> toRequest = HashMultimap.create();
         Set<FactoryPanelPosition> visited = new HashSet<>();
 
         for (FactoryPanelConnection connection : source.targetedBy.values()) {
@@ -241,14 +234,14 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 
         // If all ingredients are present, request main one
         if (visited.size() == targetedBy.size()) {
-            toRequest.put(source.network, PanelRequestedIngredients.of(source));
+            toRequest.put(source.network, PanelRequestedStacks.of(source));
         }
 
         // Input items may come from differing networks
-        Map<PanelRequestedIngredients, Multimap<PackagerBlockEntity, IngredientRequest>> requests = new HashMap<>();
+        Map<PanelRequestedStacks, Multimap<PackagerBlockEntity, GenericRequest>> requests = new HashMap<>();
 
         // Collect request distributions
-        for (Map.Entry<UUID, Collection<PanelRequestedIngredients>> entry : toRequest.asMap().entrySet()) {
+        for (Map.Entry<UUID, Collection<PanelRequestedStacks>> entry : toRequest.asMap().entrySet()) {
 //            Object2IntMap<PanelRequestedIngredients> craftCounts = new Object2IntOpenHashMap<>();
 //
 //            // Compute total number of each ingredient to craft
@@ -263,32 +256,32 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 //                requests.add(request);
 //            }
 
-            for (PanelRequestedIngredients requestedIngredients : entry.getValue()) {
-                IngredientOrder order = IngredientOrder.of(requestedIngredients);
-                Multimap<PackagerBlockEntity, IngredientRequest> request = IngredientLogisticsManager.findPackagersForRequest(
-                        entry.getKey(), order, null, requestedIngredients.recipeAddress());
+            for (PanelRequestedStacks requestedStacks : entry.getValue()) {
+                GenericOrder order = GenericOrder.of(requestedStacks);
+                Multimap<PackagerBlockEntity, GenericRequest> request = GenericLogisticsManager.findPackagersForRequest(
+                        entry.getKey(), order, null, requestedStacks.recipeAddress());
                 if (!request.isEmpty())
-                    requests.put(requestedIngredients, request);
+                    requests.put(requestedStacks, request);
             }
         }
 
         // Check if any packager is busy - cancel all
-        for (Multimap<PackagerBlockEntity, IngredientRequest> entry : requests.values())
+        for (Multimap<PackagerBlockEntity, GenericRequest> entry : requests.values())
             for (PackagerBlockEntity packager : entry.keySet())
                 if (packager.isTooBusyFor(LogisticallyLinkedBehaviour.RequestType.RESTOCK))
                     return;
 
         // Send it
-        for (Multimap<PackagerBlockEntity, IngredientRequest> entry : requests.values())
-            IngredientLogisticsManager.performPackageRequests(entry);
+        for (Multimap<PackagerBlockEntity, GenericRequest> entry : requests.values())
+            GenericLogisticsManager.performPackageRequests(entry);
 
         // Keep the output promises
         RequestPromiseQueue promises = Create.LOGISTICS.getQueuedPromises(network);
         if (promises != null) {
-            for (Map.Entry<PanelRequestedIngredients, Multimap<PackagerBlockEntity, IngredientRequest>> entry : requests.entrySet()) {
+            for (Map.Entry<PanelRequestedStacks, Multimap<PackagerBlockEntity, GenericRequest>> entry : requests.entrySet()) {
                 // if all requests were sent, add the output promise
                 if (entry.getValue().isEmpty())
-                    promises.add(new RequestPromise(entry.getKey().result().asStack()));
+                    promises.add(new RequestPromise(BigGenericStack.of(entry.getKey().result()).asStack()));
             }
         }
 

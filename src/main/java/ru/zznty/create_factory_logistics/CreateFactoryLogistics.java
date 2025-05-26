@@ -11,8 +11,6 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
 import ru.zznty.create_factory_logistics.data.FactoryDataGen;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 
 @Mod(CreateFactoryLogistics.MODID)
 public class CreateFactoryLogistics {
@@ -22,13 +20,13 @@ public class CreateFactoryLogistics {
 
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MODID)
             .defaultCreativeTab("create_factory_logistics_tab",
-                    t -> t.icon(() -> FactoryItems.REGULAR_JAR.get().getDefaultInstance()))
+                                t -> t.icon(() -> FactoryItems.REGULAR_JAR.get().getDefaultInstance()))
             .build();
 
     public CreateFactoryLogistics(IEventBus modEventBus, ModContainer modContainer) {
+        FactoryGenericExtension.register();
 
         REGISTRATE.registerEventListeners(modEventBus);
-        IngredientRegistry.BOARD_INGREDIENTS.register(modEventBus);
         FactoryRecipes.REGISTER.register(modEventBus);
         FactoryArmInteractionPointTypes.ARM_INTERACTION_POINT_TYPES.register(modEventBus);
         FactoryDataComponents.DATA_COMPONENTS.register(modEventBus);
@@ -45,7 +43,6 @@ public class CreateFactoryLogistics {
         FactoryBlockEntities.register();
         FactoryBlocks.register();
         FactoryMenus.register();
-        IngredientProviders.register();
         FactoryPackets.register();
 
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC);

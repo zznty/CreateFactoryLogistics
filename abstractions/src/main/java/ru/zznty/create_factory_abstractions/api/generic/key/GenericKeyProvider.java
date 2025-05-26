@@ -10,4 +10,6 @@ public interface GenericKeyProvider<Key extends GenericKey> extends Comparator<K
     <T> Key wrapGeneric(T value);
 
     <T> T unwrap(Key key);
+
+    String ingredientTypeUid();
 }

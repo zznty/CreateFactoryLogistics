@@ -17,12 +17,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
+import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryBlockEntities;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.FactoryRecipes;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientProviders;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     public boolean matches(CraftingInput p_44002_, Level p_44003_) {
         List<ItemStack> list = new ArrayList<>(p_44002_.items());
         list.removeIf(ItemStack::isEmpty);
-        boolean isEmpty = key.equals(IngredientProviders.EMPTY.getId());
+        boolean isEmpty = key.equals(ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "empty"));
         if (list.size() != (isEmpty ? 1 : 2))
             return false;
 
@@ -51,10 +51,11 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     }
 
     public static TagKey<Item> tag(ResourceLocation location) {
-        if (!IngredientRegistry.REGISTRY.containsKey(location))
-            throw new IllegalArgumentException("Location " + location + " does not belong to ingredient types registry");
+        if (!GenericContentExtender.REGISTRY.containsKey(location))
+            throw new IllegalArgumentException("Location" + location + " does not belong to ingredient types registry");
         return TagKey.create(BuiltInRegistries.ITEM.key(),
-                CreateFactoryLogistics.resource("network_link_qualifier/" + location.getNamespace() + "/" + location.getPath()));
+                             CreateFactoryLogistics.resource(
+                                     "network_link_qualifier/" + location.getNamespace() + "/" + location.getPath()));
     }
 
     @Override
@@ -77,7 +78,7 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
         }
 
         if (air)
-            qualifier = IngredientProviders.EMPTY.getId();
+            qualifier = GenericContentExtender.REGISTRY.get().getDefaultKey();
 
         if (link == null || qualifier == null) return ItemStack.EMPTY;
 

@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
-import ru.zznty.create_factory_logistics.logistics.panel.request.IngredientGhostMenu;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.support.GenericGhostMenu;
+import ru.zznty.create_factory_logistics.logistics.generic.FluidGenericStack;
 
 @Mixin(targets = "com/simibubi/create/compat/jei/GhostIngredientHandler$GhostTarget")
 public class JeiCompatMixin {
@@ -30,14 +30,15 @@ public class JeiCompatMixin {
             )
     )
     private void setInSlot(ItemStackHandler instance, int slot, ItemStack stack, Operation<Void> original) {
-        if (gui.getMenu() instanceof IngredientGhostMenu ingredientGhostMenu) {
-            IngredientKey key;
+        if (gui.getMenu() instanceof GenericGhostMenu genericGhostMenu) {
+            GenericStack genericStack;
             if (GenericItemEmptying.canItemBeEmptied(Minecraft.getInstance().level, stack) && Screen.hasAltDown()) {
-                key = IngredientKey.of(GenericItemEmptying.emptyItem(Minecraft.getInstance().level, stack, true).getFirst());
+                genericStack = FluidGenericStack.wrap(
+                        GenericItemEmptying.emptyItem(Minecraft.getInstance().level, stack, true).getFirst());
             } else {
-                key = IngredientKey.of(stack);
+                genericStack = GenericStack.wrap(stack);
             }
-            ingredientGhostMenu.setIngredientInSlot(slot, new BoardIngredient(key, 1));
+            genericGhostMenu.setSlot(slot, genericStack.withAmount(1));
             return;
         }
 

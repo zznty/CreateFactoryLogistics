@@ -4,8 +4,8 @@ import com.simibubi.create.foundation.fluid.FluidHelper;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
-import ru.zznty.create_factory_logistics.logistics.ingredient.BoardIngredient;
-import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientCasts;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_logistics.logistics.generic.FluidKey;
 
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ public class NetworkFluidHandler extends BaseNetworkHandler implements IFluidHan
 
     @Override
     public @NotNull FluidStack getFluidInTank(int tank) {
-        return IngredientCasts.asFluidStack(summary().get(tank));
+        return asFluid(summary().get(tank));
     }
 
     @Override
@@ -31,7 +31,7 @@ public class NetworkFluidHandler extends BaseNetworkHandler implements IFluidHan
 
     @Override
     public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
-        return FluidStack.isSameFluidSameComponents(IngredientCasts.asFluidStack(summary().get(tank)), stack);
+        return FluidStack.isSameFluidSameComponents(asFluid(summary().get(tank)), stack);
     }
 
     @Override
@@ -45,10 +45,10 @@ public class NetworkFluidHandler extends BaseNetworkHandler implements IFluidHan
             return FluidStack.EMPTY;
 
         int amount = 0;
-        for (BoardIngredient ingredient : summary()) {
-            FluidStack stack = IngredientCasts.asFluidStack(ingredient);
-            if (FluidStack.isSameFluidSameComponents(stack, resource))
-                amount += Math.min(stack.getAmount(), resource.getAmount() - amount);
+        for (GenericStack stack : summary()) {
+            FluidStack fluidStack = asFluid(stack);
+            if (FluidStack.isSameFluidSameComponents(fluidStack, resource))
+                amount += Math.min(fluidStack.getAmount(), resource.getAmount() - amount);
             if (amount >= resource.getAmount()) break;
         }
 
@@ -58,14 +58,20 @@ public class NetworkFluidHandler extends BaseNetworkHandler implements IFluidHan
     @Override
     public @NotNull FluidStack drain(int maxDrain, FluidAction action) {
         FluidStack resource = FluidStack.EMPTY;
-        for (BoardIngredient ingredient : summary()) {
-            FluidStack stack = IngredientCasts.asFluidStack(ingredient);
-            if (!stack.isEmpty()) {
-                resource = stack;
+        for (GenericStack stack : summary()) {
+            FluidStack fluidStack = asFluid(stack);
+            if (!fluidStack.isEmpty()) {
+                resource = fluidStack;
                 break;
             }
         }
 
         return drain(FluidHelper.copyStackWithAmount(resource, maxDrain), action);
+    }
+
+    private static FluidStack asFluid(GenericStack stack) {
+        if (stack.key() instanceof FluidKey fluidKey)
+            return FluidHelper.copyStackWithAmount(fluidKey.stack(), stack.amount());
+        return FluidStack.EMPTY;
     }
 }
