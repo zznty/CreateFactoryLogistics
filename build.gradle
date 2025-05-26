@@ -147,6 +147,12 @@ repositories {
     //     dir 'libs'
     // }
 
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
     maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
     maven { url = "https://maven.tterrag.com" } // Registrate
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
@@ -193,6 +199,8 @@ dependencies {
     if (!Boolean.getBoolean('idea.sync.active')) {
         annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
     }
+
+    runtimeOnly fg.deobf("curse.maven:create-vibrant-vaults-1251719:6463880")
 }
 
 mixin {

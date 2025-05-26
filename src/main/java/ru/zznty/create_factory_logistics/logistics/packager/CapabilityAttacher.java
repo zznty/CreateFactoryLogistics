@@ -1,9 +1,10 @@
 package ru.zznty.create_factory_logistics.logistics.packager;
 
-import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -11,6 +12,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +26,9 @@ import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlockE
 @ApiStatus.Internal
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class CapabilityAttacher {
+    private static final TagKey<Block> ITEM_PACKAGER = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(),
+                                                                     CreateFactoryLogistics.resource("packager_item"));
+
     private static final class BuiltInPackagerCapabilityProvider implements ICapabilityProvider {
         public static final ResourceLocation IDENTIFIER = CreateFactoryLogistics.resource("packager_cap");
 
@@ -61,10 +66,11 @@ public final class CapabilityAttacher {
     @SubscribeEvent
     public static void attach(final AttachCapabilitiesEvent<BlockEntity> event) {
         if (event.getObject() instanceof PackagerBlockEntity packagerBE) {
-            if (packagerBE.getBlockState().is(AllBlocks.PACKAGER.get())) {
+            if (packagerBE.getBlockState().is(ITEM_PACKAGER)) {
                 final BuiltInPackagerCapabilityProvider provider = new BuiltInPackagerCapabilityProvider(packagerBE);
                 event.addCapability(BuiltInPackagerCapabilityProvider.IDENTIFIER, provider);
-            } else if (packagerBE instanceof JarPackagerBlockEntity jarPackagerBE && packagerBE.getBlockState().is(FactoryBlocks.JAR_PACKAGER.get())) {
+            } else if (packagerBE instanceof JarPackagerBlockEntity jarPackagerBE && packagerBE.getBlockState().is(
+                    FactoryBlocks.JAR_PACKAGER.get())) {
                 final JarPackagerCapabilityProvider provider = new JarPackagerCapabilityProvider(jarPackagerBE);
                 event.addCapability(JarPackagerCapabilityProvider.IDENTIFIER, provider);
             }

@@ -1,2 +1,3 @@
-// 1.20.1	2025-05-19T12:48:03.5016822	Tags for minecraft:block mod id create_factory_logistics
+// 1.20.1	2025-05-26T22:53:56.3584023	Tags for minecraft:block mod id create_factory_logistics
 ef5715c7d0c589f1390130f45046f21cee433c4d data/create/tags/blocks/single_block_inventories.json
+bdba7dc27d3b8b55631f5a853ae86d2bb6470ec0 data/create_factory_logistics/tags/blocks/packager_item.json

@@ -7,6 +7,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.data.ExistingFileHelper;
@@ -17,8 +19,9 @@ import ru.zznty.create_factory_logistics.FactoryBlocks;
 
 import java.util.concurrent.CompletableFuture;
 
-public class InventoryIdentifierTagsProvider extends TagsProvider<Block> {
-    public InventoryIdentifierTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
+public class BlockTagsProvider extends TagsProvider<Block> {
+    public BlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider,
+                             @Nullable ExistingFileHelper existingFileHelper) {
         super(output, Registries.BLOCK, lookupProvider, CreateFactoryLogistics.MODID, existingFileHelper);
     }
 
@@ -28,6 +31,11 @@ public class InventoryIdentifierTagsProvider extends TagsProvider<Block> {
                 .add(asKey(Blocks.WATER_CAULDRON), asKey(Blocks.LAVA_CAULDRON))
                 .add(asKey(AllBlocks.BASIN.get()))
                 .add(asKey(FactoryBlocks.NETWORK_LINK.get()));
+
+        tag(TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(),
+                          CreateFactoryLogistics.resource("packager_item")))
+                .add(asKey(AllBlocks.PACKAGER.get()))
+                .addOptionalTag(ResourceLocation.fromNamespaceAndPath("create_vibrant_vaults", "vibrant_packagers"));
     }
 
     private ResourceKey<Block> asKey(Block block) {
