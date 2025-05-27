@@ -1,14 +1,22 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient.impl.item;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
+import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKey;
 import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeySerializer;
 
 @ApiStatus.Internal
 public class ItemKeySerializer implements IngredientKeySerializer<ItemIngredientKey> {
+    @Override
+    public <T> Codec<IngredientKey<T>> codec() {
+        Codec codec = ItemStack.OPTIONAL_CODEC.xmap(ItemIngredientKey::new, ItemIngredientKey::stack);
+        return codec;
+    }
+
     @Override
     public void write(HolderLookup.Provider levelRegistryAccess, ItemIngredientKey key, CompoundTag tag) {
         if (!key.stack().isEmpty())

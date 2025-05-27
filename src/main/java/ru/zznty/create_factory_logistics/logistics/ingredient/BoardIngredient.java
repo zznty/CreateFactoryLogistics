@@ -1,5 +1,7 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -12,6 +14,11 @@ import net.minecraft.resources.ResourceLocation;
  * Could be expanded to support other types via registry
  */
 public record BoardIngredient(IngredientKey<?> key, int amount) {
+    public static final Codec<BoardIngredient> CODEC = RecordCodecBuilder.create(i -> i.group(
+            IngredientKey.CODEC.fieldOf("key").forGetter(BoardIngredient::key),
+            Codec.INT.fieldOf("Amount").forGetter(BoardIngredient::amount)
+    ).apply(i, BoardIngredient::new));
+
     public boolean isEmpty() {
         return amount == 0 || key.provider() == IngredientProviders.EMPTY.get();
     }
@@ -37,7 +44,9 @@ public record BoardIngredient(IngredientKey<?> key, int amount) {
         int amount = tag.getInt("Amount");
         IngredientKeyProvider provider = IngredientRegistry.REGISTRY.get(ResourceLocation.parse(tag.getString("id")));
 
-        return provider == null ? BoardIngredient.of() : new BoardIngredient(provider.serializer().read(levelRegistryAccess, tag.getCompound("key")), amount);
+        return provider == null ?
+               BoardIngredient.of() :
+               new BoardIngredient(provider.serializer().read(levelRegistryAccess, tag.getCompound("key")), amount);
     }
 
     public void write(RegistryFriendlyByteBuf buf) {

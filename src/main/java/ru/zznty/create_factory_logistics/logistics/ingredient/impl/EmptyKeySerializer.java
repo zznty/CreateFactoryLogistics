@@ -1,5 +1,6 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient.impl;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -9,6 +10,12 @@ import ru.zznty.create_factory_logistics.logistics.ingredient.IngredientKeySeria
 
 @ApiStatus.Internal
 public class EmptyKeySerializer implements IngredientKeySerializer<EmptyIngredientKey> {
+    @Override
+    public <T> Codec<IngredientKey<T>> codec() {
+        Codec unit = Codec.unit(EmptyIngredientKey::new);
+        return (Codec<IngredientKey<T>>) unit;
+    }
+
     @Override
     public void write(HolderLookup.Provider levelRegistryAccess, EmptyIngredientKey key, CompoundTag tag) {
     }

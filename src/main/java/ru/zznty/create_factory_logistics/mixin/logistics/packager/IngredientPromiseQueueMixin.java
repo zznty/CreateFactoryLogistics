@@ -4,8 +4,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
+import net.createmod.catnip.codecs.CatnipCodecUtils;
 import net.createmod.catnip.nbt.NBTHelper;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
@@ -148,25 +148,32 @@ public class IngredientPromiseQueueMixin implements IngredientPromiseQueue {
     }
 
     @Overwrite
-    public static RequestPromiseQueue read(CompoundTag tag, HolderLookup.Provider registries, Runnable onChanged) {
+    public static RequestPromiseQueue read(CompoundTag tag, Runnable onChanged) {
         RequestPromiseQueue queue = new RequestPromiseQueue(onChanged);
         ListTag listTag = tag.getList("List", CompoundTag.TAG_COMPOUND);
         NBTHelper.iterateCompoundList(listTag,
-                compoundTag -> {
-                    queue.add(new RequestPromise(compoundTag.getInt("ticks_existed"),
-                            BigIngredientStack.of(BoardIngredient.read(registries, compoundTag.getCompound("promised_stack"))).asStack()));
-                });
+                                      compoundTag -> {
+                                          queue.add(new RequestPromise(compoundTag.getInt("ticks_existed"),
+                                                                       BigIngredientStack.of(CatnipCodecUtils.decode(
+                                                                               BoardIngredient.CODEC,
+                                                                               compoundTag.getCompound(
+                                                                                       "promised_stack")).orElseGet(
+                                                                               () -> new BoardIngredient(
+                                                                                       IngredientKey.EMPTY,
+                                                                                       0))).asStack()));
+                                      });
         return queue;
     }
 
     @Overwrite
-    public CompoundTag write(HolderLookup.Provider registries) {
+    public CompoundTag write() {
         CompoundTag tag = new CompoundTag();
         tag.put("List", NBTHelper.writeCompoundList(createFactoryLogistics$promises.values(), promise -> {
             CompoundTag compoundTag = new CompoundTag();
             compoundTag.putInt("ticks_existed", promise.ticksExisted);
-            CompoundTag stackTag = new CompoundTag();
-            ((BigIngredientStack) promise.promisedStack).ingredient().write(registries, stackTag);
+            CompoundTag stackTag = (CompoundTag) CatnipCodecUtils.encode(BoardIngredient.CODEC,
+                                                                         ((BigIngredientStack) promise.promisedStack).ingredient()).orElseGet(
+                    CompoundTag::new);
             compoundTag.put("promised_stack", stackTag);
             return compoundTag;
         }));

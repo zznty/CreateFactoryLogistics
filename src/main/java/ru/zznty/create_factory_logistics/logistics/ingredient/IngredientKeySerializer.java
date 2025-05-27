@@ -1,5 +1,6 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -9,6 +10,8 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
  * Type matching is handled by the registry
  */
 public interface IngredientKeySerializer<Key extends IngredientKey> {
+    <T> Codec<IngredientKey<T>> codec();
+
     void write(HolderLookup.Provider levelRegistryAccess, Key key, CompoundTag tag);
 
     void write(Key key, RegistryFriendlyByteBuf buf);

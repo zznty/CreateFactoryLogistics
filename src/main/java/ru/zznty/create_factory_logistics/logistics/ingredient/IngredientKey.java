@@ -1,5 +1,6 @@
 package ru.zznty.create_factory_logistics.logistics.ingredient;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluids;
@@ -11,6 +12,9 @@ import ru.zznty.create_factory_logistics.logistics.ingredient.impl.item.ItemIngr
 import java.util.Comparator;
 
 public interface IngredientKey<T> {
+    Codec<IngredientKey<?>> CODEC = IngredientRegistry.REGISTRY.byNameCodec()
+            .dispatch("id", IngredientKey::provider,
+                      p -> p.serializer().codec().fieldOf("key"));
     IngredientKey<?> EMPTY = new EmptyIngredientKey();
 
     IngredientKeyProvider provider();
