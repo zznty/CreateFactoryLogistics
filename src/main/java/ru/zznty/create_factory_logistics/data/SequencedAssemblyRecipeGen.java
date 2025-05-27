@@ -2,14 +2,16 @@ package ru.zznty.create_factory_logistics.data;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.api.data.recipe.SequencedAssemblyRecipeGen;
 import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
+import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipeBuilder;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryItems;
 
-public class FactorySequencedAssemblyRecipeGen extends SequencedAssemblyRecipeGen {
+import java.util.function.UnaryOperator;
+
+public class SequencedAssemblyRecipeGen extends FactoryRecipeProvider {
     GeneratedRecipe FLUID_MECHANISM = create("fluid_mechanism", b -> b.require(AllItems.COPPER_SHEET)
             .transitionTo(FactoryItems.INCOMPLETE_FLUID_MECHANISM)
             .addOutput(FactoryItems.FLUID_MECHANISM, 250)
@@ -25,7 +27,20 @@ public class FactorySequencedAssemblyRecipeGen extends SequencedAssemblyRecipeGe
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllBlocks.FLUID_PIPE))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.GOLD_NUGGET)));
 
-    public FactorySequencedAssemblyRecipeGen(PackOutput output) {
-        super(output, CreateFactoryLogistics.MODID);
+    public SequencedAssemblyRecipeGen(PackOutput output) {
+        super(output);
+    }
+
+    protected GeneratedRecipe create(String name, UnaryOperator<SequencedAssemblyRecipeBuilder> transform) {
+        GeneratedRecipe generatedRecipe =
+                c -> transform.apply(new SequencedAssemblyRecipeBuilder(CreateFactoryLogistics.resource(name)))
+                        .build(c);
+        all.add(generatedRecipe);
+        return generatedRecipe;
+    }
+
+    @Override
+    public String getName() {
+        return "Create Factory Logistics Sequenced Assembly Recipes";
     }
 }
