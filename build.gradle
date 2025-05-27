@@ -255,7 +255,7 @@ tasks.named('jar', Jar).configure {
 publishMods {
     file = tasks.withType(JarJar).find().archiveFile
     changelog = ''
-    type = ALPHA
+    type = BETA
     displayName = "$mod_name $project.version"
     modLoaders.add("forge")
 
