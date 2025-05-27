@@ -116,6 +116,7 @@ repositories {
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
     maven { url = "https://maven.blamejared.com" } // JEI, Vazkii's Mods
     maven { url = 'https://maven.minecraftforge.net/' }
+    maven { url = "https://maven.liukrast.net/" } // extra gauges
     mavenCentral()
     mavenLocal()
 }
@@ -150,15 +151,19 @@ dependencies {
     compileOnly "dev.engine-room.flywheel:flywheel-${forge_flavour}-api-${minecraft_version}:${flywheel_version}"
     localRuntime "dev.engine-room.flywheel:flywheel-${forge_flavour}-${minecraft_version}:${flywheel_version}"
     implementation "com.tterrag.registrate:Registrate:${registrate_version}"
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-beta.5"))
-    jarJar(implementation("io.github.llamalad7:mixinextras-${forge_flavour}:0.5.0-beta.5")) {
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3"))
+    jarJar(implementation("io.github.llamalad7:mixinextras-${forge_flavour}:0.5.0-rc.3")) {
         version {
-            strictly '[0.5.0-beta.5,)'
+            strictly '[0.5.0-rc.3,)'
         }
     }
 
     if (!Boolean.getBoolean('idea.sync.active')) {
 //        annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+    }
+
+    localRuntime "net.liukrast:extra_gauges-${minecraft_version}:1.1.1", {
+        transitive = false
     }
 
     localRuntime "curse.maven:create-vibrant-vaults-1251719:6463890"
@@ -210,11 +215,11 @@ publishMods {
     displayName = "$mod_name $project.version"
     modLoaders.add(forge_flavour)
 
-//    curseforge {
-//        accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
-//        projectId = "1218807"
-//        minecraftVersions.add(minecraft_version)
-//    }
+    curseforge {
+        accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+        projectId = "1218807"
+        minecraftVersions.add(minecraft_version)
+    }
 
     modrinth {
         accessToken = providers.environmentVariable("MODRINTH_TOKEN")
