@@ -155,6 +155,7 @@ repositories {
     maven { url = "https://maven.tterrag.com" } // Registrate
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
     maven { url = "https://maven.blamejared.com" } // JEI, Vazkii's Mods
+    maven { url = "https://maven.liukrast.net/" } // extra gauges
     mavenCentral()
 }
 
@@ -187,10 +188,10 @@ dependencies {
     compileOnly(fg.deobf("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}"))
     runtimeOnly(fg.deobf("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}"))
     implementation(fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}"))
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-beta.5"))
-    jarJar(implementation("io.github.llamalad7:mixinextras-forge:0.5.0-beta.5")) {
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3"))
+    jarJar(implementation("io.github.llamalad7:mixinextras-forge:0.5.0-rc.3")) {
         version {
-            strictly '[0.5.0-beta.5,)'
+            strictly '[0.5.0-rc.3,)'
         }
     }
 
@@ -199,6 +200,9 @@ dependencies {
     }
 
     runtimeOnly fg.deobf("curse.maven:create-vibrant-vaults-1251719:6463880")
+    runtimeOnly fg.deobf("net.liukrast:extra_gauges-${minecraft_version}:1.1.1") {
+        transitive = false
+    }
 }
 
 mixin {
@@ -255,11 +259,11 @@ publishMods {
     displayName = "$mod_name $project.version"
     modLoaders.add("forge")
 
-//    curseforge {
-//        accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
-//        projectId = "1218807"
-//        minecraftVersions.add(minecraft_version)
-//    }
+    curseforge {
+        accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+        projectId = "1218807"
+        minecraftVersions.add(minecraft_version)
+    }
 
     modrinth {
         accessToken = providers.environmentVariable("MODRINTH_TOKEN")
