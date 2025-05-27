@@ -4,12 +4,10 @@ plugins {
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.+'
     id 'me.modmuss50.mod-publish-plugin' version '0.8.3'
-    id 'net.minecraftforge.gradleutils' version '[2.4,2.5)'
+    id 'net.minecraftforge.gradleutils' version '2.+'
 }
 
-def isPreview = providers.environmentVariable("MODRINTH_TOKEN").getOrNull() == null
-
-version = isPreview ? "$gitversion.version.info.tag-$gitversion.version.info.offset" : gitversion.version.info.tag
+version = gitversion.tagOffset
 group = mod_group_id
 
 base {
@@ -216,7 +214,7 @@ publishMods {
         minecraftVersions.add(minecraft_version)
     }
 
-    dryRun = isPreview
+    dryRun = providers.environmentVariable("MODRINTH_TOKEN").getOrNull() == null
 }
 
 tasks.named('publishMods').configure {
