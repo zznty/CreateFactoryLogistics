@@ -21,6 +21,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.block.Blocks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -67,7 +68,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
 
     @Shadow(remap = false)
     private Pair<Integer, List<List<BigItemStack>>> maxCraftable(CraftableBigItemStack cbis, InventorySummary summary,
-                                                                 Function<ItemStack, Integer> countModifier, int newTypeLimit) {
+                                                                 Function<ItemStack, Integer> countModifier,
+                                                                 int newTypeLimit) {
         return null;
     }
 
@@ -103,7 +105,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     target = "(Lnet/minecraft/world/item/ItemStack;I)Lcom/simibubi/create/content/logistics/BigItemStack;"
             )
     )
-    private BigItemStack createOrderForIngredientInClicked(ItemStack $, int count, @Local(ordinal = 0) BigItemStack entry) {
+    private BigItemStack createOrderForIngredientInClicked(ItemStack $, int count,
+                                                           @Local(ordinal = 0) BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
         return BigIngredientStack.of(stack.ingredient().withAmount(1), 0).asStack();
     }
@@ -115,7 +118,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     target = "(Lnet/minecraft/world/item/ItemStack;I)Lcom/simibubi/create/content/logistics/BigItemStack;"
             )
     )
-    private BigItemStack createOrderForIngredientInScrolled(ItemStack $, int count, @Local(ordinal = 0) BigItemStack entry) {
+    private BigItemStack createOrderForIngredientInScrolled(ItemStack $, int count,
+                                                            @Local(ordinal = 0) BigItemStack entry) {
         BigIngredientStack stack = (BigIngredientStack) entry;
         return BigIngredientStack.of(stack.ingredient().withAmount(1), 0).asStack();
     }
@@ -149,7 +153,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     target = "Lcom/simibubi/create/content/logistics/stockTicker/StockKeeperRequestScreen;getOrderForItem(Lnet/minecraft/world/item/ItemStack;)Lcom/simibubi/create/content/logistics/BigItemStack;"
             )
     )
-    private BigItemStack getExistingOrderInClicked(StockKeeperRequestScreen instance, ItemStack $, @Local BigItemStack itemStack) {
+    private BigItemStack getExistingOrderInClicked(StockKeeperRequestScreen instance, ItemStack $,
+                                                   @Local BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
         BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.ingredient());
         return order == null ? null : order.asStack();
@@ -163,7 +168,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             ),
             remap = false
     )
-    private BigItemStack getExistingOrderInRender(StockKeeperRequestScreen instance, ItemStack $, @Local(argsOnly = true) BigItemStack itemStack) {
+    private BigItemStack getExistingOrderInRender(StockKeeperRequestScreen instance, ItemStack $,
+                                                  @Local(argsOnly = true) BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
         BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.ingredient());
         return order == null ? null : order.asStack();
@@ -188,7 +194,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     target = "Lcom/simibubi/create/content/logistics/stockTicker/StockKeeperRequestScreen;getOrderForItem(Lnet/minecraft/world/item/ItemStack;)Lcom/simibubi/create/content/logistics/BigItemStack;"
             )
     )
-    private BigItemStack getExistingOrderInScrolled(StockKeeperRequestScreen instance, ItemStack $, @Local BigItemStack itemStack) {
+    private BigItemStack getExistingOrderInScrolled(StockKeeperRequestScreen instance, ItemStack $,
+                                                    @Local BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
         BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.ingredient());
         return order == null ? null : order.asStack();
@@ -219,7 +226,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     target = "Lnet/minecraft/client/gui/GuiGraphics;renderTooltip(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;II)V"
             )
     )
-    private void renderTooltip(GuiGraphics instance, Font p_282308_, ItemStack p_282781_, int p_282687_, int p_282292_, @Local BigItemStack itemStack, @Local(ordinal = 1) boolean orderHovered) {
+    private void renderTooltip(GuiGraphics instance, Font p_282308_, ItemStack p_282781_, int p_282687_, int p_282292_,
+                               @Local BigItemStack itemStack, @Local(ordinal = 1) boolean orderHovered) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
         BigIngredientStack order = createFactoryLogistics$getOrderForIngredient(stack.ingredient());
         int customCount = stack.getCount();
@@ -232,7 +240,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             customCount = Math.max(0, customCount);
         }
 
-        instance.renderComponentTooltip(p_282308_, IngredientGui.tooltipBuilder(stack.ingredient().key(), customCount), p_282687_, p_282292_);
+        instance.renderComponentTooltip(p_282308_, IngredientGui.tooltipBuilder(stack.ingredient().key(), customCount),
+                                        p_282687_, p_282292_);
     }
 
     @Redirect(
@@ -242,7 +251,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     target = "Lnet/minecraft/world/item/ItemStack;getTooltipLines(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;"
             )
     )
-    private List<Component> getCraftableTooltip(ItemStack instance, Player player, TooltipFlag flag, @Local BigItemStack itemStack) {
+    private List<Component> getCraftableTooltip(ItemStack instance, Player player, TooltipFlag flag,
+                                                @Local BigItemStack itemStack) {
         BigIngredientStack stack = (BigIngredientStack) itemStack;
         return IngredientGui.tooltipBuilder(stack.ingredient().key(), stack.ingredient().amount());
     }
@@ -272,7 +282,9 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             ),
             remap = false
     )
-    private GuiGameElement.GuiRenderBuilder renderIngredientEntry(ItemStack itemStack, @Local(argsOnly = true) BigItemStack entry, @Local(argsOnly = true) GuiGraphics graphics) {
+    private GuiGameElement.GuiRenderBuilder renderIngredientEntry(ItemStack itemStack,
+                                                                  @Local(argsOnly = true) BigItemStack entry,
+                                                                  @Local(argsOnly = true) GuiGraphics graphics) {
         BigIngredientStack stack = (BigIngredientStack) entry;
         IngredientGui.renderSlot(graphics, stack.ingredient().key(), 0, 0);
         return GuiGameElement.of(Blocks.AIR);
@@ -286,7 +298,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             ),
             remap = false
     )
-    private void renderIngredientEntryAmount(StockKeeperRequestScreen instance, GuiGraphics graphics, int count, int customCount,
+    private void renderIngredientEntryAmount(StockKeeperRequestScreen instance, GuiGraphics graphics, int count,
+                                             int customCount,
                                              @Local(argsOnly = true) BigItemStack entry,
                                              @Local(argsOnly = true, ordinal = 0) boolean isStackHovered,
                                              @Local(argsOnly = true, ordinal = 1) boolean isRenderingOrders) {
@@ -413,7 +426,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
 
         for (CraftableBigItemStack cbis : recipesToOrder) {
             CraftableIngredientStack craftableStack = (CraftableIngredientStack) cbis;
-            if (craftableStack.ingredients().isEmpty()) {
+            if (craftableStack.ingredients().isEmpty() || cbis.recipe instanceof CraftingRecipe) {
                 Pair<Integer, List<List<BigItemStack>>> craftingResult =
                         maxCraftable(cbis, availableItems, stack -> -usedItems.getCountOf(stack), -1);
                 int maxCraftable = craftingResult.getFirst();
@@ -435,7 +448,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                 }
             } else {
                 Pair<Integer, List<Pair<BoardIngredient, BoardIngredient>>> craftingResult =
-                        createFactoryLogistics$maxCraftable(craftableStack, availableIngredients, stack -> -usedIngredients.getCountOf(stack.key()), -1);
+                        createFactoryLogistics$maxCraftable(craftableStack, availableIngredients,
+                                                            stack -> -usedIngredients.getCountOf(stack.key()), -1);
 
                 int outputCount = craftableStack.outputCount(blockEntity.getLevel());
 
@@ -469,7 +483,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private void requestIngredients(CraftableBigItemStack cbis, int requestedDifference, Operation<Void> original) {
         CraftableIngredientStack stack = (CraftableIngredientStack) cbis;
-        if (stack.ingredients().isEmpty()) {
+        if (stack.ingredients().isEmpty() || cbis.recipe instanceof CraftingRecipe) {
             original.call(cbis, requestedDifference);
             return;
         }
@@ -498,7 +512,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         CraftableIngredientStack craftableStack = (CraftableIngredientStack) cbis;
 
         Pair<Integer, List<Pair<BoardIngredient, BoardIngredient>>> craftingResult =
-                createFactoryLogistics$maxCraftable(craftableStack, availableItems, countModifier, takeOrdersAway ? -1 : 9 - itemsToOrder.size());
+                createFactoryLogistics$maxCraftable(craftableStack, availableItems, countModifier,
+                                                    takeOrdersAway ? -1 : 9 - itemsToOrder.size());
         int outputCount = craftableStack.outputCount(blockEntity.getLevel());
         int adjustToRecipeAmount = Mth.ceil(Math.abs(requestedDifference) / (float) outputCount) * outputCount;
         int maxCraftable = Math.min(adjustToRecipeAmount, craftingResult.getFirst());
@@ -538,7 +553,9 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     }
 
     @Unique
-    private Pair<Integer, List<Pair<BoardIngredient, BoardIngredient>>> createFactoryLogistics$maxCraftable(CraftableIngredientStack cbis, IngredientInventorySummary summary, Function<BoardIngredient, Integer> countModifier, int newTypeLimit) {
+    private Pair<Integer, List<Pair<BoardIngredient, BoardIngredient>>> createFactoryLogistics$maxCraftable(
+            CraftableIngredientStack cbis, IngredientInventorySummary summary,
+            Function<BoardIngredient, Integer> countModifier, int newTypeLimit) {
         // original ingredient -> result with amount representing original times x
         List<Pair<BoardIngredient, BoardIngredient>> validIngredients = new ArrayList<>(cbis.ingredients().size());
         for (BoardIngredient ingredient : cbis.ingredients()) {
