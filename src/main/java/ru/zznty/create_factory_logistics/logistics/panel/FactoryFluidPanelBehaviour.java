@@ -43,7 +43,8 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
             if (!GenericItemEmptying.canItemBeEmptied(blockEntity.getLevel(), stack))
                 return false;
 
-            Pair<FluidStack, ItemStack> emptyResult = GenericItemEmptying.emptyItem(blockEntity.getLevel(), stack, true);
+            Pair<FluidStack, ItemStack> emptyResult = GenericItemEmptying.emptyItem(blockEntity.getLevel(), stack,
+                                                                                    true);
 
             if (emptyResult.getFirst().isEmpty()) return false;
 
@@ -85,9 +86,9 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
                 .color(satisfied ? 0xD7FFA8 : promisedSatisfied ? 0xffcd75 : 0xFFBFA8)
                 .add(CreateLang.text(promised == 0 ? "" : "\u23F6"))
                 .add(CreateLang.text("/")
-                        .style(ChatFormatting.WHITE))
+                             .style(ChatFormatting.WHITE))
                 .add(formatLevel(count)
-                        .color(0xF1EFE8))
+                             .color(0xF1EFE8))
                 .component();
     }
 
@@ -104,12 +105,12 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
     public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
         int maxAmount = 100;
         return new ValueSettingsBoard(CreateLang.translate("factory_panel.target_amount")
-                .component(), maxAmount, 10,
-                List.of(CreateLang.translate("schedule.condition.threshold.buckets")
-                                .component(),
-                        CreateLang.translate("schedule.condition.threshold.buckets")
-                                .component()),
-                new ValueSettingsFormatter(this::formatValue));
+                                              .component(), maxAmount, 10,
+                                      List.of(CreateLang.translate("schedule.condition.threshold.buckets")
+                                                      .component(),
+                                              CreateLang.translate("schedule.condition.threshold.buckets")
+                                                      .component()),
+                                      new ValueSettingsFormatter(this::formatValue));
     }
 
     public static LangBuilder formatLevel(int level) {
@@ -123,7 +124,8 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
         if (level < 100)
             return CreateLang.number(level).add(CreateLang.translate("generic.unit.millibuckets"));
 
-        return CreateLang.number(Math.round((float) level / 100) / 10.).add(CreateLang.translate("generic.unit.buckets"));
+        return CreateLang.number(Math.round((float) level / 100) / 10.).add(
+                CreateLang.translate("generic.unit.buckets"));
     }
 
     public static LangBuilder formatLevel(int level, boolean round) {
@@ -132,16 +134,16 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
 
         if (!round || level < 1000 || level % 1000 != 0) {
             if (level % 1000 == 0)
-                return CreateLang.number(level / 1000).add(CreateLang.translate("generic.unit.buckets"));
+                return CreateLang.number((float) level / 1000).add(CreateLang.translate("generic.unit.buckets"));
 
             return CreateLang.number(level).add(CreateLang.translate("generic.unit.millibuckets"));
         }
 
         if (level < 100_001) {
-            return CreateLang.number(level / 1000).add(CreateLang.translate("generic.unit.buckets"));
+            return CreateLang.number((float) level / 1000).add(CreateLang.translate("generic.unit.buckets"));
         }
 
-        return CreateLang.number(level / 1_000_000)
+        return CreateLang.number((float) level / 1_000_000)
                 .add(CreateLang.text("k"))
                 .add(CreateLang.translate("generic.unit.buckets"));
     }
