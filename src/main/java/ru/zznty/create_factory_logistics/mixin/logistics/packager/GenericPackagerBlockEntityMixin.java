@@ -31,6 +31,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.items.IItemHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -437,5 +438,15 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
     private Optional<Tag> writeLastSummary(Codec<InventorySummary> codec, HolderLookup.Provider registries, Object t, Operation<Optional<Tag>> original) {
         GenericInventorySummary summary = GenericInventorySummary.of(t);
         return Optional.of(summary.write(registries));
+    }
+
+    @WrapMethod(
+            method = "isSameInventoryFallback",
+            remap = false
+    )
+    private static boolean isSameInventoryNullCheck(IItemHandler first, IItemHandler second,
+                                                    Operation<Boolean> original) {
+        if (first == null || second == null) return false;
+        return original.call(first, second);
     }
 }
