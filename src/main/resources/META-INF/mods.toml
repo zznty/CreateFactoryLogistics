@@ -50,6 +50,12 @@ description='''${mod_description}'''
     versionRange = "[6.0.4,)"
     ordering = "NONE"
     side = "BOTH"
+[[dependencies.${mod_id}]]
+    modId = "create_factory_abstractions"
+    mandatory = true
+    versionRange = "[${mod_version},)"
+    ordering = "NONE"
+    side = "BOTH"
 [[dependencies.${mod_id}]] #optional
     # the modid of the dependency
     modId="forge" #mandatory

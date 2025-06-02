@@ -2,9 +2,6 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'net.minecraftforge.gradleutils'
 
-def mod_id = 'create_factory_abstractions'
-def mod_name = 'Create Factory Abstractions'
-
 // TODO maybe separate versioning scheme
 version = gitversion.tagOffset
 base {

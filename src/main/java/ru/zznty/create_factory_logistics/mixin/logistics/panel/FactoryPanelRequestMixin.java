@@ -31,6 +31,7 @@ import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttac
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.*;
 import ru.zznty.create_factory_logistics.Config;
+import ru.zznty.create_factory_logistics.compat.extra_gauges.AbstractPanelBehaviourStub;
 
 import java.util.*;
 

@@ -204,9 +204,9 @@ dependencies {
     }
 
     runtimeOnly fg.deobf("curse.maven:create-vibrant-vaults-1251719:6463880")
-    runtimeOnly fg.deobf("net.liukrast:extra_gauges-${minecraft_version}:1.1.1") {
-        transitive = false
-    }
+//    runtimeOnly fg.deobf("net.liukrast:extra_gauges-${minecraft_version}:1.1.1") {
+//        transitive = false
+//    }
 }
 
 mixin {

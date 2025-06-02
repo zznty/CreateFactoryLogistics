@@ -3,6 +3,7 @@ package ru.zznty.create_factory_abstractions.api.generic.crafting;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.util.Mth;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericIngredient;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
@@ -87,28 +88,6 @@ public final class RecipeRequestHelper {
         }
 
         for (CraftableGenericStack craftableStack : provider.recipesToOrder()) {
-            /*if (craftableStack.ingredients().isEmpty()) {
-                Pair<Integer, List<List<BigItemStack>>> craftingResult =
-                        maxCraftable(craftableStack.asStack(), availableItems, stack -> -usedItems.getCountOf(stack),
-                                     -1);
-                int maxCraftable = craftingResult.getFirst();
-                List<List<BigItemStack>> validEntriesByIngredient = craftingResult.getSecond();
-                int outputCount = craftableStack.outputCount(provider.world());
-
-                // Only tweak amounts downward
-                craftableStack.setAmount(Math.min(craftableStack.get().amount(), maxCraftable));
-
-                // Use ingredients up before checking next recipe
-                for (List<BigItemStack> list : validEntriesByIngredient) {
-                    int remaining = craftableStack.get().amount() / outputCount;
-                    for (BigItemStack entry : list) {
-                        if (remaining <= 0)
-                            break;
-                        usedItems.add(entry.stack, Math.min(remaining, entry.count));
-                        remaining -= entry.count;
-                    }
-                }
-            } else {*/
             Pair<Integer, Map<GenericIngredient, List<GenericStack>>> craftingResult =
                     maxCraftable(provider, craftableStack, availableIngredients,
                                  stack -> -usedIngredients.getCountOf(stack.key()), -1);
@@ -129,7 +108,6 @@ public final class RecipeRequestHelper {
                     remaining -= stack.amount();
                 }
             }
-            /*}*/
         }
 
         for (BigGenericStack ordered : provider.itemsToOrder()) {
@@ -146,7 +124,6 @@ public final class RecipeRequestHelper {
             Function<GenericStack, Integer> countModifier,
             int newTypeLimit) {
         List<GenericIngredient> ingredients = cbis.ingredients();
-        // ingredient -> valid stacks
         Map<GenericIngredient, List<GenericStack>> validEntriesByIngredient = new HashMap<>();
         List<GenericStack> alreadyCreated = new ArrayList<>();
 
@@ -181,7 +158,6 @@ public final class RecipeRequestHelper {
             validEntriesByIngredient.put(ingredient, valid);
         }
 
-        // Used new items may have to be trimmed
         if (newTypeLimit != -1) {
             int toRemove = (int) validEntriesByIngredient.values().stream()
                     .flatMap(Collection::stream)
@@ -193,20 +169,34 @@ public final class RecipeRequestHelper {
                 removeLeastEssentialStack(provider, validEntriesByIngredient.values());
         }
 
-        // Ingredients with shared items must divide counts
-        validEntriesByIngredient = resolveIngredientAmounts(validEntriesByIngredient);
-
-        // Determine the bottlenecking ingredient
-        int minCount = Integer.MAX_VALUE;
-        for (Map.Entry<GenericIngredient, List<GenericStack>> validEntry : validEntriesByIngredient.entrySet()) {
-            int sum = 0;
-            for (GenericStack entry : validEntry.getValue())
-                sum += entry.amount() / validEntry.getKey().amount();
-            minCount = Math.min(sum, minCount);
+        // Calculate available and required per item type
+        Map<GenericKey, Integer> availablePerType = new HashMap<>();
+        for (GenericStack stack : alreadyCreated) {
+            availablePerType.merge(stack.key(), stack.amount(), Integer::sum);
         }
 
-        if (minCount == 0)
-            return Pair.of(0, Map.of());
+        Map<GenericKey, Integer> requiredPerType = new HashMap<>();
+        for (Map.Entry<GenericIngredient, List<GenericStack>> entry : validEntriesByIngredient.entrySet()) {
+            GenericIngredient ingredient = entry.getKey();
+            for (GenericStack stack : entry.getValue()) {
+                requiredPerType.merge(stack.key(), ingredient.amount(), Integer::sum);
+            }
+        }
+
+        int minCount = Integer.MAX_VALUE;
+        for (GenericKey key : availablePerType.keySet()) {
+            int available = availablePerType.get(key);
+            int required = requiredPerType.getOrDefault(key, 0);
+            if (required == 0)
+                continue;
+            int craftsForType = available / required;
+            if (craftsForType < minCount)
+                minCount = craftsForType;
+        }
+        if (minCount == Integer.MAX_VALUE)
+            minCount = 0;
+
+        validEntriesByIngredient = resolveIngredientAmounts(validEntriesByIngredient);
 
         int outputCount = cbis.outputCount(provider.world());
         return Pair.of(minCount * outputCount, validEntriesByIngredient);
