@@ -69,10 +69,13 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (registration != null && (side == null || PackagerLinkBlock.getConnectedDirection(getBlockState())
                 .getOpposite() == side)) {
-//            CapabilityFactory<T> factory = registration.capabilityFactory();
-//            LazyOptional<T> optional = factory.create(cap, scroll.get(), link);
-//            if (optional.isPresent())
-//                return optional;
+            NetworkLinkCapabilityFactory capabilityFactory = NetworkLinkCapabilityFactory.FACTORY_MAP.get(
+                    registration);
+            LazyOptional<T> optional = capabilityFactory == null ?
+                                       LazyOptional.empty() :
+                                       capabilityFactory.create(cap, scroll.get(), link);
+            if (optional.isPresent())
+                return optional;
         }
         return super.getCapability(cap, side);
     }

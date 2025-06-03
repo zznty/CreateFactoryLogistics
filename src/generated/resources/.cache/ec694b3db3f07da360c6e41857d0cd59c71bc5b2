@@ -1,4 +1,4 @@
-// 1.20.1	2025-05-19T19:45:34.1307604	Registrate Provider for create_factory_logistics [Recipes, Advancements, Loot Tables, Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), Blockstates, Item models, Lang (en_us/en_ud)]
+// 1.20.1	2025-06-03T20:21:11.3224504	Registrate Provider for create_factory_logistics [Recipes, Advancements, Loot Tables, Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), Blockstates, Item models, Lang (en_us/en_ud)]
 8808975dd6f90df154a752d53cb0e5c5002deaab assets/create_factory_logistics/blockstates/factory_fluid_gauge.json
 9ad0dd76a0402de36e97e4563c0b3fcb473f0b40 assets/create_factory_logistics/blockstates/jar_packager.json
 58208f197fd47e4bb129648c8026ce0873cee36c assets/create_factory_logistics/blockstates/network_link.json
@@ -19,7 +19,7 @@ c6477a0e29a8486ff09a6bd81aeb2665160a5219 data/create_factory_logistics/advanceme
 6846a5c76806ab94d2caea8d7c2580d4bf36c069 data/create_factory_logistics/recipes/factory_fluid_gauge.json
 faa287eb73a631ce04ab051768cf24d1797aa3e9 data/create_factory_logistics/recipes/jar_packager.json
 40eb01af07c989f0cfd1ab4ae107e66b1e6b5997 data/create_factory_logistics/recipes/network_link.json
-e7903b75c6546dd7e7bb94210edfbd544a7766c2 data/create_factory_logistics/recipes/network_link_qualification_create_factory_logistics_empty_ingredient_key.json
+5711d276a579a8acebb8fa9892120b9f5525da29 data/create_factory_logistics/recipes/network_link_qualification_create_factory_abstractions_empty.json
+a5a9af0bd2a318d3acb33a6f2ef487c303f49fc6 data/create_factory_logistics/recipes/network_link_qualification_create_factory_abstractions_item.json
 696c2431b592a0a727436ad4b5409855e9cb044a data/create_factory_logistics/recipes/network_link_qualification_create_factory_logistics_fluid.json
-aa813bb5938d188a67d0a154fcdbd7c417c7ec33 data/create_factory_logistics/recipes/network_link_qualification_create_factory_logistics_item.json
 eefb282fd7dad8ccd6477c19cf4d14e7f658cb10 data/minecraft/tags/blocks/mineable/pickaxe.json
