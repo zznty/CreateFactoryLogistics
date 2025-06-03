@@ -30,7 +30,7 @@ public class ItemTagsProvider extends TagsProvider<Item> {
     @Override
     protected void addTags(HolderLookup.Provider pProvider) {
         tag(NetworkLinkQualificationRecipe.tag(
-                ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "empty")))
+                ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "item")))
                 .add(TagEntry.tag(Tags.Items.CHESTS.location()))
                 .add(TagEntry.tag(Tags.Items.BARRELS.location()))
                 .add(asKey(AllBlocks.CREATIVE_CRATE))
