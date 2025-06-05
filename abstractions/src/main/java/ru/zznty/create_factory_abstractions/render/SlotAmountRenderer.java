@@ -3,11 +3,11 @@ package ru.zznty.create_factory_abstractions.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
+import ru.zznty.create_factory_abstractions.api.generic.crafting.OrderProvider;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.NUMBERS;
 
@@ -29,7 +29,7 @@ public class SlotAmountRenderer {
 
     public static void render(GuiGraphics graphics, float x, float y,
                               String text) {
-        if (Minecraft.getInstance().screen instanceof StockKeeperRequestScreen) {
+        if (Minecraft.getInstance().screen instanceof OrderProvider) {
             renderCreate(graphics, text, x, y);
             return;
         }

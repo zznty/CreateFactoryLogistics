@@ -1,18 +1,21 @@
+plugins {
+    id 'maven-publish'
+}
+
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'net.minecraftforge.gradleutils'
 
 // TODO maybe separate versioning scheme
 version = gitversion.tagOffset
+group = 'ru.zznty'
 base {
-    archivesName = "${name}-${minecraft_version}"
+    archivesName = "${mod_id}-${minecraft_version}"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println "Version: ${version}"
-
-jarJar.enable()
 
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
@@ -93,21 +96,16 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+
     implementation(fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false })
     implementation(fg.deobf("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}"))
     compileOnly(fg.deobf("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}"))
     runtimeOnly(fg.deobf("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}"))
     implementation(fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}"))
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-beta.5"))
-    jarJar(implementation("io.github.llamalad7:mixinextras-forge:0.5.0-beta.5")) {
-        version {
-            strictly '[0.5.0-beta.5,)'
-        }
-    }
-
-    if (!Boolean.getBoolean('idea.sync.active')) {
-        annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
-    }
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -125,10 +123,36 @@ tasks.named('processResources', ProcessResources).configure {
     }
 }
 
-jar {
+tasks.named('jar', Jar).configure {
     manifest {
-        attributes ([
-                'FMLModType': 'GAMELIBRARY'
+        attributes([
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1', // We are version 1 of ourselves
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
+    }
+
+    // This is the preferred method to reobfuscate your jar file
+    finalizedBy 'reobfJar'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact(tasks.jar) {
+                classifier = "all"
+            }
+        }
     }
 }

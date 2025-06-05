@@ -14,4 +14,7 @@ plugins {
 
 include ':abstractions'
 
-project(':abstractions').name = "CreateFactoryAbstractions"
+rootProject.name = mod_id
+
+// jarJar metadata really wants actual artifact id as project name
+project(':abstractions').name = "create_factory_abstractions-${minecraft_version}"

@@ -190,13 +190,13 @@ dependencies {
     implementation(fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}"))
     compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3"))
     jarJar(implementation("io.github.llamalad7:mixinextras-forge:0.5.0-rc.3")) {
-        version {
-            strictly '[0.5.0-rc.3,)'
-        }
+        jarJar.ranged(it, '[0.5.0-rc.3,)')
     }
 
-    jarJar(implementation(project(":CreateFactoryAbstractions"))) {
+    jarJar(implementation(project(":create_factory_abstractions-${minecraft_version}")) {
         transitive = false
+    }) {
+        jarJar.ranged(it, "[${project.version},)")
     }
 
     if (!Boolean.getBoolean('idea.sync.active')) {
@@ -288,4 +288,17 @@ tasks.withType(Platform).configureEach {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'ru.zznty'
+            artifactId = "${mod_id}-${minecraft_version}"
+            version = version
+
+            from components.java
+            jarJar.component(it)
+        }
+    }
 }

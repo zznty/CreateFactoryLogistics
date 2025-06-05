@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics.compat.jei;
+package ru.zznty.create_factory_abstractions.compat.jei;
 
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
