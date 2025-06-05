@@ -40,12 +40,12 @@ public class EmptyKeyClientProvider implements GenericKeyClientProvider<EmptyKey
 
             @Override
             public int stackSize(EmptyKey key) {
-                return Item.MAX_STACK_SIZE;
+                return Item.DEFAULT_MAX_STACK_SIZE;
             }
 
             @Override
             public int maxStackSize(EmptyKey key) {
-                return Item.MAX_STACK_SIZE;
+                return Item.DEFAULT_MAX_STACK_SIZE;
             }
         };
     }

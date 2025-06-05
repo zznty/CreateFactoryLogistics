@@ -1,5 +1,6 @@
 package ru.zznty.create_factory_logistics.mixin.logistics.packager;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.datafixers.util.Pair;
@@ -31,7 +32,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -80,7 +81,7 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
         return null;
     }
 
-    public PackagerIngredientBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    public GenericPackagerBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
@@ -97,7 +98,8 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
 
     @Overwrite
     public InventorySummary getAvailableItems() {
-        PackagerAttachedHandler handler = level.getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED, worldPosition);
+        PackagerAttachedHandler handler = level.getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED,
+                                                              worldPosition);
 
         if (availableItems != null && handler != null && !handler.hasChanges())
             return availableItems;
@@ -143,7 +145,8 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
 
         Objects.requireNonNull(level);
 
-        PackagerAttachedHandler handler = level.getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED, worldPosition);
+        PackagerAttachedHandler handler = level.getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED,
+                                                              worldPosition);
         if (handler == null) return promiseQueues;
 
         for (Direction d : Iterate.directions) {
@@ -187,15 +190,25 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
 
         Objects.requireNonNull(this.level);
 
-        IngredientOrder orderContext = IngredientOrder.of(level.registryAccess(), box);
+        GenericOrder orderContext = GenericOrder.of(level.registryAccess(), box);
         Direction facing = getBlockState().getOptionalValue(PackagerBlock.FACING).orElse(Direction.UP);
         BlockPos target = worldPosition.relative(facing.getOpposite());
         BlockState targetState = level.getBlockState(target);
 
         ItemStack originalBox = box.copy();
 
-        boolean unpacked = Optional.ofNullable(level.getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED, worldPosition)).map(handler ->
-                        handler.unwrap(level, target, targetState, facing, orderContext == null ? null : orderContext.asCrafting(), box, simulate))
+        boolean unpacked = Optional.ofNullable(
+                        level.getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED, worldPosition)).map(handler ->
+                                                                                                                    handler.unwrap(
+                                                                                                                            level,
+                                                                                                                            target,
+                                                                                                                            targetState,
+                                                                                                                            facing,
+                                                                                                                            orderContext == null ?
+                                                                                                                            null :
+                                                                                                                            orderContext.asCrafting(),
+                                                                                                                            box,
+                                                                                                                            simulate))
                 .orElse(false);
 
         if (unpacked && !simulate) {
@@ -305,7 +318,9 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
                 continuePacking = false;
 
                 for (int slot = 0; slot < target.slotCount(); slot++) {
-                    int initialAmount = requestQueue ? Math.min(extractedPackage.maxPerSlot(), nextRequest.getCount()) : extractedPackage.maxPerSlot();
+                    int initialAmount = requestQueue ?
+                                        Math.min(extractedPackage.maxPerSlot(), nextRequest.getCount()) :
+                                        extractedPackage.maxPerSlot();
                     GenericStack extracted = target.extract(slot, initialAmount, true);
                     if (extracted.isEmpty())
                         continue;
@@ -378,16 +393,12 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
         if (fixedAddress != null)
             PackageItem.addAddress(box, fixedAddress);
         if (requestQueue)
-            GenericOrder.set(level.registryAccess(), box, fixedOrderId, linkIndexInOrder, finalLinkInOrder, packageIndexAtLink, finalPackageAtLink, orderContext);
+            GenericOrder.set(level.registryAccess(), box, fixedOrderId, linkIndexInOrder, finalLinkInOrder,
+                             packageIndexAtLink, finalPackageAtLink, orderContext);
         if (!requestQueue && !signBasedAddress.isBlank())
             PackageItem.addAddress(box, signBasedAddress);
 
         return Pair.of(box, extractedPackage);
-    }
-
-    @Override
-    public BlockPos getLink() {
-        return getLinkPos();
     }
 
     @WrapOperation(
@@ -397,7 +408,9 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
                     target = "Lnet/createmod/catnip/nbt/NBTHelper;readCompoundList(Lnet/minecraft/nbt/ListTag;Ljava/util/function/Function;)Ljava/util/List;"
             )
     )
-    private List<BigItemStack> readQueuedExitingPackages(ListTag listNBT, Function<CompoundTag, BigItemStack> deserializer, Operation<List<BigItemStack>> original) {
+    private List<BigItemStack> readQueuedExitingPackages(ListTag listNBT,
+                                                         Function<CompoundTag, BigItemStack> deserializer,
+                                                         Operation<List<BigItemStack>> original) {
         return NBTHelper.readCompoundList(listNBT, t ->
                 BigGenericStack.of(GenericStackSerializer.read(level.registryAccess(), t)).asStack());
     }
@@ -409,10 +422,12 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
                     target = "Lnet/createmod/catnip/nbt/NBTHelper;writeCompoundList(Ljava/lang/Iterable;Ljava/util/function/Function;)Lnet/minecraft/nbt/ListTag;"
             )
     )
-    private ListTag writeQueuedExitingPackages(Iterable<BigItemStack> list, Function<BigItemStack, CompoundTag> serializer, Operation<ListTag> original) {
+    private ListTag writeQueuedExitingPackages(Iterable<BigItemStack> list,
+                                               Function<BigItemStack, CompoundTag> serializer,
+                                               Operation<ListTag> original) {
         return NBTHelper.writeCompoundList(list, t -> {
             CompoundTag tag = new CompoundTag();
-            GenericStackSerializer.write(level.registryAccess(), tag, BigGenericStack.of(t).get());
+            GenericStackSerializer.write(level.registryAccess(), BigGenericStack.of(t).get(), tag);
             return tag;
         });
     }
@@ -424,25 +439,32 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
                     target = "Lnet/createmod/catnip/codecs/CatnipCodecUtils;decode(Lcom/mojang/serialization/Codec;Lnet/minecraft/core/HolderLookup$Provider;Lnet/minecraft/nbt/Tag;)Ljava/util/Optional;"
             )
     )
-    private Optional<InventorySummary> readLastSummary(Codec<InventorySummary> codec, HolderLookup.Provider registries, Tag tag, Operation<Optional<InventorySummary>> original) {
-        return Optional.of(GenericInventorySummary.read(registries, (CompoundTag) tag));
+    private Optional<InventorySummary> readLastSummary(Codec<InventorySummary> codec, HolderLookup.Provider registries,
+                                                       Tag tag, Operation<Optional<InventorySummary>> original) {
+        GenericInventorySummary summary = GenericInventorySummary.empty();
+        if (tag instanceof ListTag listTag)
+            NBTHelper.iterateCompoundList(listTag, t -> summary.add(GenericStackSerializer.read(registries, t)));
+        return Optional.of(summary.asSummary());
     }
 
-    @WrapOperation(
+    @Redirect(
             method = "write",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/createmod/catnip/codecs/CatnipCodecUtils;encode(Lcom/mojang/serialization/Codec;Lnet/minecraft/core/HolderLookup$Provider;Ljava/lang/Object;)Ljava/util/Optional;"
             )
     )
-    private Optional<Tag> writeLastSummary(Codec<InventorySummary> codec, HolderLookup.Provider registries, Object t, Operation<Optional<Tag>> original) {
-        GenericInventorySummary summary = GenericInventorySummary.of(t);
-        return Optional.of(summary.write(registries));
+    private Optional<Tag> writeLastSummary(Codec<InventorySummary> codec, HolderLookup.Provider registries, Object t) {
+        GenericInventorySummary summary = GenericInventorySummary.of((InventorySummary) t);
+        return Optional.of(NBTHelper.writeCompoundList(summary.get(), stack -> {
+            CompoundTag tag = new CompoundTag();
+            GenericStackSerializer.write(registries, stack, tag);
+            return tag;
+        }));
     }
 
     @WrapMethod(
-            method = "isSameInventoryFallback",
-            remap = false
+            method = "isSameInventoryFallback"
     )
     private static boolean isSameInventoryNullCheck(IItemHandler first, IItemHandler second,
                                                     Operation<Boolean> original) {

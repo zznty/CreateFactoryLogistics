@@ -160,14 +160,11 @@ public class GenericPromiseQueueMixin implements GenericPromiseQueue {
         ListTag listTag = tag.getList("List", CompoundTag.TAG_COMPOUND);
         NBTHelper.iterateCompoundList(listTag,
                                       compoundTag -> {
+                                          GenericStack stack = CatnipCodecUtils.decode(
+                                                  GenericStack.CODEC, compoundTag.get("promised_stack")
+                                          ).orElse(GenericStack.EMPTY);
                                           queue.add(new RequestPromise(compoundTag.getInt("ticks_existed"),
-                                                                       BigIngredientStack.of(CatnipCodecUtils.decode(
-                                                                               BoardIngredient.CODEC,
-                                                                               compoundTag.getCompound(
-                                                                                       "promised_stack")).orElseGet(
-                                                                               () -> new BoardIngredient(
-                                                                                       IngredientKey.EMPTY,
-                                                                                       0))).asStack()));
+                                                                       BigGenericStack.of(stack).asStack()));
                                       });
         return queue;
     }
@@ -178,8 +175,9 @@ public class GenericPromiseQueueMixin implements GenericPromiseQueue {
         tag.put("List", NBTHelper.writeCompoundList(createFactoryLogistics$promises.values(), promise -> {
             CompoundTag compoundTag = new CompoundTag();
             compoundTag.putInt("ticks_existed", promise.ticksExisted);
-            CompoundTag stackTag = (CompoundTag) CatnipCodecUtils.encode(BoardIngredient.CODEC,
-                                                                         ((BigIngredientStack) promise.promisedStack).ingredient()).orElseGet(
+            CompoundTag stackTag = (CompoundTag) CatnipCodecUtils.encode(GenericStack.CODEC,
+                                                                         BigGenericStack.of(
+                                                                                 promise.promisedStack).get()).orElseGet(
                     CompoundTag::new);
             compoundTag.put("promised_stack", stackTag);
             return compoundTag;

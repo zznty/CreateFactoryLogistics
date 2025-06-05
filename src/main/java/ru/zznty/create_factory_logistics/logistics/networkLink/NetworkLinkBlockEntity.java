@@ -25,6 +25,7 @@ import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistrati
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 
 import java.util.List;
+import java.util.Objects;
 
 public class NetworkLinkBlockEntity extends SmartBlockEntity {
     private LogisticallyLinkedBehaviour link;
@@ -50,7 +51,8 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         if (tag.contains(NetworkLinkBlock.INGREDIENT_TYPE, CompoundTag.TAG_STRING))
-            registration = GenericContentExtender.REGISTRY.get(ResourceLocation.parse(tag.getString(NetworkLinkBlock.INGREDIENT_TYPE)));
+            registration = GenericContentExtender.REGISTRY.get(
+                    ResourceLocation.parse(tag.getString(NetworkLinkBlock.INGREDIENT_TYPE)));
     }
 
     @Override
@@ -58,7 +60,7 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
         super.write(tag, registries, clientPacket);
         if (registration != null)
             tag.putString(NetworkLinkBlock.INGREDIENT_TYPE,
-                          GenericContentExtender.REGISTRY.get().getKey(registration).toString());
+                          Objects.requireNonNull(GenericContentExtender.REGISTRY.getKey(registration)).toString());
     }
 
     public NetworkLinkMode mode() {

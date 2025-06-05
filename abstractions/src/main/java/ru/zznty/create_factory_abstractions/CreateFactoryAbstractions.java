@@ -1,8 +1,9 @@
 package ru.zznty.create_factory_abstractions;
 
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.registry.TypeRegistries;
 
@@ -12,8 +13,8 @@ public final class CreateFactoryAbstractions {
 
     public static final boolean EXTENSIBILITY_AVAILABLE = ModList.get().isLoaded("create_factory_logistics");
 
-    public CreateFactoryAbstractions(FMLJavaModLoadingContext context) {
-        TypeRegistries.register(context.getModEventBus());
-        GenericContentExtender.register(context.getModEventBus());
+    public CreateFactoryAbstractions(IEventBus modEventBus, ModContainer modContainer) {
+        TypeRegistries.register(modEventBus);
+        GenericContentExtender.register(modEventBus);
     }
 }

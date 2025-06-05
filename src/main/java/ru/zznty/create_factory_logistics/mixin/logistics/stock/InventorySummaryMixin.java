@@ -4,11 +4,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
-import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.platform.CatnipServices;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,9 +17,9 @@ import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
-import ru.zznty.create_factory_abstractions.generic.stack.GenericStackSerializer;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.panel.request.LogisticalStockResponsePacket;
 
 import java.util.*;
 
@@ -100,17 +97,6 @@ public class InventorySummaryMixin implements GenericInventorySummary {
         GenericInventorySummary copy = GenericInventorySummary.empty();
         copy.add(this);
         return copy.asSummary();
-    }
-
-    @Override
-    public CompoundTag write(HolderLookup.Provider registries) {
-        CompoundTag tag = new CompoundTag();
-        tag.put("List", NBTHelper.writeCompoundList(createFactoryLogistics$stacks.values(), stack -> {
-            CompoundTag compoundTag = new CompoundTag();
-            GenericStackSerializer.write(registries, compoundTag, stack.get());
-            return compoundTag;
-        }));
-        return tag;
     }
 
     @Override
@@ -215,7 +201,8 @@ public class InventorySummaryMixin implements GenericInventorySummary {
         List<BigItemStack> currentList = null;
 
         if (stacks.isEmpty())
-            CatnipServices.NETWORK.sendToClient(player, new LogisticalStockResponsePacket(true, pos, Collections.emptyList()));
+            CatnipServices.NETWORK.sendToClient(player,
+                                                new LogisticalStockResponsePacket(true, pos, Collections.emptyList()));
 
         for (BigGenericStack entry : stacks) {
             if (currentList == null)

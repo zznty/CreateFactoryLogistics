@@ -1,16 +1,17 @@
 package ru.zznty.create_factory_abstractions.generic.impl;
 
+import com.simibubi.create.foundation.utility.DistExecutor;
 import net.createmod.catnip.data.Pair;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegisterEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
@@ -27,15 +28,16 @@ import ru.zznty.create_factory_abstractions.generic.key.item.ItemKeySerializer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @ApiStatus.Internal
 public final class GenericContentExtender {
     private static final Map<String, GenericContentExtension> EXTENSIONS = new HashMap<>(); // <modId, extension>
     public static final String ID = "create_factory_abstractions";
-    public static Supplier<IForgeRegistry<GenericKeyRegistration>> REGISTRY;
+    public static Registry<GenericKeyRegistration> REGISTRY;
     public static Map<Class<?>, GenericKeyRegistration> REGISTRATIONS = new HashMap<>(); // <key, provider>
+    public static ResourceLocation DEFAULT_KEY = ResourceLocation.fromNamespaceAndPath(ID, "empty");
 
     public static void enqueueExtension(String modId, GenericContentExtension extension) {
         if (CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE)
@@ -52,34 +54,37 @@ public final class GenericContentExtender {
 
     @SubscribeEvent
     public static void onRegistry(NewRegistryEvent event) {
-        REGISTRY = event.create(new RegistryBuilder<GenericKeyRegistration>()
-                                        .setName(ResourceLocation.fromNamespaceAndPath(ID, "generic_keys"))
-                                        .setDefaultKey(ResourceLocation.fromNamespaceAndPath(ID, "empty"))
-                                        .disableSaving()
-                                        .disableOverrides(),
-                                GenericContentExtender::fillKeys);
+        REGISTRY = event.create(new RegistryBuilder<GenericKeyRegistration>(
+                ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(ID, "generic_keys"))
+        )
+                                        .defaultKey(DEFAULT_KEY)
+                                        .sync(false));
     }
 
-    private static void fillKeys(IForgeRegistry<GenericKeyRegistration> registry) {
+    @SuppressWarnings({"removal", "UnstableApiUsage"})
+    private static void fillKeys(RegisterEvent.RegisterHelper<GenericKeyRegistration> register) {
         Registration<EmptyKey> emptyKeyRegistration = new Registration<>(new EmptyKeyProvider(),
                                                                          new EmptyKeySerializer(),
-                                                                         DistExecutor.safeCallWhenOn(Dist.CLIENT,
-                                                                                                     () -> EmptyKeyClientProvider::new));
-        registry.register(ResourceLocation.fromNamespaceAndPath(ID, "empty"),
+                                                                         DistExecutor.unsafeCallWhenOn(Dist.CLIENT,
+                                                                                                       () -> EmptyKeyClientProvider::new));
+        register.register(ResourceLocation.fromNamespaceAndPath(ID, "empty"),
                           emptyKeyRegistration);
         REGISTRATIONS.put(EmptyKey.class, emptyKeyRegistration);
 
         Registration<ItemKey> itemKeyRegistration = new Registration<>(new ItemKeyProvider(), new ItemKeySerializer(),
-                                                                       DistExecutor.safeCallWhenOn(Dist.CLIENT,
-                                                                                                   () -> ItemKeyClientProvider::new));
-        registry.register(ResourceLocation.fromNamespaceAndPath(ID, "item"),
+                                                                       DistExecutor.unsafeCallWhenOn(Dist.CLIENT,
+                                                                                                     () -> ItemKeyClientProvider::new));
+        register.register(ResourceLocation.fromNamespaceAndPath(ID, "item"),
                           itemKeyRegistration);
         REGISTRATIONS.put(ItemKey.class, itemKeyRegistration);
     }
 
+    @SuppressWarnings({"removal", "UnstableApiUsage"})
     @SubscribeEvent
-    public static void onRegisterExtensions(RegisterEvent event) {
-        event.register(REGISTRY.get().getRegistryKey(), helper -> {
+    public static void onRegister(RegisterEvent event) {
+        event.register(REGISTRY.key(), helper -> {
+            fillKeys(helper);
+
             for (Map.Entry<String, GenericContentExtension> entry : EXTENSIONS.entrySet()) {
                 GenericContentExtension extension = entry.getValue();
                 Map<String, Pair<CommonRegistrationBuilderImpl<?>, ClientRegistrationBuilderImpl<?>>> registrations = new HashMap<>();
@@ -97,9 +102,9 @@ public final class GenericContentExtender {
                     }
                 });
 
-                DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> new DistExecutor.SafeRunnable() {
+                DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> new Callable<Object>() {
                     @Override
-                    public void run() {
+                    public Object call() {
                         extension.registerClient(new ClientContentRegistration() {
                             @Override
                             public <Key extends GenericKey> void register(String id,
@@ -111,6 +116,7 @@ public final class GenericContentExtender {
                                                                                     registrationBuilder));
                             }
                         });
+                        return null;
                     }
                 });
 

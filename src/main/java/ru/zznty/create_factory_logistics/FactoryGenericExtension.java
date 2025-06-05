@@ -1,7 +1,7 @@
 package ru.zznty.create_factory_logistics;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.ClientContentRegistration;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.CommonContentRegistration;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.GenericContentExtension;

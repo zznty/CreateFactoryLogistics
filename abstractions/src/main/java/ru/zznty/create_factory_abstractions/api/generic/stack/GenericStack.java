@@ -1,5 +1,7 @@
 package ru.zznty.create_factory_abstractions.api.generic.stack;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import net.minecraft.world.item.ItemStack;
 import ru.zznty.create_factory_abstractions.api.generic.GenericFilterProvider;
@@ -7,6 +9,16 @@ import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
 
 public record GenericStack(GenericKey key, int amount) {
+    public static final Codec<GenericStack> CODEC = RecordCodecBuilder.create(i ->
+                                                                                      i.group(GenericKey.CODEC.fieldOf(
+                                                                                                      "key").forGetter(
+                                                                                                      GenericStack::key),
+                                                                                              Codec.INT.fieldOf(
+                                                                                                      "Amount").forGetter(
+                                                                                                      GenericStack::amount))
+                                                                                              .apply(i,
+                                                                                                     GenericStack::new));
+
     public static final GenericStack EMPTY = new GenericStack(GenericKey.EMPTY, 0);
 
     public boolean isEmpty() {

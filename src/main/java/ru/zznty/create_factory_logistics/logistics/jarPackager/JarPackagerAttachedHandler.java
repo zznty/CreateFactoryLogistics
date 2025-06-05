@@ -91,7 +91,7 @@ public class JarPackagerAttachedHandler implements PackagerAttachedHandler {
     }
 
     @Override
-    public void collectAvailable(boolean scanInputSlots, GenericInventorySummary summary) {
+    public void collectAvailable(GenericInventorySummary summary) {
         if (!packagerBE.drainInventory.hasInventory()) {
             // in case inventory didn't load in the first tick
             packagerBE.drainInventory.findNewCapability();
@@ -104,8 +104,6 @@ public class JarPackagerAttachedHandler implements PackagerAttachedHandler {
         for (int i = 0; i < fluidHandler.getTanks(); i++) {
             FluidStack stack = fluidHandler.getFluidInTank(i);
             if (!stack.isEmpty()) {
-                if (!scanInputSlots)
-                    stack = fluidHandler.drain(stack, IFluidHandler.FluidAction.SIMULATE);
                 if (fluidHandler instanceof CreativeFluidTankBlockEntity.CreativeSmartFluidTank)
                     stack.setAmount(BigItemStack.INF);
 

@@ -15,7 +15,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -256,7 +255,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     target = "Lnet/minecraft/world/item/ItemStack;getTooltipLines(Lnet/minecraft/world/item/Item$TooltipContext;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;"
             )
     )
-    private List<Component> getCraftableTooltip(ItemStack instance, Item.TooltipContext i, Player list, TooltipFlag tooltipFlag, @Local BigItemStack itemStack) {
+    private List<Component> getCraftableTooltip(ItemStack instance, Item.TooltipContext i, Player list,
+                                                TooltipFlag tooltipFlag, @Local BigItemStack itemStack) {
         BigGenericStack stack = BigGenericStack.of(itemStack);
         return GenericContentExtender.registrationOf(
                 stack.get().key()).clientProvider().guiHandler().tooltipBuilder(stack.get().key(),
@@ -383,7 +383,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     target = "Lnet/createmod/catnip/platform/services/NetworkHelper;sendToServer(Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V"
             )
     )
-    private void sendRequest(NetworkHelper instance, CustomPacketPayload customPacketPayload, Operation<Void> original, @Local PackageOrderWithCrafts order) {
+    private void sendRequest(NetworkHelper instance, CustomPacketPayload customPacketPayload, Operation<Void> original,
+                             @Local PackageOrderWithCrafts order) {
         ru.zznty.create_factory_logistics.logistics.panel.request.PackageOrderRequestPacket packet =
                 new ru.zznty.create_factory_logistics.logistics.panel.request.PackageOrderRequestPacket(
                         blockEntity.getBlockPos(), GenericOrder.of(order), addressBox.getValue(), encodeRequester);
@@ -399,23 +400,14 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     ordinal = 0
             )
     )
-    private void sendEmptyRequest(NetworkHelper instance, CustomPacketPayload customPacketPayload, Operation<Void> original) {
+    private void sendEmptyRequest(NetworkHelper instance, CustomPacketPayload customPacketPayload,
+                                  Operation<Void> original) {
         ru.zznty.create_factory_logistics.logistics.panel.request.PackageOrderRequestPacket packet =
                 new ru.zznty.create_factory_logistics.logistics.panel.request.PackageOrderRequestPacket(
                         blockEntity.getBlockPos(), GenericOrder.empty(), addressBox.getValue(), encodeRequester);
 
         instance.sendToServer(packet);
     }
-
-    @WrapMethod(
-            method = "requestCraftable"
-    )
-    private void requestIngredients(CraftableBigItemStack cbis, int requestedDifference, Operation<Void> original) {
-        CraftableGenericStack stack = CraftableGenericStack.of(cbis);
-        if (stack.ingredients().isEmpty()) {
-            original.call(cbis, requestedDifference);
-            return;
-        }
 
     @Overwrite(remap = false)
     public void requestCraftable(CraftableBigItemStack cbis, int requestedDifference) {

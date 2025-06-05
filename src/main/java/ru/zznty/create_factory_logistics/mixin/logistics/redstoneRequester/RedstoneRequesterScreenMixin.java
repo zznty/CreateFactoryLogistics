@@ -9,7 +9,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.logistics.AddressEditBox;
 import com.simibubi.create.content.logistics.BigItemStack;
-import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterConfigurationPacket;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterMenu;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterScreen;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
@@ -45,8 +44,8 @@ import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericGhostMenu;
 import ru.zznty.create_factory_abstractions.generic.support.GenericRedstoneRequester;
-import ru.zznty.create_factory_abstractions.generic.support.GenericRedstoneRequesterConfigurationPacket;
 import ru.zznty.create_factory_logistics.logistics.generic.FluidGenericStack;
+import ru.zznty.create_factory_logistics.logistics.panel.request.RedstoneRequesterConfigurationPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -279,7 +278,8 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
                     target = "Lnet/createmod/catnip/platform/services/NetworkHelper;sendToServer(Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V"
             )
     )
-    private void createPacket(NetworkHelper instance, CustomPacketPayload customPacketPayload, Operation<Void> original) {
+    private void createPacket(NetworkHelper instance, CustomPacketPayload customPacketPayload,
+                              Operation<Void> original) {
         GenericGhostMenu ghostMenu = (GenericGhostMenu) menu;
 
         List<GenericStack> genericStack = ghostMenu.getStacks();
@@ -293,8 +293,9 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             stacks.add(genericStack.get(i).withAmount(amounts.get(i)));
         }
 
-        RedstoneRequesterConfigurationPacket packet = new RedstoneRequesterConfigurationPacket(menu.contentHolder.getBlockPos(),
-                                                                                               addressBox.getValue(), allowPartial.green, stacks);
+        RedstoneRequesterConfigurationPacket packet = new RedstoneRequesterConfigurationPacket(
+                menu.contentHolder.getBlockPos(),
+                addressBox.getValue(), allowPartial.green, stacks);
 
         instance.sendToServer(packet);
     }

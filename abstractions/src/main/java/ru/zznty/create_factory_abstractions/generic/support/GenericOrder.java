@@ -24,14 +24,14 @@ public record GenericOrder(List<GenericStack> stacks, List<PackageOrderWithCraft
         CompoundTag tag = new CompoundTag();
         tag.put("Entries", NBTHelper.writeCompoundList(stacks, s -> {
             CompoundTag compoundTag = new CompoundTag();
-            GenericStackSerializer.write(levelRegistryAccess, compoundTag, s);
+            GenericStackSerializer.write(levelRegistryAccess, s, compoundTag);
             return compoundTag;
         }));
         tag.put("Crafts", NBTHelper.writeCompoundList(crafts, e -> {
             CompoundTag compoundTag = new CompoundTag();
             compoundTag.put("Entries", NBTHelper.writeCompoundList(e.pattern().stacks(), s -> {
                 CompoundTag tag1 = new CompoundTag();
-                GenericStackSerializer.write(levelRegistryAccess, tag1, BigGenericStack.of(s).get());
+                GenericStackSerializer.write(levelRegistryAccess, BigGenericStack.of(s).get(), tag1);
                 return tag1;
             }));
             compoundTag.putInt("Count", e.count());
@@ -68,27 +68,33 @@ public record GenericOrder(List<GenericStack> stacks, List<PackageOrderWithCraft
         ListTag listTag = tag.getList("Entries", Tag.TAG_COMPOUND);
         List<GenericStack> stacks = new ArrayList<>(listTag.size());
         NBTHelper.iterateCompoundList(listTag,
-                entryTag -> stacks.add(GenericStackSerializer.read(levelRegistryAccess, entryTag)));
+                                      entryTag -> stacks.add(
+                                              GenericStackSerializer.read(levelRegistryAccess, entryTag)));
         listTag = tag.getList("Crafts", Tag.TAG_COMPOUND);
         List<PackageOrderWithCrafts.CraftingEntry> crafts = new ArrayList<>(listTag.size());
         NBTHelper.iterateCompoundList(listTag,
-                entryTag -> {
-                    PackageOrder order = new PackageOrder(NBTHelper.readCompoundList(entryTag.getList("Entries", Tag.TAG_COMPOUND), t -> BigGenericStack.of(GenericStackSerializer.read(levelRegistryAccess, t)).asStack()));
-                    crafts.add(new PackageOrderWithCrafts.CraftingEntry(order, entryTag.getInt("Count")));
-                });
+                                      entryTag -> {
+                                          PackageOrder order = new PackageOrder(NBTHelper.readCompoundList(
+                                                  entryTag.getList("Entries", Tag.TAG_COMPOUND),
+                                                  t -> BigGenericStack.of(
+                                                          GenericStackSerializer.read(levelRegistryAccess,
+                                                                                      t)).asStack()));
+                                          crafts.add(new PackageOrderWithCrafts.CraftingEntry(order, entryTag.getInt(
+                                                  "Count")));
+                                      });
         return new GenericOrder(stacks, crafts);
     }
 
     public void write(RegistryFriendlyByteBuf buffer) {
         buffer.writeVarInt(stacks.size());
         for (GenericStack stack : stacks)
-            GenericStackSerializer.write(buffer, stack);
+            GenericStackSerializer.write(stack, buffer);
         buffer.writeVarInt(crafts.size());
         for (PackageOrderWithCrafts.CraftingEntry entry : crafts) {
             PackageOrder pattern = entry.pattern();
             buffer.writeVarInt(pattern.stacks().size());
             for (BigItemStack stack : pattern.stacks()) {
-                GenericStackSerializer.write(buffer, BigGenericStack.of(stack).get());
+                GenericStackSerializer.write(BigGenericStack.of(stack).get(), buffer);
             }
             buffer.writeVarInt(entry.count());
         }
@@ -123,7 +129,8 @@ public record GenericOrder(List<GenericStack> stacks, List<PackageOrderWithCraft
         return new GenericOrder(stacks, crafts);
     }
 
-    public static void set(HolderLookup.Provider levelRegistryAccess, ItemStack box, int orderId, int linkIndex, boolean isFinalLink, int fragmentIndex,
+    public static void set(HolderLookup.Provider levelRegistryAccess, ItemStack box, int orderId, int linkIndex,
+                           boolean isFinalLink, int fragmentIndex,
                            boolean isFinal, @Nullable GenericOrder orderContext) {
         CompoundTag tag = new CompoundTag();
         tag.putInt("OrderId", orderId);

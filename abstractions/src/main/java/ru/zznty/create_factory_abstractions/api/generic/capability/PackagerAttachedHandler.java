@@ -9,8 +9,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.AutoRegisterCapability;
-import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.AbstractionsCapabilities;
@@ -18,7 +16,6 @@ import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.BuiltInPackagerAttachedHandler;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 
-@AutoRegisterCapability
 public interface PackagerAttachedHandler {
     int slotCount();
 
@@ -31,16 +28,17 @@ public interface PackagerAttachedHandler {
 
     boolean hasChanges();
 
-    void collectAvailable(boolean scanInputSlots, GenericInventorySummary summary);
+    void collectAvailable(GenericInventorySummary summary);
 
     Block supportedGauge();
 
     @Nullable IdentifiedInventory identifiedInventory();
 
-    static LazyOptional<PackagerAttachedHandler> get(PackagerBlockEntity blockEntity) {
+    static @Nullable PackagerAttachedHandler get(PackagerBlockEntity blockEntity) {
         if (CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE)
-            return blockEntity.getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED);
+            return blockEntity.getLevel().getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED,
+                                                        blockEntity.getBlockPos());
 
-        return LazyOptional.of(() -> new BuiltInPackagerAttachedHandler(blockEntity));
+        return new BuiltInPackagerAttachedHandler(blockEntity);
     }
 }

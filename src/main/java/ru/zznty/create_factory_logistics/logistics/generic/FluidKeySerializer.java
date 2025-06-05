@@ -1,38 +1,65 @@
 package ru.zznty.create_factory_logistics.logistics.generic;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.createmod.catnip.codecs.CatnipCodecUtils;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.PatchedDataComponentMap;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeySerializer;
 
 public class FluidKeySerializer implements GenericKeySerializer<FluidKey> {
     @Override
-    public FluidKey read(CompoundTag tag) {
+    public FluidKey read(HolderLookup.Provider registries, CompoundTag tag) {
         String key = tag.getString("id");
-        return key.isEmpty() ? new FluidKey(Fluids.EMPTY, null) :
-               new FluidKey(ForgeRegistries.FLUIDS.getValue(ResourceLocation.parse(key)),
-                            tag.contains("Tag") ? tag.getCompound("Tag") : null);
+        return key.isEmpty() ? new FluidKey(Fluids.EMPTY.builtInRegistryHolder(), null) :
+               new FluidKey(BuiltInRegistries.FLUID.getHolder(ResourceLocation.parse(key)).get(),
+                            tag.contains("Tag") ?
+                            PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY,
+                                                              CatnipCodecUtils.decode(DataComponentPatch.CODEC,
+                                                                                      tag.getCompound("Tag")).orElse(
+                                                                      DataComponentPatch.EMPTY)) :
+                            new PatchedDataComponentMap(DataComponentMap.EMPTY));
     }
 
     @Override
-    public void write(FluidKey key, CompoundTag tag) {
-        ResourceLocation resourceLocation = ForgeRegistries.FLUIDS.getKey(key.fluid());
-        tag.putString("id", resourceLocation == null ? "minecraft:air" : resourceLocation.toString());
-        if (key.nbt() != null)
-            tag.put("Tag", key.nbt().copy());
+    public void write(FluidKey key, HolderLookup.Provider registries, CompoundTag tag) {
+        @Nullable ResourceKey<Fluid> resourceKey = key.fluid().getKey();
+        tag.putString("id", resourceKey == null ? "minecraft:air" : resourceKey.location().toString());
+        CatnipCodecUtils.encode(DataComponentPatch.CODEC, key.nbt().asPatch())
+                .ifPresent(t -> tag.put("Tag", t));
     }
 
     @Override
-    public FluidKey read(FriendlyByteBuf buf) {
-        return new FluidKey(buf.readRegistryIdSafe(Fluid.class), buf.readNbt());
+    public FluidKey read(RegistryFriendlyByteBuf buf) {
+        Holder<Fluid> fluid = BuiltInRegistries.FLUID.getHolderOrThrow(
+                buf.readResourceKey(BuiltInRegistries.FLUID.key()));
+        DataComponentPatch nbt = DataComponentPatch.STREAM_CODEC.decode(buf);
+        return new FluidKey(fluid, PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, nbt));
     }
 
     @Override
-    public void write(FluidKey key, FriendlyByteBuf buf) {
-        buf.writeRegistryId(ForgeRegistries.FLUIDS, key.fluid());
-        buf.writeNbt(key.nbt());
+    public void write(FluidKey key, RegistryFriendlyByteBuf buf) {
+        buf.writeResourceKey(key.fluid().getKey());
+        DataComponentPatch.STREAM_CODEC.encode(buf, key.nbt().asPatch());
+    }
+
+    @Override
+    public Codec<FluidKey> codec() {
+        return RecordCodecBuilder.create(i -> i.group(
+                BuiltInRegistries.FLUID.holderByNameCodec().fieldOf("fluid").forGetter(FluidKey::fluid),
+                DataComponentPatch.CODEC.fieldOf("nbt").forGetter(k -> k.nbt().asPatch())
+        ).apply(i, (fluid, nbt) ->
+                new FluidKey(fluid, PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, nbt))));
     }
 }

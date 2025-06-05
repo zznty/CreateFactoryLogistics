@@ -48,7 +48,7 @@ public class IdentifiedInventoryMixin implements GenericIdentifiedInventory {
     }
 
     @Override
-    public <T, C> void setCapability(BlockCapability<T, C> capability, T handler) {
+    public <T> void setCapability(BlockCapability<T, ?> capability, T handler) {
         if (this.handler != null)
             throw new IllegalArgumentException("Handler must be null");
         createFactoryLogistics$capability = capability;

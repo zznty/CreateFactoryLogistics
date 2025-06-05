@@ -43,7 +43,8 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
         if (list.size() != (isEmpty ? 1 : 2))
             return false;
 
-        return (isEmpty || list.stream().anyMatch(Ingredient.of(tag(key)))) && list.stream().anyMatch(Ingredient.of(FactoryBlocks.NETWORK_LINK));
+        return (isEmpty || list.stream().anyMatch(Ingredient.of(tag(key)))) && list.stream().anyMatch(
+                Ingredient.of(FactoryBlocks.NETWORK_LINK));
     }
 
     private @Nullable ResourceLocation test(ItemStack item) {
@@ -78,7 +79,7 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
         }
 
         if (air)
-            qualifier = GenericContentExtender.REGISTRY.get().getDefaultKey();
+            qualifier = GenericContentExtender.DEFAULT_KEY;
 
         if (link == null || qualifier == null) return ItemStack.EMPTY;
 
@@ -120,11 +121,19 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
 
         // i hate codecs i hate codecs i hate codecs
         public static final MapCodec<NetworkLinkQualificationRecipe> CODEC = RecordCodecBuilder.mapCodec((p_340778_) ->
-                p_340778_.group(ResourceLocation.CODEC.fieldOf("key").forGetter(NetworkLinkQualificationRecipe::key),
-                        CraftingBookCategory.CODEC.fieldOf("category").forGetter(NetworkLinkQualificationRecipe::category)).apply(p_340778_, NetworkLinkQualificationRecipe::new));
+                                                                                                                 p_340778_.group(
+                                                                                                                         ResourceLocation.CODEC.fieldOf(
+                                                                                                                                 "key").forGetter(
+                                                                                                                                 NetworkLinkQualificationRecipe::key),
+                                                                                                                         CraftingBookCategory.CODEC.fieldOf(
+                                                                                                                                 "category").forGetter(
+                                                                                                                                 NetworkLinkQualificationRecipe::category)).apply(
+                                                                                                                         p_340778_,
+                                                                                                                         NetworkLinkQualificationRecipe::new));
 
         public static @Nullable NetworkLinkQualificationRecipe fromNetwork(RegistryFriendlyByteBuf p_44106_) {
-            return new NetworkLinkQualificationRecipe(p_44106_.readResourceLocation(), p_44106_.readEnum(CraftingBookCategory.class));
+            return new NetworkLinkQualificationRecipe(p_44106_.readResourceLocation(),
+                                                      p_44106_.readEnum(CraftingBookCategory.class));
         }
 
         public static void toNetwork(RegistryFriendlyByteBuf p_44101_, NetworkLinkQualificationRecipe p_44102_) {

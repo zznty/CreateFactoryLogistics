@@ -78,7 +78,7 @@ public record BuiltInPackagerAttachedHandler(PackagerBlockEntity packagerBE) imp
     }
 
     @Override
-    public void collectAvailable(boolean scanInputSlots, GenericInventorySummary summary) {
+    public void collectAvailable(GenericInventorySummary summary) {
         if (!packagerBE.targetInventory.hasInventory() || packagerBE.targetInventory.getInventory() instanceof PackagerItemHandler)
             return;
 
@@ -91,9 +91,7 @@ public record BuiltInPackagerAttachedHandler(PackagerBlockEntity packagerBE) imp
 
         for (int slot = 0; slot < targetInv.getSlots(); slot++) {
             int slotLimit = targetInv.getSlotLimit(slot);
-            ItemStack stack = scanInputSlots ?
-                              targetInv.getStackInSlot(slot) :
-                              targetInv.extractItem(slot, slotLimit, true);
+            ItemStack stack = targetInv.getStackInSlot(slot);
             summary.add(GenericStack.wrap(stack));
         }
 
