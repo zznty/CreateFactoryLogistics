@@ -39,8 +39,8 @@ public class SequencedAssemblyRecipeGen extends FactoryRecipeProvider {
         return generatedRecipe;
     }
 
-    @Override
-    public String getName() {
-        return "Create Factory Logistics Sequenced Assembly Recipes";
-    }
+//    @Override
+//    public String getName() {
+//        return "Create Factory Logistics Sequenced Assembly Recipes";
+//    }
 }

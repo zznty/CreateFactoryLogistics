@@ -2,7 +2,6 @@ package ru.zznty.create_factory_logistics.logistics.networkLink;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
-import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
@@ -67,7 +66,7 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (registration != null && (side == null || PackagerLinkBlock.getConnectedDirection(getBlockState())
+        if (registration != null && (side == null || getConnectedDirection(getBlockState())
                 .getOpposite() == side)) {
             NetworkLinkCapabilityFactory capabilityFactory = NetworkLinkCapabilityFactory.FACTORY_MAP.get(
                     registration);
@@ -117,6 +116,20 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
             if (state.getValue(NetworkLinkBlock.FACE) == AttachFace.FLOOR)
                 return direction == Direction.UP;
             return state.getValue(NetworkLinkBlock.FACING) == direction;
+        }
+    }
+
+    public static Direction getConnectedDirection(BlockState arg) {
+        switch (arg.getValue(NetworkLinkBlock.FACE)) {
+            case CEILING -> {
+                return Direction.DOWN;
+            }
+            case FLOOR -> {
+                return Direction.UP;
+            }
+            default -> {
+                return arg.getValue(NetworkLinkBlock.FACING);
+            }
         }
     }
 }

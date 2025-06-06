@@ -13,7 +13,6 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntit
 import com.simibubi.create.content.logistics.packager.*;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
-import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlock;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlockEntity;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
@@ -41,6 +40,7 @@ import ru.zznty.create_factory_abstractions.api.generic.capability.PackageMeasur
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttachedHandler;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.*;
+import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlockEntity;
 import ru.zznty.create_factory_logistics.logistics.packager.GenericPackagerItemHandler;
 
 import java.util.*;
@@ -164,7 +164,7 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
             }
 
             if (AllBlocks.STOCK_LINK.has(adjacentState)) {
-                if (PackagerLinkBlock.getConnectedDirection(adjacentState) != d)
+                if (NetworkLinkBlockEntity.getConnectedDirection(adjacentState) != d)
                     continue;
                 if (!(level.getBlockEntity(worldPosition.relative(d)) instanceof PackagerLinkBlockEntity plbe))
                     continue;
@@ -391,7 +391,7 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
 
         return Pair.of(box, extractedPackage);
     }
-    
+
     @WrapMethod(
             method = "isSameInventoryFallback",
             remap = false

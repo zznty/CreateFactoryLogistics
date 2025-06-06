@@ -5,16 +5,13 @@ pluginManagement {
             name = 'MinecraftForge'
             url = 'https://maven.minecraftforge.net/'
         }
+        maven { url "https://maven.fabricmc.net/" }
+        maven { url "https://maven.architectury.dev/" }
     }
 }
 
-plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.7.0'
-}
-
 include ':abstractions'
+include ':forge'
 
-rootProject.name = mod_id
-
-// jarJar metadata really wants actual artifact id as project name
-project(':abstractions').name = "create_factory_abstractions-${minecraft_version}"
+project(':abstractions').name = 'create_factory_abstractions'
+project(':forge').name = mod_id
