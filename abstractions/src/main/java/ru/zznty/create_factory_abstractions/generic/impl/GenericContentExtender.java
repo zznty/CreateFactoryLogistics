@@ -30,18 +30,19 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@ApiStatus.Internal
 public final class GenericContentExtender {
     private static final Map<String, GenericContentExtension> EXTENSIONS = new HashMap<>(); // <modId, extension>
     public static final String ID = "create_factory_abstractions";
     public static Supplier<IForgeRegistry<GenericKeyRegistration>> REGISTRY;
     public static Map<Class<?>, GenericKeyRegistration> REGISTRATIONS = new HashMap<>(); // <key, provider>
 
+    @ApiStatus.Internal
     public static void enqueueExtension(String modId, GenericContentExtension extension) {
         if (CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE)
             EXTENSIONS.putIfAbsent(modId, extension);
     }
 
+    @ApiStatus.Internal
     public static void register(IEventBus bus) {
         bus.register(GenericContentExtender.class);
     }
@@ -50,6 +51,7 @@ public final class GenericContentExtender {
         return REGISTRATIONS.get(instance.getClass());
     }
 
+    @ApiStatus.Internal
     @SubscribeEvent
     public static void onRegistry(NewRegistryEvent event) {
         REGISTRY = event.create(new RegistryBuilder<GenericKeyRegistration>()
@@ -77,6 +79,7 @@ public final class GenericContentExtender {
         REGISTRATIONS.put(ItemKey.class, itemKeyRegistration);
     }
 
+    @ApiStatus.Internal
     @SubscribeEvent
     public static void onRegisterExtensions(RegisterEvent event) {
         event.register(REGISTRY.get().getRegistryKey(), helper -> {

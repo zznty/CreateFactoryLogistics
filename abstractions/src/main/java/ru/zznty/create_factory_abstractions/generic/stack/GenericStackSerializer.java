@@ -3,7 +3,6 @@ package ru.zznty.create_factory_abstractions.generic.stack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistration;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
@@ -11,7 +10,6 @@ import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 
 import java.util.Objects;
 
-@ApiStatus.Internal
 public final class GenericStackSerializer {
     public static GenericStack read(FriendlyByteBuf buf) {
         GenericKeyRegistration provider = buf.readRegistryIdSafe(GenericKeyRegistration.class);
