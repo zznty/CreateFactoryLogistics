@@ -1,69 +1,11 @@
-apply plugin: 'dev.architectury.loom'
-apply plugin: 'net.minecraftforge.gradleutils'
-
-// TODO maybe separate versioning scheme
-version = gitversion.tagOffset
-base {
-    archivesName = "${name}-${minecraft_version}"
+java {
+    withJavadocJar()
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-
-println "Version: ${version}"
-
-repositories {
-    maven {
-        url "https://cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
-    maven { url = 'https://maven.neoforged.net/releases/' }
-    maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
-    maven { url = "https://mvn.devos.one/snapshots" } // Registrate
-    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
-    maven { url = "https://maven.blamejared.com" } // JEI, Vazkii's Mods
-    maven { url = "https://maven.liukrast.net/" } // extra gauges
-}
-
-loom {
-    silentMojangMappingsLicense()
-    runs {
-        configureEach {
-            property("forge.logging.markers", "")
-            property("forge.logging.console.level", "debug")
-        }
-    }
-}
-
-dependencies {
-    minecraft "net.minecraft:minecraft:${minecraft_version}"
-    mappings loom.officialMojangMappings()
-
-    neoForge "net.neoforged:${forge_flavour}:${forge_version}"
-
-    modCompileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
-    modCompileOnly "mezz.jei:jei-${minecraft_version}-${forge_flavour}-api:${jei_version}"
-    modCompileOnly "mezz.jei:jei-${minecraft_version}-${forge_flavour}:${jei_version}"
-    modRuntimeOnly "mezz.jei:jei-${minecraft_version}-${forge_flavour}:${jei_version}"
-
-    modImplementation "com.simibubi.create:create-${minecraft_version}:${create_version}:slim", { transitive = false }
-    modImplementation "net.createmod.ponder:Ponder-${forge_flavour_pascal}-${minecraft_version}:${ponder_version}"
-    modCompileOnly "dev.engine-room.flywheel:flywheel-${forge_flavour}-api-${minecraft_version}:${flywheel_version}"
-    modRuntimeOnly "dev.engine-room.flywheel:flywheel-${forge_flavour}-${minecraft_version}:${flywheel_version}"
-    modImplementation "com.tterrag.registrate:Registrate:${registrate_version}"
-    modCompileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3"))
-    include(implementation("io.github.llamalad7:mixinextras-${forge_flavour}:0.5.0-rc.3")) {
-        version {
-            strictly '[0.5.0-rc.3,)'
-        }
-    }
-}
-
-processResources {
+tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_flavour: forge_flavour, forge_version_range: forge_version_range,
+            forge_version: forge_version, forge_version_range: forge_version_range, forge_flavour: forge_flavour,
             loader_version_range: loader_version_range,
             mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: version,
             mod_authors: mod_authors, mod_description: mod_description,

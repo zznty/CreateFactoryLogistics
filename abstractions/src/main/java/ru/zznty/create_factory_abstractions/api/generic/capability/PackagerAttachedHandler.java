@@ -35,9 +35,17 @@ public interface PackagerAttachedHandler {
     @Nullable IdentifiedInventory identifiedInventory();
 
     static @Nullable PackagerAttachedHandler get(PackagerBlockEntity blockEntity) {
-        if (CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE)
-            return blockEntity.getLevel().getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED,
-                                                        blockEntity.getBlockPos());
+        if (CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE) {
+            PackagerAttachedHandler capability = blockEntity.getLevel().getCapability(
+                    AbstractionsCapabilities.PACKAGER_ATTACHED,
+                    blockEntity.getBlockPos());
+
+            // TODO for whatever reason, neoforge capability register event is fired before registry tags are loaded
+            // so we cant use same tag as 1.20.1 because its empty
+            // at this point easiest solution is to treat any non-registered packager as built-in
+            if (capability != null)
+                return capability;
+        }
 
         return new BuiltInPackagerAttachedHandler(blockEntity);
     }
