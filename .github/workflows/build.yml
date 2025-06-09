@@ -1,0 +1,39 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+      - '1.21'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag prefix
+        id: tag-prefix
+        shell: pwsh
+        run: |
+          $branch = '1.20.1'
+          if ('${{ github.ref }}' -eq 'refs/heads/1.21') {
+            $branch = '1.21.1'
+          }
+          Write-Output "prefix=$branch" >> $env:GITHUB_OUTPUT
+
+      - id: version
+        uses: paulhatch/semantic-version@v5.3.0
+        with:
+          tag_prefix: '${{ steps.tag-prefix.outputs.prefix }}-'
+          major_pattern: '/\w+(?:\([\w.]+\))?!:.+/'
+          minor_pattern: '/feat(?:\([\w.]+\))?:.+/'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: jetbrains
+          java-version: 21
+
+      - name: Build with Gradle
+        run: ./gradlew -Pversion=${{ steps.version.outputs.version }} --no-daemon build

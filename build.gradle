@@ -1,11 +1,9 @@
 plugins {
     id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
-    id 'net.minecraftforge.gradleutils' version '2.+'
 }
 
 allprojects {
     group = rootProject.mod_group_id
-    version = gitversion.tagOffset
 }
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
@@ -106,7 +104,14 @@ subprojects {
         }
 
         repositories {
-
+            maven {
+                name = "zzntyMaven"
+                url = "s3://dl.zznty.ru/maven"
+                credentials(AwsCredentials) {
+                    accessKey = providers.environmentVariable('S3_KEY_ID').getOrNull()
+                    secretKey = providers.environmentVariable('S3_KEY').getOrNull()
+                }
+            }
         }
     }
 }

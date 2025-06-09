@@ -1,0 +1,72 @@
+name: Release
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag prefix
+        id: tag-prefix
+        shell: pwsh
+        run: |
+          $branch = '1.20.1'
+          if ('${{ github.ref }}' -eq 'refs/heads/1.21') {
+            $branch = '1.21.1'
+          }
+          Write-Output "prefix=$branch" >> $env:GITHUB_OUTPUT
+
+      - id: version
+        uses: paulhatch/semantic-version@v5.3.0
+        with:
+          tag_prefix: '${{ steps.tag-prefix.outputs.prefix }}-'
+          major_pattern: '/\w+(?:\([\w.]+\))?!:.+/'
+          minor_pattern: '/feat(?:\([\w.]+\))?:.+/'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: jetbrains
+          java-version: 21
+
+      - name: Publish with Gradle
+        run: ./gradlew -Dorg.gradle.s3.endpoint=${{ secrets.S3_ENDPOINT }} -Pversion=${{ steps.version.outputs.version }} publish
+        env:
+          S3_KEY_ID: ${{ secrets.S3_KEY_ID }}
+          S3_KEY: ${{ secrets.S3_KEY }}
+
+      - name: Get previous tag
+        id: previous-tag
+        run: |
+          name=$(git --no-pager tag --sort=creatordate --merged ${{ github.ref_name }} | tail -1)
+          echo "previousTag: $name"
+          echo "tag=$name" >> $env:GITHUB_OUTPUT
+
+      - name: Push new tag
+        run: git config user.email "you@example.com" && git config user.name "Your Name" && git tag -a ${{ steps.version.outputs.version_tag }} -m ${{ steps.version.outputs.version_tag }} && git push --follow-tags
+
+#      - name: Create Changelog
+#        id: changelog
+#        uses: requarks/changelog-action@v1
+#        with:
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          fromTag: ${{ steps.previous-tag.outputs.tag }}
+#          toTag: ${{ github.ref_name }}
+#          writeToFile: false
+#          useGitmojis: false
+#
+#      - name: Write Changelog
+#        uses: DamianReeves/write-file-action@master
+#        with:
+#          contents: ${{ steps.changelog.outputs.changes }}
+#          path: CHANGELOG.md
+#          write-mode: 'overwrite'
+
+      - name: Publish Mods with Gradle
+        run: ./gradlew -Pversion=${{ steps.version.outputs.version }} :create_factory_logistics:publishMods
+        env:
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
