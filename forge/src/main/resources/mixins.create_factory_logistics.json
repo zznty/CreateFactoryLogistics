@@ -9,6 +9,7 @@
   "mixins": [
     "accessor.PackageEntityAccessor",
     "bugfixes.ArmBlockEntityMixin",
+    "logistics.jar.ChainConveyorDropMixin",
     "logistics.jar.JarDrainMixin",
     "logistics.packager.GenericPackagerBlockEntityMixin",
     "logistics.packager.GenericPromiseQueueMixin",
