@@ -1,13 +1,9 @@
 plugins {
     id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
-    id 'com.palantir.git-version' version '3.+'
 }
-
-def ver = gitVersion(prefix: '211@').replaceFirst('\\.dirty', '')
 
 allprojects {
     group = rootProject.mod_group_id
-    version = ver
 }
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
@@ -111,7 +107,14 @@ subprojects {
         }
 
         repositories {
-
+            maven {
+                name = "zzntyMaven"
+                url = "s3://dl.zznty.ru/maven"
+                credentials(AwsCredentials) {
+                    accessKey = providers.environmentVariable('S3_KEY_ID').getOrNull()
+                    secretKey = providers.environmentVariable('S3_KEY').getOrNull()
+                }
+            }
         }
     }
 }
