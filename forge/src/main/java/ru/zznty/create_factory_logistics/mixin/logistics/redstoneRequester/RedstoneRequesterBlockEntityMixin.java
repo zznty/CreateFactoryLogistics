@@ -1,7 +1,5 @@
 package ru.zznty.create_factory_logistics.mixin.logistics.redstoneRequester;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.serialization.Codec;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterBlockEntity;
@@ -21,6 +19,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 import ru.zznty.create_factory_abstractions.generic.support.GenericLogisticsManager;
@@ -63,7 +62,7 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
             }
             if (!allowPartialRequests && level instanceof ServerLevel serverLevel) {
                 CatnipServices.NETWORK.sendToClientsAround(serverLevel, worldPosition, 32,
-                        new RedstoneRequesterEffectPacket(worldPosition, false));
+                                                           new RedstoneRequesterEffectPacket(worldPosition, false));
                 return;
             }
         }
@@ -75,42 +74,46 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
                                                         encodedTargetAdress);
 
         if (level instanceof ServerLevel serverLevel)
-            CatnipServices.NETWORK.sendToClientsAround(serverLevel, worldPosition, 32, new RedstoneRequesterEffectPacket(worldPosition, anySucceeded));
+            CatnipServices.NETWORK.sendToClientsAround(serverLevel, worldPosition, 32,
+                                                       new RedstoneRequesterEffectPacket(worldPosition, anySucceeded));
         lastRequestSucceeded = true;
     }
 
-    @WrapOperation(
+    @Redirect(
             method = "read",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/createmod/catnip/codecs/CatnipCodecUtils;decode(Lcom/mojang/serialization/Codec;Lnet/minecraft/core/HolderLookup$Provider;Lnet/minecraft/nbt/Tag;)Ljava/util/Optional;"
             )
     )
-    private Optional<PackageOrderWithCrafts> readRequest(Codec<PackageOrderWithCrafts> codec, HolderLookup.Provider registries, Tag tag, Operation<Optional<PackageOrderWithCrafts>> original) {
+    private Optional<PackageOrderWithCrafts> readRequest(Codec<PackageOrderWithCrafts> codec,
+                                                         HolderLookup.Provider registries, Tag tag) {
         createFactoryLogistics$encodedRequest = GenericOrder.read(registries, (CompoundTag) tag);
 
         return Optional.empty();
     }
 
-    @WrapOperation(
+    @Redirect(
             method = "write",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/createmod/catnip/codecs/CatnipCodecUtils;encode(Lcom/mojang/serialization/Codec;Lnet/minecraft/core/HolderLookup$Provider;Ljava/lang/Object;)Ljava/util/Optional;"
             )
     )
-    private Optional<Tag> writeRequest(Codec<PackageOrderWithCrafts> codec, HolderLookup.Provider registries, Object t, Operation<Optional<Tag>> original) {
+    private Optional<Tag> writeRequest(Codec<PackageOrderWithCrafts> codec, HolderLookup.Provider registries,
+                                       Object t) {
         return Optional.of(createFactoryLogistics$encodedRequest.write(registries));
     }
 
-    @WrapOperation(
+    @Redirect(
             method = "writeSafe",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/createmod/catnip/codecs/CatnipCodecUtils;encode(Lcom/mojang/serialization/Codec;Lnet/minecraft/core/HolderLookup$Provider;Ljava/lang/Object;)Ljava/util/Optional;"
             )
     )
-    private Optional<Tag> writeSafeRequest(Codec<PackageOrderWithCrafts> codec, HolderLookup.Provider registries, Object t, Operation<Optional<Tag>> original) {
+    private Optional<Tag> writeSafeRequest(Codec<PackageOrderWithCrafts> codec, HolderLookup.Provider registries,
+                                           Object t) {
         return Optional.of(createFactoryLogistics$encodedRequest.write(registries));
     }
 

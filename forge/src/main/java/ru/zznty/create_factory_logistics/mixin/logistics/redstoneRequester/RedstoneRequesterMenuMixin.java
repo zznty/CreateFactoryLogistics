@@ -11,6 +11,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
@@ -58,5 +59,9 @@ public abstract class RedstoneRequesterMenuMixin extends GhostItemMenu<RedstoneR
     @Override
     public List<GenericStack> getStacks() {
         return ((GenericRedstoneRequester) contentHolder).getOrder().stacks();
+    }
+
+    @Overwrite
+    protected void saveData(RedstoneRequesterBlockEntity contentHolder) {
     }
 }
