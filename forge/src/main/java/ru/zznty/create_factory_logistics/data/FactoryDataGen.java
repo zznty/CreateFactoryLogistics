@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_logistics.data;
 
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateDataProvider;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
@@ -34,6 +35,10 @@ public class FactoryDataGen {
                               new FactorySequencedAssemblyRecipeGen(output, event.getLookupProvider()));
         generator.addProvider(event.includeServer(), new ItemTagsProvider(output, lookupProvider, existingFileHelper));
         generator.addProvider(event.includeServer(), new BlockTagsProvider(output, lookupProvider, existingFileHelper));
+
+        //noinspection UnstableApiUsage
+        event.getGenerator().addProvider(true, REGISTRATE.setDataProvider(
+                new RegistrateDataProvider(REGISTRATE, CreateFactoryLogistics.MODID, event)));
     }
 
     private static void generateLang(BiConsumer<String, String> consumer) {

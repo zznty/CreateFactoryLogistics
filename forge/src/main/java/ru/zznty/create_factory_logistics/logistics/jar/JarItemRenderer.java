@@ -1,11 +1,11 @@
 package ru.zznty.create_factory_logistics.logistics.jar;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.foundation.fluid.FluidRenderer;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModel;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
 import com.simibubi.create.foundation.item.render.PartialItemModelRenderer;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
-import net.createmod.catnip.platform.NeoForgeCatnipServices;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -65,9 +65,9 @@ public class JarItemRenderer extends CustomRenderedItemModelRenderer {
         ms.pushPose();
         TransformStack.of(ms).rotate(Direction.UP.getRotation());
         ms.translate(-xMax / 2, level - totalHeight, -zMax / 2);
-        NeoForgeCatnipServices.FLUID_RENDERER.renderFluidBox(containedFluid.get(), xMin, yMin,
-                                                             zMin, xMax, yMax, zMax,
-                                                             buffer, ms, light, false, true);
+        FluidRenderer.renderFluidBox(containedFluid.get().getFluid(), containedFluid.get().getAmount(), xMin, yMin,
+                                     zMin, xMax, yMax, zMax,
+                                     buffer, ms, light, false, true, containedFluid.get().getComponentsPatch());
         ms.popPose();
     }
 }

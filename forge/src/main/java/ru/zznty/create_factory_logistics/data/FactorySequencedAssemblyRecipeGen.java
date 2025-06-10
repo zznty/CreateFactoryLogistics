@@ -2,7 +2,6 @@ package ru.zznty.create_factory_logistics.data;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.api.data.recipe.SequencedAssemblyRecipeGen;
 import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipeBuilder;
 import net.minecraft.core.HolderLookup;
@@ -14,9 +13,9 @@ import ru.zznty.create_factory_logistics.FactoryItems;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.UnaryOperator;
 
-public class FactorySequencedAssemblyRecipeGen extends SequencedAssemblyRecipeGen {
+public class FactorySequencedAssemblyRecipeGen extends FactoryRecipeProvider {
     public FactorySequencedAssemblyRecipeGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
-        super(output, registries, CreateFactoryLogistics.MODID);
+        super(output, registries);
     }
 
     GeneratedRecipe FLUID_MECHANISM = create("fluid_mechanism", b -> b.require(AllItems.COPPER_SHEET)

@@ -4,8 +4,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
+import net.createmod.catnip.codecs.CatnipCodecUtils;
 import net.createmod.catnip.nbt.NBTHelper;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
@@ -16,7 +16,6 @@ import org.spongepowered.asm.mixin.Unique;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
-import ru.zznty.create_factory_abstractions.generic.stack.GenericStackSerializer;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericPromiseQueue;
 
@@ -155,15 +154,16 @@ public class GenericPromiseQueueMixin implements GenericPromiseQueue {
         return all;
     }
 
+    // TODO pass registries parameter once Create 6.0.5 is out
     @Overwrite
-    public static RequestPromiseQueue read(CompoundTag tag, HolderLookup.Provider registries, Runnable onChanged) {
+    public static RequestPromiseQueue read(CompoundTag tag, Runnable onChanged) {
         RequestPromiseQueue queue = new RequestPromiseQueue(onChanged);
         ListTag listTag = tag.getList("List", CompoundTag.TAG_COMPOUND);
         NBTHelper.iterateCompoundList(listTag,
                                       compoundTag -> {
-                                          GenericStack stack = GenericStackSerializer.read(registries,
-                                                                                           compoundTag.getCompound(
-                                                                                                   "promised_stack"));
+                                          GenericStack stack = CatnipCodecUtils.decode(
+                                                  GenericStack.CODEC, compoundTag.get("promised_stack")
+                                          ).orElse(GenericStack.EMPTY);
                                           queue.add(new RequestPromise(compoundTag.getInt("ticks_existed"),
                                                                        BigGenericStack.of(stack).asStack()));
                                       });
@@ -171,13 +171,15 @@ public class GenericPromiseQueueMixin implements GenericPromiseQueue {
     }
 
     @Overwrite
-    public CompoundTag write(HolderLookup.Provider registries) {
+    public CompoundTag write() {
         CompoundTag tag = new CompoundTag();
         tag.put("List", NBTHelper.writeCompoundList(createFactoryLogistics$promises.values(), promise -> {
             CompoundTag compoundTag = new CompoundTag();
             compoundTag.putInt("ticks_existed", promise.ticksExisted);
-            CompoundTag stackTag = new CompoundTag();
-            GenericStackSerializer.write(registries, BigGenericStack.of(promise.promisedStack).get(), stackTag);
+            CompoundTag stackTag = (CompoundTag) CatnipCodecUtils.encode(GenericStack.CODEC,
+                                                                         BigGenericStack.of(
+                                                                                 promise.promisedStack).get()).orElseGet(
+                    CompoundTag::new);
             compoundTag.put("promised_stack", stackTag);
             return compoundTag;
         }));

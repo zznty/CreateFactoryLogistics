@@ -1,5 +1,6 @@
 package ru.zznty.create_factory_abstractions.generic.key.item;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -28,5 +29,10 @@ public class ItemKeySerializer implements GenericKeySerializer<ItemKey> {
     @Override
     public void write(ItemKey key, RegistryFriendlyByteBuf buf) {
         ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, key.stack());
+    }
+
+    @Override
+    public Codec<ItemKey> codec() {
+        return ItemStack.OPTIONAL_CODEC.xmap(ItemKey::new, ItemKey::stack);
     }
 }
