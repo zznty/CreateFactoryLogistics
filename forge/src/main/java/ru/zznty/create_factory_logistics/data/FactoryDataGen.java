@@ -20,7 +20,7 @@ public class FactoryDataGen {
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
 
-        generator.addProvider(event.includeServer(), new FactorySequencedAssemblyRecipeGen(output));
+        generator.addProvider(event.includeServer(), new SequencedAssemblyRecipeGen(output));
         generator.addProvider(event.includeServer(),
                               new ItemTagsProvider(output, lookupProvider, existingFileHelper));
         generator.addProvider(event.includeServer(),
