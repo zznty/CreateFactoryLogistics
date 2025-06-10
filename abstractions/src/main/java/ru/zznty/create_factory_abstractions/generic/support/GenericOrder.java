@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_abstractions.generic.support;
 
 import com.simibubi.create.content.logistics.BigItemStack;
+import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import net.createmod.catnip.nbt.NBTHelper;
@@ -12,6 +13,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.stack.GenericStackSerializer;
 
@@ -132,6 +134,11 @@ public record GenericOrder(List<GenericStack> stacks, List<PackageOrderWithCraft
     public static void set(HolderLookup.Provider levelRegistryAccess, ItemStack box, int orderId, int linkIndex,
                            boolean isFinalLink, int fragmentIndex,
                            boolean isFinal, @Nullable GenericOrder orderContext) {
+        if (!CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE) {
+            PackageItem.setOrder(box, orderId, linkIndex, isFinalLink, fragmentIndex, isFinal,
+                                 orderContext == null ? null : orderContext.asCrafting());
+            return;
+        }
         CompoundTag tag = new CompoundTag();
         tag.putInt("OrderId", orderId);
         tag.putInt("LinkIndex", linkIndex);
@@ -145,6 +152,10 @@ public record GenericOrder(List<GenericStack> stacks, List<PackageOrderWithCraft
     }
 
     public static GenericOrder of(HolderLookup.Provider levelRegistryAccess, ItemStack box) {
+        if (!CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE) {
+            PackageOrderWithCrafts orderContext = PackageItem.getOrderContext(box);
+            return orderContext == null ? null : GenericOrder.of(orderContext);
+        }
         CustomData data = box.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         if (!data.contains("Fragment"))
             return null;

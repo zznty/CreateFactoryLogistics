@@ -66,8 +66,10 @@ public final class IngredientTransfer {
                 Map<Object, ITypedIngredient<?>> ingredientUids = slotUidCache.computeIfAbsent(ingredient, s ->
                         s.getAllIngredients()
                                 .map(typedIngredient -> {
-                                    IIngredientHelper ingredientHelper1 = ingredientManager.getIngredientHelper(typedIngredient.getType());
-                                    return Pair.of(ingredientHelper1.getUid(typedIngredient.getIngredient(), UidContext.Ingredient), typedIngredient);
+                                    IIngredientHelper ingredientHelper1 = ingredientManager.getIngredientHelper(
+                                            typedIngredient.getType());
+                                    return Pair.of(ingredientHelper1.getUid(typedIngredient.getIngredient(),
+                                                                            UidContext.Ingredient), typedIngredient);
                                 })
                                 .collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond))
                 );
@@ -183,14 +185,18 @@ public final class IngredientTransfer {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static Object getStackUid(IIngredientManager ingredientManager, GenericStack availableStack, UidContext context) {
+    private static Object getStackUid(IIngredientManager ingredientManager, GenericStack availableStack,
+                                      UidContext context) {
         GenericKeyProvider<GenericKey> provider = GenericContentExtender.registrationOf(
                 availableStack.key()).provider();
 
         IIngredientHelper ingredientHelper = ingredientManager.getIngredientHelper(
                 ingredientManager.getIngredientTypeForUid(
                         provider.ingredientTypeUid()).orElseThrow());
-        return ingredientHelper.getUid(provider.unwrap(availableStack.key()), context);
+        
+        // inlining of variable breaks overload resolution
+        Object value = provider.unwrap(availableStack.key());
+        return ingredientHelper.getUid(value, context);
     }
 
     private record PhantomSlotState(int slot, MutableObject<GenericStack> stack,
