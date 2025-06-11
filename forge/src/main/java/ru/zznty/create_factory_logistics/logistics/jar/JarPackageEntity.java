@@ -1,19 +1,25 @@
 package ru.zznty.create_factory_logistics.logistics.jar;
 
+import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.logistics.box.PackageEntity;
 import com.simibubi.create.content.logistics.chute.ChuteBlock;
 import net.createmod.catnip.animation.LerpedFloat;
+import net.createmod.catnip.data.Pair;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.network.PlayMessages;
 import ru.zznty.create_factory_logistics.FactoryEntities;
+import ru.zznty.create_factory_logistics.logistics.jar.unpack.JarUnpackingHandler;
 import ru.zznty.create_factory_logistics.mixin.accessor.PackageEntityAccessor;
 
 public class JarPackageEntity extends PackageEntity {
@@ -49,17 +55,28 @@ public class JarPackageEntity extends PackageEntity {
 
     @Override
     protected void dropAllDeathLoot(DamageSource pDamageSource) {
+        Pair<FluidStack, ItemStack> pair = GenericItemEmptying.emptyItem(level(), box, true);
+        if (pair.getFirst().isEmpty() || !(level() instanceof ServerLevel serverLevel))
+            return;
+        JarUnpackingHandler handler = JarUnpackingHandler.REGISTRY.get(pair.getFirst().getFluid());
+        if (handler == null) handler = JarUnpackingHandler.DEFAULT;
+
+        Player player = null;
+        if (pDamageSource.getEntity() instanceof Player entity)
+            player = entity;
+
+        handler.unpack(serverLevel, getOnPos(), pair.getFirst(), player);
     }
 
     public static JarPackageEntity fromDroppedItem(Level world, Entity originalEntity, ItemStack itemstack) {
-        JarPackageEntity jarEntity = (JarPackageEntity) FactoryEntities.JAR.get()
+        JarPackageEntity jarEntity = FactoryEntities.JAR.get()
                 .create(world);
 
         Vec3 position = originalEntity.position();
         jarEntity.setPos(position);
         jarEntity.setBox(itemstack);
         jarEntity.setDeltaMovement(originalEntity.getDeltaMovement()
-                .scale(1.5f));
+                                           .scale(1.5f));
         PackageEntityAccessor accessor = (PackageEntityAccessor) jarEntity;
         accessor.setOriginalEntity(originalEntity);
 
