@@ -12,8 +12,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
@@ -56,6 +59,17 @@ public class CompositePackageItem extends PackageItem {
         }
     }
 
+    @Override
+    public InteractionResultHolder<ItemStack> open(Level worldIn, Player playerIn, InteractionHand handIn) {
+        InteractionResultHolder<ItemStack> resultHolder = super.open(worldIn, playerIn, handIn);
+        if (resultHolder.getResult() == InteractionResult.SUCCESS && !worldIn.isClientSide()) {
+            for (ItemStack child : getChildren(worldIn.registryAccess(), resultHolder.getObject())) {
+                playerIn.getInventory().placeItemBackInInventory(child);
+            }
+        }
+        return resultHolder;
+    }
+
     public static List<ItemStack> getChildren(HolderLookup.Provider lookupProvider, ItemStack stack) {
         if (!stack.has(DataComponents.CUSTOM_DATA) || !stack.get(DataComponents.CUSTOM_DATA).contains(CHILDREN_TAG))
             return List.of();
@@ -89,7 +103,8 @@ public class CompositePackageItem extends PackageItem {
                 ItemStackHandler childContents = PackageItem.getContents(child);
                 boolean emptied = true;
                 for (int slot = 0; slot < childContents.getSlots(); slot++) {
-                    ItemStack reminder = ItemHandlerHelper.insertItemStacked(contents, childContents.getStackInSlot(slot), false);
+                    ItemStack reminder = ItemHandlerHelper.insertItemStacked(contents,
+                                                                             childContents.getStackInSlot(slot), false);
                     childContents.setStackInSlot(slot, reminder);
                     if (!reminder.isEmpty())
                         emptied = false;
@@ -102,7 +117,8 @@ public class CompositePackageItem extends PackageItem {
         }
 
         CustomData.update(DataComponents.CUSTOM_DATA, compositeBox, t ->
-                t.put(CHILDREN_TAG, NBTHelper.writeCompoundList(children, s -> (CompoundTag) s.saveOptional(lookupProvider))));
+                t.put(CHILDREN_TAG,
+                      NBTHelper.writeCompoundList(children, s -> (CompoundTag) s.saveOptional(lookupProvider))));
 
         return compositeBox;
     }
@@ -132,8 +148,8 @@ public class CompositePackageItem extends PackageItem {
                 .getAxis()
                 .isHorizontal())
             point = point.add(Vec3.atLowerCornerOf(context.getClickedFace()
-                            .getNormal())
-                    .scale(r));
+                                                           .getNormal())
+                                      .scale(r));
 
         AABB scanBB = new AABB(point, point).inflate(r, 0, r)
                 .expandTowards(0, h, 0);

@@ -3,8 +3,11 @@ package ru.zznty.create_factory_logistics.logistics.composite;
 import com.simibubi.create.content.logistics.box.PackageEntity;
 import com.simibubi.create.content.logistics.chute.ChuteBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -32,6 +35,15 @@ public class CompositePackageEntity extends PackageEntity {
         children = CompositePackageItem.getChildren(level().registryAccess(), box);
     }
 
+    @Override
+    protected void dropAllDeathLoot(ServerLevel level, DamageSource pDamageSource) {
+        super.dropAllDeathLoot(level, pDamageSource);
+        for (ItemStack child : children) {
+            ItemEntity jarEntity = new ItemEntity(level, position().x, position().y, position().z, child);
+            level.addFreshEntity(jarEntity);
+        }
+    }
+
     public static PackageEntity fromDroppedItem(Level world, Entity originalEntity, ItemStack itemstack) {
         PackageEntity packageEntity = FactoryEntities.COMPOSITE_PACKAGE.get()
                 .create(world);
@@ -40,7 +52,7 @@ public class CompositePackageEntity extends PackageEntity {
         packageEntity.setPos(position);
         packageEntity.setBox(itemstack);
         packageEntity.setDeltaMovement(originalEntity.getDeltaMovement()
-                .scale(1.5f));
+                                               .scale(1.5f));
         PackageEntityAccessor accessor = (PackageEntityAccessor) packageEntity;
         accessor.setOriginalEntity(originalEntity);
 
