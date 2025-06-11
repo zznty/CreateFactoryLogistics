@@ -27,7 +27,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import ru.zznty.create_factory_abstractions.api.generic.AbstractionsCapabilities;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttachedHandler;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.*;
@@ -96,10 +95,11 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
     protected abstract void sendEffect(FactoryPanelPosition fromPos, boolean success);
 
     @Unique
-    private void createFactoryLogistics$sendEffect(FactoryPanelPosition fromPos, FactoryPanelPosition toPos, boolean success) {
+    private void createFactoryLogistics$sendEffect(FactoryPanelPosition fromPos, FactoryPanelPosition toPos,
+                                                   boolean success) {
         if (getWorld() instanceof ServerLevel serverLevel)
             CatnipServices.NETWORK.sendToClientsAround(serverLevel, getPos(), 64,
-                    new FactoryPanelEffectPacket(fromPos, toPos, success));
+                                                       new FactoryPanelEffectPacket(fromPos, toPos, success));
     }
 
     @Unique
@@ -108,7 +108,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         PackagerBlockEntity packager = panelBE.getRestockedPackager();
         if (packager == null)
             return;
-        PackagerAttachedHandler handler = packager.getLevel().getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED, packager.getBlockPos());
+        PackagerAttachedHandler handler = PackagerAttachedHandler.get(packager);
         if (handler == null)
             return;
 
