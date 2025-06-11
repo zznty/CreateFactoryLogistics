@@ -65,6 +65,10 @@ public class SlotAmountRenderer {
         int x = (int) Math.floor(-text.length() * 2.5);
         for (int i = 0; i < text.length(); i++) {
             char c = Character.toLowerCase(text.charAt(i));
+
+            if (c == ',')
+                continue;
+
             int index = c - '0';
             int xOffset = index * 6;
             int spriteWidth = NUMBERS.getWidth();
