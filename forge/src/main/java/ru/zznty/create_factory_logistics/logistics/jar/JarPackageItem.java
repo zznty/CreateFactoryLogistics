@@ -8,6 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -42,6 +43,7 @@ import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryEntities;
+import ru.zznty.create_factory_logistics.logistics.jar.unpack.JarUnpackingHandler;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
 
 import java.lang.ref.WeakReference;
@@ -88,14 +90,25 @@ public class JarPackageItem extends PackageItem {
         if (fluid.getAmount() != Config.jarCapacity ||
                 !(fluid.getFluid() instanceof FlowingFluid) ||
                 !worldIn.mayInteract(playerIn, relative) ||
-                !playerIn.mayUseItemAt(relative, hitResult.getDirection(), box))
+                !playerIn.mayUseItemAt(relative, hitResult.getDirection(), box) ||
+                !(worldIn instanceof ServerLevel serverLevel))
             return InteractionResultHolder.fail(box);
 
-        BlockState blockState = worldIn.getBlockState(hitResult.getBlockPos());
+        JarUnpackingHandler handler = JarUnpackingHandler.REGISTRY.get(fluid.getFluid());
+        boolean success;
+        if (handler != null) {
+            success = handler.unpack(serverLevel, relative, fluid, playerIn);
+        } else {
+            BlockState blockState = worldIn.getBlockState(hitResult.getBlockPos());
 
-        BlockPos placePos = canBlockContainFluid(worldIn, hitResult.getBlockPos(), blockState, fluid) ? hitResult.getBlockPos() : relative;
+            BlockPos placePos = canBlockContainFluid(worldIn, hitResult.getBlockPos(), blockState, fluid) ?
+                                hitResult.getBlockPos() :
+                                relative;
 
-        if (emptyContents(playerIn, worldIn, handIn, placePos, box)) {
+            success = emptyContents(playerIn, worldIn, handIn, placePos, box);
+        }
+
+        if (success) {
             playerIn.setItemInHand(handIn, ItemStack.EMPTY);
             return InteractionResultHolder.sidedSuccess(ItemStack.EMPTY, worldIn.isClientSide());
         }
@@ -125,8 +138,8 @@ public class JarPackageItem extends PackageItem {
                 .getAxis()
                 .isHorizontal())
             point = point.add(Vec3.atLowerCornerOf(context.getClickedFace()
-                            .getNormal())
-                    .scale(r));
+                                                           .getNormal())
+                                      .scale(r));
 
         AABB scanBB = new AABB(point, point).inflate(r, 0, r)
                 .expandTowards(0, h, 0);
@@ -158,7 +171,7 @@ public class JarPackageItem extends PackageItem {
             return;
 
         world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SNOWBALL_THROW,
-                SoundSource.NEUTRAL, 0.5F, 0.5F);
+                        SoundSource.NEUTRAL, 0.5F, 0.5F);
 
         ItemStack copy = stack.copy();
         if (!player.getAbilities().instabuild)
@@ -185,7 +198,8 @@ public class JarPackageItem extends PackageItem {
         super.initializeClient(consumer);
     }
 
-    public static ItemStack slurp(Level world, BlockPos pos, IFluidHandler tank, FluidStack extractedFluid, int amount) {
+    public static ItemStack slurp(Level world, BlockPos pos, IFluidHandler tank, FluidStack extractedFluid,
+                                  int amount) {
         if (amount < 1) amount = Config.jarCapacity;
 
         ItemStack jar = new ItemStack(JarStyles.getRandomJar());
@@ -204,7 +218,8 @@ public class JarPackageItem extends PackageItem {
         return JarStyles.ALL_JARS.get(0).getDefaultInstance();
     }
 
-    public boolean emptyContents(@Nullable Player player, Level level, InteractionHand hand, BlockPos pos, ItemStack container) {
+    public boolean emptyContents(@Nullable Player player, Level level, InteractionHand hand, BlockPos pos,
+                                 ItemStack container) {
         FluidStack resource = FluidUtil.getFluidContained(container).orElse(FluidStack.EMPTY);
         if (resource.getAmount() < 1000)
             return false;
@@ -213,7 +228,8 @@ public class JarPackageItem extends PackageItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, TooltipContext tooltipContext, List<Component> pTooltipComponents, TooltipFlag pIsAdvanced) {
+    public void appendHoverText(ItemStack pStack, TooltipContext tooltipContext, List<Component> pTooltipComponents,
+                                TooltipFlag pIsAdvanced) {
         super.appendHoverText(pStack, tooltipContext, pTooltipComponents, pIsAdvanced);
 
         FluidStack contained = FluidUtil.getFluidContained(pStack).orElse(FluidStack.EMPTY);
@@ -221,9 +237,10 @@ public class JarPackageItem extends PackageItem {
         if (contained.isEmpty()) return;
 
         pTooltipComponents.add(contained.getHoverName()
-                .copy()
-                .append(" ")
-                .append(FactoryFluidPanelBehaviour.formatLevel(contained.getAmount()).component())
-                .withStyle(ChatFormatting.GRAY));
+                                       .copy()
+                                       .append(" ")
+                                       .append(FactoryFluidPanelBehaviour.formatLevel(
+                                               contained.getAmount()).component())
+                                       .withStyle(ChatFormatting.GRAY));
     }
 }
