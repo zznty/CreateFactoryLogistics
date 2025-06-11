@@ -139,8 +139,12 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
             return CreateLang.number(level).add(CreateLang.translate("generic.unit.millibuckets"));
         }
 
-        if (level < 100_001) {
-            return CreateLang.number((float) level / 1000).add(CreateLang.translate("generic.unit.buckets"));
+        // 1000 buckets
+        if (level < 1_000_000) {
+            float d = (float) level / 1000;
+            if (d >= 100)
+                d = Math.round(d);
+            return CreateLang.number(d).add(CreateLang.translate("generic.unit.buckets"));
         }
 
         return CreateLang.number((float) level / 1_000_000)
