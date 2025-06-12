@@ -12,10 +12,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -31,6 +34,7 @@ import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import ru.zznty.create_factory_logistics.FactoryItems;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -164,5 +168,39 @@ public class CompositePackageItem extends PackageItem {
         world.addFreshEntity(packageEntity);
         itemInHand.shrink(1);
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public void releaseUsing(ItemStack stack, Level world, LivingEntity entity, int ticks) {
+        if (!(entity instanceof Player player))
+            return;
+        int i = this.getUseDuration(stack, entity) - ticks;
+        if (i < 0)
+            return;
+
+        float f = getPackageVelocity(i);
+        if (f < 0.1D)
+            return;
+        if (world.isClientSide)
+            return;
+
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SNOWBALL_THROW,
+                        SoundSource.NEUTRAL, 0.5F, 0.5F);
+
+        ItemStack copy = stack.copy();
+        if (!player.getAbilities().instabuild)
+            stack.shrink(1);
+
+        Vec3 vec = new Vec3(entity.getX(), entity.getY() + entity.getBoundingBox()
+                .getYsize() / 2f, entity.getZ());
+        Vec3 motion = entity.getLookAngle()
+                .scale(f * 2);
+        vec = vec.add(motion);
+
+        CompositePackageEntity packageEntity = new CompositePackageEntity(world, vec.x, vec.y, vec.z);
+        packageEntity.setBox(copy);
+        packageEntity.setDeltaMovement(motion);
+        packageEntity.tossedBy = new WeakReference<>(player);
+        world.addFreshEntity(packageEntity);
     }
 }
