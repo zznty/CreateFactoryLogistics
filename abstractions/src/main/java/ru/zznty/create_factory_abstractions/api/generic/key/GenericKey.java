@@ -1,15 +1,11 @@
 package ru.zznty.create_factory_abstractions.api.generic.key;
 
-import com.mojang.serialization.Codec;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.key.EmptyKey;
 
 import java.util.Comparator;
 
 public interface GenericKey {
-    Codec<GenericKey> CODEC = GenericContentExtender.REGISTRY.byNameCodec()
-            .dispatch("id", GenericContentExtender::registrationOf,
-                      p -> p.serializer().codec().fieldOf("key"));
     GenericKey EMPTY = new EmptyKey();
 
     Comparator<GenericKey> COMPARATOR = (a, b) -> {

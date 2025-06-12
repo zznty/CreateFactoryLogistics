@@ -1,6 +1,5 @@
 package ru.zznty.create_factory_abstractions.generic.key;
 
-import com.mojang.serialization.Codec;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -24,10 +23,5 @@ public class EmptyKeySerializer implements GenericKeySerializer<EmptyKey> {
 
     @Override
     public void write(EmptyKey key, RegistryFriendlyByteBuf buf) {
-    }
-
-    @Override
-    public Codec<EmptyKey> codec() {
-        return Codec.unit((EmptyKey) EmptyKey.EMPTY);
     }
 }

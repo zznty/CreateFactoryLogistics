@@ -1,7 +1,5 @@
 package ru.zznty.create_factory_logistics.logistics.generic;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.createmod.catnip.codecs.CatnipCodecUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -52,14 +50,5 @@ public class FluidKeySerializer implements GenericKeySerializer<FluidKey> {
     public void write(FluidKey key, RegistryFriendlyByteBuf buf) {
         buf.writeResourceKey(key.fluid().getKey());
         DataComponentPatch.STREAM_CODEC.encode(buf, key.nbt().asPatch());
-    }
-
-    @Override
-    public Codec<FluidKey> codec() {
-        return RecordCodecBuilder.create(i -> i.group(
-                BuiltInRegistries.FLUID.holderByNameCodec().fieldOf("fluid").forGetter(FluidKey::fluid),
-                DataComponentPatch.CODEC.fieldOf("nbt").forGetter(k -> k.nbt().asPatch())
-        ).apply(i, (fluid, nbt) ->
-                new FluidKey(fluid, PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, nbt))));
     }
 }

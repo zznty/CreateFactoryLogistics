@@ -96,7 +96,7 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
     }
 
     @Overwrite
-    public InventorySummary getAvailableItems(boolean scanInputSlots) {
+    public InventorySummary getAvailableItems() {
         PackagerAttachedHandler handler = PackagerAttachedHandler.get((PackagerBlockEntity) (Object) this);
 
         if (availableItems != null && handler != null && !handler.hasChanges())
