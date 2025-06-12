@@ -17,7 +17,9 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
+import ru.zznty.create_factory_logistics.FactoryBlockEntities;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,13 +39,15 @@ public class NetworkLinkBlockItem extends LogisticallyLinkedBlockItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, TooltipContext tooltipContext, List<Component> pTooltip, TooltipFlag pFlag) {
+    public void appendHoverText(ItemStack pStack, TooltipContext tooltipContext, List<Component> pTooltip,
+                                TooltipFlag pFlag) {
         super.appendHoverText(pStack, tooltipContext, pTooltip, pFlag);
         CustomData tag = pStack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
         if (!tag.contains(NetworkLinkBlock.INGREDIENT_TYPE))
             return;
 
-        ResourceLocation ingredientType = ResourceLocation.parse(tag.copyTag().getString(NetworkLinkBlock.INGREDIENT_TYPE));
+        ResourceLocation ingredientType = ResourceLocation.parse(
+                tag.copyTag().getString(NetworkLinkBlock.INGREDIENT_TYPE));
 
         if (ingredientType.getPath().equals("empty"))
             return;
@@ -93,7 +97,10 @@ public class NetworkLinkBlockItem extends LogisticallyLinkedBlockItem {
 
     // thank create for static method
     public static void assignFrequency(ItemStack stack, Player player, UUID frequency) {
-        CustomData.update(DataComponents.BLOCK_ENTITY_DATA, stack, t -> t.putUUID("Freq", frequency));
+        CustomData.update(DataComponents.BLOCK_ENTITY_DATA, stack, t -> {
+            BlockEntity.addEntityType(t, FactoryBlockEntities.NETWORK_LINK.get());
+            t.putUUID("Freq", frequency);
+        });
 
         player.displayClientMessage(CreateLang.translateDirect("logistically_linked.tuned"), true);
     }
