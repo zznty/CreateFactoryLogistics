@@ -52,11 +52,10 @@ public class SlotAmountRenderer {
 
     private static void renderCreate(GuiGraphics graphics, String text, float x, float y) {
         var ps = graphics.pose();
+
         ps.pushPose();
-        ps.translate(0, 0, 200);
-
+        ps.translate(x, y, 0);
         blitCreateFont(graphics, text);
-
         ps.popPose();
     }
 
