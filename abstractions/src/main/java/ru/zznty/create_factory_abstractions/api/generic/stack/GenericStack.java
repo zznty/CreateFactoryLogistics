@@ -28,7 +28,7 @@ public record GenericStack(GenericKey key, int amount) {
 
     public static GenericStack wrap(ItemStack stack) {
         if (stack.isEmpty()) return EMPTY;
-        return new GenericStack(new ItemKey(stack), stack.getCount());
+        return new GenericStack(new ItemKey(stack.copyWithCount(1)), stack.getCount());
     }
 
     public static GenericStack of(FactoryPanelBehaviour behaviour) {
