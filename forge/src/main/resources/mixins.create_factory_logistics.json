@@ -8,6 +8,7 @@
   "plugin": "ru.zznty.create_factory_logistics.mixin.CreateFactoryLogisticsMixinPlugin",
   "mixins": [
     "accessor.PackageEntityAccessor",
+    "accessor.StockTickerBlockEntityAccessor",
     "bugfixes.ArmBlockEntityMixin",
     "logistics.jar.ChainConveyorDropMixin",
     "logistics.jar.JarDrainMixin",

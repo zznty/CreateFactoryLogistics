@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import ru.zznty.create_factory_abstractions.generic.support.GenericLogisticsManager;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 import ru.zznty.create_factory_logistics.FactoryPackets;
+import ru.zznty.create_factory_logistics.mixin.accessor.StockTickerBlockEntityAccessor;
 
 public class PackageOrderRequestPacket extends BlockEntityConfigurationPacket<StockTickerBlockEntity> {
     private final GenericOrder order;
@@ -45,6 +46,9 @@ public class PackageOrderRequestPacket extends BlockEntityConfigurationPacket<St
         GenericLogisticsManager.broadcastPackageRequest(be.behaviour.freqId,
                                                         LogisticallyLinkedBehaviour.RequestType.PLAYER, order, null,
                                                         address);
+
+        ((StockTickerBlockEntityAccessor) be).setPreviouslyUsedAddress(address);
+        be.notifyUpdate();
     }
 
     @Override
