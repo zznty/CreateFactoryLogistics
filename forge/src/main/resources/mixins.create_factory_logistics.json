@@ -9,6 +9,7 @@
   "mixins": [
     "accessor.PackageEntityAccessor",
     "bugfixes.ArmBlockEntityMixin",
+    "logistics.composite.CompositePackageSawingMixin",
     "logistics.jar.ChainConveyorDropMixin",
     "logistics.jar.JarDrainMixin",
     "logistics.packager.GenericPackagerBlockEntityMixin",
