@@ -31,7 +31,7 @@ public interface BigGenericStack {
 
             @Override
             public GenericStack get() {
-                return GenericStack.wrap(itemStack.stack);
+                return GenericStack.wrap(itemStack.stack).withAmount(itemStack.count);
             }
 
             @Override
