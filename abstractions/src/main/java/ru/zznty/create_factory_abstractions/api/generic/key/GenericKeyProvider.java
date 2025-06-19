@@ -1,6 +1,9 @@
 package ru.zznty.create_factory_abstractions.api.generic.key;
 
+import net.minecraft.resources.ResourceKey;
+
 import java.util.Comparator;
+import java.util.Optional;
 
 public interface GenericKeyProvider<Key extends GenericKey> extends Comparator<Key> {
     Key defaultKey();
@@ -12,4 +15,6 @@ public interface GenericKeyProvider<Key extends GenericKey> extends Comparator<K
     <T> T unwrap(Key key);
 
     String ingredientTypeUid();
+
+    <T> Optional<ResourceKey<T>> resourceKey(Key key);
 }

@@ -1,8 +1,12 @@
 package ru.zznty.create_factory_abstractions.generic.key.item;
 
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyProvider;
+
+import java.util.Optional;
 
 @ApiStatus.Internal
 public class ItemKeyProvider implements GenericKeyProvider<ItemKey> {
@@ -36,6 +40,14 @@ public class ItemKeyProvider implements GenericKeyProvider<ItemKey> {
     @Override
     public String ingredientTypeUid() {
         return "item_stack";
+    }
+
+    @Override
+    public <T> Optional<ResourceKey<T>> resourceKey(ItemKey key) {
+        //noinspection rawtypes
+        Optional resourceKey = ForgeRegistries.ITEMS.getResourceKey(key.stack().getItem());
+        //noinspection unchecked
+        return resourceKey;
     }
 
     @Override

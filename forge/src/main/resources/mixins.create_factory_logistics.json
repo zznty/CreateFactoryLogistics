@@ -8,6 +8,7 @@
   "plugin": "ru.zznty.create_factory_logistics.mixin.CreateFactoryLogisticsMixinPlugin",
   "mixins": [
     "accessor.PackageEntityAccessor",
+    "accessor.StockTickerBlockEntityAccessor",
     "bugfixes.ArmBlockEntityMixin",
     "logistics.composite.CompositePackageSawingMixin",
     "logistics.jar.ChainConveyorDropMixin",
@@ -29,9 +30,11 @@
     "logistics.stock.IdentifiedInventoryMixin",
     "logistics.stock.InventorySummaryMixin",
     "logistics.stock.StockCheckingBlockEntityMixin",
+    "logistics.stockKeeper.StockTickerBlockEntityMixin",
     "logistics.stockLink.PackagerIngredientLinkBlockEntityMixin"
   ],
   "client": [
+    "accessor.CategoryEntryAccessor",
     "logistics.panel.FactoryPanelScreenMixin",
     "logistics.redstoneRequester.RedstoneRequesterScreenMixin",
     "logistics.stockKeeper.StockKeeperRequestScreenMixin",

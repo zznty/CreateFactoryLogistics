@@ -1,11 +1,15 @@
 package ru.zznty.create_factory_logistics.logistics.generic;
 
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.GenericKeyProviderExtension;
 
-public class FluidGenericExtension implements GenericKeyProviderExtension<FluidKey, FluidStack> {
+import java.util.Optional;
+
+public class FluidGenericExtension implements GenericKeyProviderExtension<FluidKey, FluidStack, Fluid> {
     @Override
     public FluidKey defaultKey() {
         return wrap(FluidStack.EMPTY);
@@ -29,6 +33,11 @@ public class FluidGenericExtension implements GenericKeyProviderExtension<FluidK
     @Override
     public String ingredientTypeUid() {
         return "fluid_stack";
+    }
+
+    @Override
+    public Optional<ResourceKey<Fluid>> resourceKey(FluidKey key) {
+        return ForgeRegistries.FLUIDS.getResourceKey(key.fluid());
     }
 
     @Override
