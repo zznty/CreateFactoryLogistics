@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_abstractions.generic.impl;
 
 import net.createmod.catnip.data.Pair;
+import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.CommonRegistrationBuilder;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.GenericKeyProviderExtension;
@@ -8,6 +9,7 @@ import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyProvider;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeySerializer;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonRegistrationBuilder<Key> {
@@ -22,12 +24,13 @@ class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonReg
     }
 
     @Override
-    public <Value> CommonRegistrationBuilder<Key> provider(Supplier<GenericKeyProviderExtension<Key, Value>> provider) {
+    public <Value, RegistryValue> CommonRegistrationBuilder<Key> provider(
+            Supplier<GenericKeyProviderExtension<Key, Value, RegistryValue>> provider) {
         if (this.provider != null) {
             throw new IllegalStateException("Provider already set");
         }
         this.provider = () -> new GenericKeyProvider<>() {
-            private final GenericKeyProviderExtension<Key, Value> extension = provider.get();
+            private final GenericKeyProviderExtension<Key, Value, RegistryValue> extension = provider.get();
 
             @Override
             public Key defaultKey() {
@@ -59,6 +62,14 @@ class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonReg
             @Override
             public String ingredientTypeUid() {
                 return extension.ingredientTypeUid();
+            }
+
+            @Override
+            public <T> Optional<ResourceKey<T>> resourceKey(Key key) {
+                //noinspection rawtypes
+                Optional resourceKey = extension.resourceKey(key);
+                //noinspection unchecked
+                return resourceKey;
             }
 
             @Override

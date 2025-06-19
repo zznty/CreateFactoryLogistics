@@ -30,9 +30,11 @@
     "logistics.stock.InventorySummaryMixin",
     "logistics.stock.PackageOrderDataMixin",
     "logistics.stock.StockCheckingBlockEntityMixin",
+    "logistics.stockKeeper.StockTickerBlockEntityMixin",
     "logistics.stockLink.PackagerIngredientLinkBlockEntityMixin"
   ],
   "client": [
+    "accessor.CategoryEntryAccessor",
     "logistics.panel.FactoryPanelScreenMixin",
     "logistics.redstoneRequester.RedstoneRequesterScreenMixin",
     "logistics.stockKeeper.StockKeeperRequestScreenMixin",

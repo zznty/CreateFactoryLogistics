@@ -8,11 +8,13 @@ import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.content.logistics.stockTicker.*;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
+import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.platform.services.NetworkHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Inventory;
@@ -30,20 +32,22 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_abstractions.api.generic.crafting.OrderProvider;
 import ru.zznty.create_factory_abstractions.api.generic.crafting.RecipeRequestHelper;
+import ru.zznty.create_factory_abstractions.api.generic.search.CategoriesProvider;
+import ru.zznty.create_factory_abstractions.api.generic.search.GenericSearch;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.CraftableGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
-import ru.zznty.create_factory_logistics.logistics.generic.FluidKey;
+import ru.zznty.create_factory_logistics.mixin.accessor.CategoryEntryAccessor;
+import ru.zznty.create_factory_logistics.mixin.accessor.StockTickerBlockEntityAccessor;
 
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 @Mixin(StockKeeperRequestScreen.class)
-public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContainerScreen<StockKeeperRequestMenu> implements OrderProvider {
+public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContainerScreen<StockKeeperRequestMenu> implements OrderProvider, CategoriesProvider {
     public StockKeeperRequestScreenMixin(StockKeeperRequestMenu container, Inventory inv, Component title) {
         super(container, inv, title);
     }
@@ -58,7 +62,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     StockTickerBlockEntity blockEntity;
 
     @Shadow
-    public List<List<BigItemStack>> currentItemSource;
+    public List<List<BigGenericStack>> currentItemSource;
 
     @Shadow
     public List<CraftableGenericStack> recipesToOrder;
@@ -70,11 +74,45 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     public AddressEditBox addressBox;
 
     @Shadow
+    public LerpedFloat itemScroll;
+
+    @Shadow
+    public List<List<BigGenericStack>> displayedItems;
+
+    @Shadow
+    public EditBox searchBox;
+
+    @Shadow
+    final int cols = 9;
+
+    @Shadow
+    final int rowHeight = 20;
+
+    @Shadow
+    private Set<Integer> hiddenCategories;
+
+    @Shadow
     private Pair<Integer, List<List<BigItemStack>>> maxCraftable(CraftableBigItemStack cbis, InventorySummary summary,
                                                                  Function<ItemStack, Integer> countModifier,
                                                                  int newTypeLimit) {
         return null;
     }
+
+    @Shadow
+    private void clampScrollBar() {
+    }
+
+    @Shadow
+    public boolean isSchematicListMode() {
+        return false;
+    }
+
+    @Shadow
+    public void requestSchematicList() {
+    }
+
+    @Shadow
+    public List<StockKeeperRequestScreen.CategoryEntry> categories;
 
     @Redirect(
             method = "containerTick",
@@ -263,20 +301,38 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                                                                                 stack.get().amount());
     }
 
-    // todo make that as proper search
-    @WrapOperation(
-            method = "refreshSearchResults",
-            at = @At(
-                    value = "FIELD",
-                    target = "Lcom/simibubi/create/content/logistics/BigItemStack;stack:Lnet/minecraft/world/item/ItemStack;"
-            )
-    )
-    private ItemStack fluidStackSearchPlaceholder(BigItemStack instance, Operation<ItemStack> original) {
-        BigGenericStack stack = BigGenericStack.of(instance);
-        if (stack.get().key() instanceof FluidKey fluidKey) {
-            return fluidKey.stack().getFluid().getBucket().getDefaultInstance();
+    @Overwrite
+    private void refreshSearchResults(boolean scrollBackUp) {
+        displayedItems = Collections.emptyList();
+        if (scrollBackUp)
+            itemScroll.startWithValue(0);
+
+        if (currentItemSource == null) {
+            clampScrollBar();
+            return;
         }
-        return original.call(instance);
+
+        if (isSchematicListMode()) {
+            clampScrollBar();
+            requestSchematicList();
+            return;
+        }
+
+        GenericSearch.SearchResult result = GenericSearch.search(this, searchBox.getValue(), rowHeight, cols);
+
+        displayedItems = result.displayedItems();
+        categories = new ArrayList<>(result.categories().size());
+
+        for (int i = 0; i < result.categories().size(); i++) {
+            GenericSearch.CategoryEntry entry = result.categories().get(i);
+            StockKeeperRequestScreen.CategoryEntry categoryEntry = new StockKeeperRequestScreen.CategoryEntry(
+                    entry.targetCategory(), entry.name(), entry.y().getValue());
+            ((CategoryEntryAccessor) categoryEntry).setHidden(entry.hidden().getValue());
+            categories.add(categoryEntry);
+        }
+
+        clampScrollBar();
+        updateCraftableAmounts();
     }
 
     @Redirect(
@@ -409,7 +465,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         instance.sendToServer(packet);
     }
 
-    @Overwrite(remap = false)
+    @Overwrite
     public void requestCraftable(CraftableBigItemStack cbis, int requestedDifference) {
         RecipeRequestHelper.requestCraftable(this, CraftableGenericStack.of(cbis), requestedDifference);
     }
@@ -437,5 +493,20 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     @Override
     public GenericInventorySummary stockSnapshot() {
         return GenericInventorySummary.of(blockEntity.getLastClientsideStockSnapshotAsSummary());
+    }
+
+    @Override
+    public List<ItemStack> categories() {
+        return ((StockTickerBlockEntityAccessor) blockEntity).getCategories();
+    }
+
+    @Override
+    public Set<Integer> hiddenCategories() {
+        return hiddenCategories;
+    }
+
+    @Override
+    public List<List<BigGenericStack>> currentItemSource() {
+        return currentItemSource;
     }
 }

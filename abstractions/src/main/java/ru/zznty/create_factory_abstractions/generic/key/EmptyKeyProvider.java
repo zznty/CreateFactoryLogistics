@@ -1,8 +1,13 @@
 package ru.zznty.create_factory_abstractions.generic.key;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyProvider;
+
+import java.util.Optional;
 
 @ApiStatus.Internal
 public class EmptyKeyProvider implements GenericKeyProvider<EmptyKey> {
@@ -33,6 +38,14 @@ public class EmptyKeyProvider implements GenericKeyProvider<EmptyKey> {
     @Override
     public String ingredientTypeUid() {
         return "empty";
+    }
+
+    @Override
+    public <T> Optional<ResourceKey<T>> resourceKey(EmptyKey key) {
+        //noinspection rawtypes
+        Optional resourceKey = BuiltInRegistries.ITEM.getResourceKey(Items.AIR);
+        //noinspection unchecked
+        return resourceKey;
     }
 
     @Override
