@@ -95,7 +95,7 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     }
 
     public static @NotNull ItemStack qualifyTo(ItemStack link, ResourceLocation qualifier) {
-        link = link.copy();
+        link = link.copyWithCount(1);
 
         CompoundTag tag = link.getOrCreateTagElement(BLOCK_ENTITY_TAG);
         tag.putString(NetworkLinkBlock.INGREDIENT_TYPE, qualifier.toString());
