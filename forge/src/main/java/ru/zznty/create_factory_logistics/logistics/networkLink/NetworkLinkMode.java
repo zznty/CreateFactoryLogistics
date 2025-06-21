@@ -15,9 +15,7 @@ public enum NetworkLinkMode implements INamedIconOptions {
 
     NetworkLinkMode(AllIcons icon) {
         this.icon = icon;
-        // it is autoprefixed with create. on Create 6.0.4 so i decided to not introduce a new prefix
-        // TODO fix once 6.0.5 is out
-        translationKey = "gui.network_link.mode." + Lang.asId(name());
+        translationKey = "create_factory_logistics.gui.network_link.mode." + Lang.asId(name());
     }
 
     @Override
