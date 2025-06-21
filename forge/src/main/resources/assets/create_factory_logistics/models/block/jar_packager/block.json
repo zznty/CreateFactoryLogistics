@@ -7,7 +7,7 @@
 		"2": "create_factory_logistics:block/spout",
 		"3": "create_factory_logistics:block/jarzilla",
 		"5": "create_factory_logistics:block/texture2",
-		"particle": "create_factory_logistics:block/frame_limked"
+		"particle": "create_factory_logistics:block/frame_linked"
 	},
 	"elements": [
 		{
