@@ -35,7 +35,7 @@ public class NetworkLinkBlockItem extends LogisticallyLinkedBlockItem {
     }
 
     public static boolean isTuned(ItemStack pStack) {
-        return pStack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Freq");
+        return pStack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).contains("Freq");
     }
 
     @Override
