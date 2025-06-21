@@ -15,7 +15,7 @@ public enum NetworkLinkMode implements INamedIconOptions {
 
     NetworkLinkMode(AllIcons icon) {
         this.icon = icon;
-        translationKey = "gui.network_link.mode." + Lang.asId(name());
+        translationKey = "create_factory_logistics.gui.network_link.mode." + Lang.asId(name());
     }
 
     @Override
