@@ -25,7 +25,7 @@ subprojects {
             }
         }
         maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
-        maven { url = "https://maven.tterrag.com" } // Registrate
+        maven { url = "https://modmaven.dev/" } // Registrate
         maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
         maven { url = "https://maven.blamejared.com" } // JEI, Vazkii's Mods
         maven { url = "https://maven.liukrast.net/" } // extra gauges
