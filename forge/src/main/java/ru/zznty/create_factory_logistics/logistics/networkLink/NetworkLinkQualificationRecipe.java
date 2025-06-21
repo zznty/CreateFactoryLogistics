@@ -92,7 +92,7 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     }
 
     public static @NotNull ItemStack qualifyTo(ItemStack link, ResourceLocation qualifier) {
-        link = link.copy();
+        link = link.copyWithCount(1);
 
         CustomData.update(DataComponents.BLOCK_ENTITY_DATA, link, t -> {
             BlockEntity.addEntityType(t, FactoryBlockEntities.NETWORK_LINK.get());
