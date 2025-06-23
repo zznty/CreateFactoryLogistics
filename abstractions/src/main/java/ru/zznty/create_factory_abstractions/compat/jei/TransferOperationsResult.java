@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics.compat.jei;
+package ru.zznty.create_factory_abstractions.compat.jei;
 
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 
