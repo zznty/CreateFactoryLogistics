@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
@@ -164,4 +165,13 @@ public record GenericOrder(List<GenericStack> stacks, List<PackageOrderWithCraft
             return null;
         return GenericOrder.read(levelRegistryAccess, frag.getCompound("OrderContext"));
     }
+
+    public static void writeToStream(RegistryFriendlyByteBuf buffer, GenericOrder order) {
+        order.write(buffer);
+    }
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, GenericOrder> STREAM_CODEC = StreamCodec.of(
+            GenericOrder::writeToStream,
+            GenericOrder::read
+    );
 }
