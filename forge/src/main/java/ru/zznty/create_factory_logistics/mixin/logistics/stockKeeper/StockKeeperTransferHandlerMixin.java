@@ -30,9 +30,9 @@ import ru.zznty.create_factory_abstractions.api.generic.stack.GenericIngredient;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.CraftableGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
-import ru.zznty.create_factory_logistics.compat.jei.IngredientTransfer;
-import ru.zznty.create_factory_logistics.compat.jei.TransferOperation;
-import ru.zznty.create_factory_logistics.compat.jei.TransferOperationsResult;
+import ru.zznty.create_factory_abstractions.compat.jei.IngredientTransfer;
+import ru.zznty.create_factory_abstractions.compat.jei.TransferOperation;
+import ru.zznty.create_factory_abstractions.compat.jei.TransferOperationsResult;
 
 import java.util.ArrayList;
 import java.util.List;
