@@ -31,7 +31,8 @@
     "logistics.stock.InventorySummaryMixin",
     "logistics.stock.StockCheckingBlockEntityMixin",
     "logistics.stockKeeper.StockTickerBlockEntityMixin",
-    "logistics.stockLink.PackagerIngredientLinkBlockEntityMixin"
+    "logistics.stockLink.PackagerIngredientLinkBlockEntityMixin",
+    "render.GoggleOverlayRendererMixin"
   ],
   "client": [
     "accessor.CategoryEntryAccessor",

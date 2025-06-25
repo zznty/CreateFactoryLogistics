@@ -1,11 +1,13 @@
 package ru.zznty.create_factory_logistics.logistics.jar;
 
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.logistics.box.PackageEntity;
 import com.simibubi.create.content.logistics.chute.ChuteBlock;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -17,12 +19,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.network.PlayMessages;
 import ru.zznty.create_factory_logistics.FactoryEntities;
 import ru.zznty.create_factory_logistics.logistics.jar.unpack.JarUnpackingHandler;
 import ru.zznty.create_factory_logistics.mixin.accessor.PackageEntityAccessor;
 
-public class JarPackageEntity extends PackageEntity {
+import java.util.List;
+import java.util.Optional;
+
+public class JarPackageEntity extends PackageEntity implements IHaveGoggleInformation {
     public LerpedFloat fluidLevel = LerpedFloat.linear();
 
     public JarPackageEntity(EntityType<?> entityTypeIn, Level worldIn) {
@@ -66,6 +73,11 @@ public class JarPackageEntity extends PackageEntity {
             player = entity;
 
         handler.unpack(serverLevel, getOnPos(), pair.getFirst(), player);
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        return containedFluidTooltip(tooltip, isPlayerSneaking, FluidUtil.getFluidHandler(box).cast());
     }
 
     public static JarPackageEntity fromDroppedItem(Level world, Entity originalEntity, ItemStack itemstack) {
