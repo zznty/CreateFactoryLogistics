@@ -32,7 +32,8 @@
     "logistics.stock.StockCheckingBlockEntityMixin",
     "logistics.stockKeeper.StockTickerBlockEntityMixin",
     "logistics.stockKeeper.StockTickerInteractionHandlerMixin",
-    "logistics.stockLink.PackagerIngredientLinkBlockEntityMixin"
+    "logistics.stockLink.PackagerIngredientLinkBlockEntityMixin",
+    "render.GoggleOverlayRendererMixin"
   ],
   "client": [
     "accessor.CategoryEntryAccessor",
