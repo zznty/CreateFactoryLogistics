@@ -19,11 +19,8 @@ public class FactoryJarUnpackingHandlers {
                 fluidExperience, (level, pos, fluid, player) -> {
                     // default is 1mb -> 1xp
                     int experience = fluid.getAmount();
-                    if (player != null) {
-                        player.giveExperiencePoints(experience);
-                    } else {
-                        ExperienceOrb.award(level, pos.getCenter(), experience);
-                    }
+
+                    ExperienceOrb.award(level, pos.getCenter(), experience);
                     return true;
                 }));
 
@@ -31,11 +28,8 @@ public class FactoryJarUnpackingHandlers {
                 SimpleRegistry.Provider.forFluidTag(Tags.Fluids.EXPERIENCE, (level, pos, fluid, player) -> {
                     // default is 20mb -> 1xp
                     int experience = fluid.getAmount() / 20;
-                    if (player != null) {
-                        player.giveExperiencePoints(experience);
-                    } else {
-                        ExperienceOrb.award(level, pos.getCenter(), experience);
-                    }
+
+                    ExperienceOrb.award(level, pos.getCenter(), experience);
                     return true;
                 }));
     }
