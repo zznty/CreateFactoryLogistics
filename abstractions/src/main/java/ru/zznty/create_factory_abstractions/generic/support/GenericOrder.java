@@ -107,8 +107,7 @@ public record GenericOrder(List<GenericStack> stacks, List<PackageOrderWithCraft
         tag.putBoolean("IsFinal", isFinal);
         if (orderContext != null) {
             PackageOrderWithCrafts craftingOrder = orderContext.asCrafting();
-            if (craftingOrder != null)
-                tag.put("OrderContext", craftingOrder.write());
+            tag.put("OrderContext", craftingOrder.write());
         }
         box.getOrCreateTag()
                 .put("Fragment", tag);

@@ -9,6 +9,7 @@ import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import javax.annotation.Nullable;
 
 public interface GenericPackagerLinkBlockEntity {
+    @Nullable
     Pair<PackagerBlockEntity, GenericRequest> processRequest(GenericStack stack, String address,
                                                              int linkIndex, MutableBoolean finalLink, int orderId,
                                                              @Nullable GenericOrder orderContext,
