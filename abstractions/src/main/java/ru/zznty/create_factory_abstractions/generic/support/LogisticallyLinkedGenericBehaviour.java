@@ -39,16 +39,7 @@ public interface LogisticallyLinkedGenericBehaviour {
                     if (pair == null) return null;
 
                     PackagingRequest request = pair.getSecond();
-                    return Pair.of(pair.getFirst(), new GenericRequest(
-                            GenericStack.wrap(request.item()),
-                            request.count(),
-                            request.address(),
-                            request.linkIndex(),
-                            request.finalLink(),
-                            request.packageCounter(),
-                            request.orderId(),
-                            request.context() == null ? null : GenericOrder.of(request.context())
-                    ));
+                    return Pair.of(pair.getFirst(), GenericRequest.from(request));
                 }
                 return null;
             }
