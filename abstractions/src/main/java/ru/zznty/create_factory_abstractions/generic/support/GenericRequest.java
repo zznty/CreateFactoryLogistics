@@ -1,5 +1,6 @@
 package ru.zznty.create_factory_abstractions.generic.support;
 
+import com.simibubi.create.content.logistics.packager.PackagingRequest;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
@@ -27,5 +28,18 @@ public record GenericRequest(GenericStack stack, MutableInt count, String addres
 
     public boolean isEmpty() {
         return getCount() == 0;
+    }
+
+    public static GenericRequest from(PackagingRequest request) {
+        return new GenericRequest(
+                GenericStack.wrap(request.item()),
+                request.count(),
+                request.address(),
+                request.linkIndex(),
+                request.finalLink(),
+                request.packageCounter(),
+                request.orderId(),
+                request.context() == null ? null : GenericOrder.of(request.context())
+        );
     }
 }
