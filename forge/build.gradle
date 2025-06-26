@@ -15,8 +15,8 @@ dependencies {
     compileOnly annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
     include implementation("io.github.llamalad7:mixinextras-forge:0.5.0-rc.3")
 
-    implementation(project(path: ':create_factory_abstractions', configuration: 'namedElements')) { transitive false }
-    include project(':create_factory_abstractions')
+    implementation(project(path: ":create_factory_abstractions-${minecraft_version}", configuration: 'namedElements')) { transitive false }
+    include project(":create_factory_abstractions-${minecraft_version}")
 
     if (!Boolean.getBoolean('idea.sync.active')) {
         annotationProcessor "org.spongepowered:mixin:0.8.5:processor"

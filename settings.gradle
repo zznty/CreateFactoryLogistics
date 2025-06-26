@@ -13,5 +13,5 @@ pluginManagement {
 include ':abstractions'
 include ':forge'
 
-project(':abstractions').name = 'create_factory_abstractions'
-project(':forge').name = mod_id
+project(':abstractions').name = "create_factory_abstractions-${minecraft_version}"
+project(':forge').name = "${mod_id}-${minecraft_version}"
