@@ -9,8 +9,8 @@ dependencies {
     compileOnly annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
     include implementation("io.github.llamalad7:mixinextras-${forge_flavour}:0.5.0-rc.3")
 
-    implementation(project(path: ':create_factory_abstractions', configuration: 'namedElements')) { transitive false }
-    include project(':create_factory_abstractions')
+    implementation(project(path: ":create_factory_abstractions-${minecraft_version}", configuration: 'namedElements')) { transitive false }
+    include project(":create_factory_abstractions-${minecraft_version}")
 
     modLocalRuntime "curse.maven:create-vibrant-vaults-1251719:6463890"
 //    modLocalRuntime "curse.maven:create-enchantment-industry-688768:6549319"
