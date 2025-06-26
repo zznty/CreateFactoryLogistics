@@ -154,7 +154,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 
         if (!visited.add(sourceConnection.from)) {
             // Cycle detected
-//            return false;
+            return source.satisfied || source.promisedSatisfied;
         }
 
         GenericStack ingredient = GenericStack.of(source).withAmount(sourceConnection.amount);
@@ -179,6 +179,9 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
             for (FactoryPanelConnection connection : source.targetedBy.values()) {
                 if (!createFactoryLogistics$requestDependent(toRequest, connection, source, visited))
                     return false;
+            }
+            for (FactoryPanelConnection connection : source.targetedBy.values()) {
+                visited.remove(connection.from);
             }
         } else {
             return false;
