@@ -9,6 +9,7 @@ import ru.zznty.create_factory_abstractions.api.generic.stack.GenericIngredient;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface CraftableGenericStack extends BigGenericStack {
@@ -34,7 +35,9 @@ public interface CraftableGenericStack extends BigGenericStack {
 
             @Override
             public List<GenericStack> results(RegistryAccess registryAccess) {
-                return List.of(GenericStack.wrap(itemStack.recipe.getResultItem(registryAccess)));
+                ArrayList<GenericStack> list = new ArrayList<>(1);
+                list.add(GenericStack.wrap(itemStack.recipe.getResultItem(registryAccess)));
+                return list;
             }
 
             @Override
