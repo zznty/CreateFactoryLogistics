@@ -211,7 +211,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
         GenericStack stack = BigGenericStack.of(itemStack).get();
 
         return GenericContentExtender.registrationOf(stack.key()).clientProvider().guiHandler()
-                .nameBuilder(stack.key());
+                .nameBuilder(stack.key(), stack.amount());
     }
 
     @Redirect(
