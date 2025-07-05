@@ -25,8 +25,8 @@ import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericIdentifiedInventory;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
-import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
 import ru.zznty.create_factory_logistics.logistics.generic.FluidGenericStack;
 import ru.zznty.create_factory_logistics.logistics.generic.FluidKey;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
@@ -150,7 +150,7 @@ class JarPackageBuilder implements PackageBuilder {
         }
 
         int remainingAmount = content.amount();
-        int amountToAdd = Math.min(Config.jarCapacity - fluidStack.getAmount(), remainingAmount);
+        int amountToAdd = Math.min(WorldConfig.jarCapacity - fluidStack.getAmount(), remainingAmount);
         fluidStack.grow(amountToAdd);
         return remainingAmount - amountToAdd;
     }
@@ -162,12 +162,12 @@ class JarPackageBuilder implements PackageBuilder {
 
     @Override
     public boolean isFull() {
-        return fluidStack.getAmount() >= Config.jarCapacity;
+        return fluidStack.getAmount() >= WorldConfig.jarCapacity;
     }
 
     @Override
     public int maxPerSlot() {
-        return Config.jarCapacity;
+        return WorldConfig.jarCapacity;
     }
 
     @Override

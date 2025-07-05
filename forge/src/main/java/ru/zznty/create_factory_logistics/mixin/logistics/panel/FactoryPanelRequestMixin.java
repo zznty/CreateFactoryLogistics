@@ -30,8 +30,8 @@ import ru.zznty.create_factory_abstractions.api.generic.AbstractionsCapabilities
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttachedHandler;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.*;
-import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.compat.extra_gauges.AbstractPanelBehaviourStub;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
 
 import java.util.*;
 
@@ -175,7 +175,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         }
 
         // request lower level ingredients recursively
-        if (Config.factoryGaugeCascadeRequest && !source.targetedBy.isEmpty() && !source.recipeAddress.isBlank()) {
+        if (WorldConfig.factoryGaugeCascadeRequest && !source.targetedBy.isEmpty() && !source.recipeAddress.isBlank()) {
             for (FactoryPanelConnection connection : source.targetedBy.values()) {
                 if (!createFactoryLogistics$requestDependent(toRequest, connection, source, visited))
                     return false;

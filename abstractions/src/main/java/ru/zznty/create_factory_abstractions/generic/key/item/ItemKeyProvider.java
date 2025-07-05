@@ -38,8 +38,13 @@ public class ItemKeyProvider implements GenericKeyProvider<ItemKey> {
     }
 
     @Override
-    public String ingredientTypeUid() {
+    public String ingredientTypeUid(ItemKey key) {
         return "item_stack";
+    }
+
+    @Override
+    public boolean supportsIngredientTypeUid(String uid) {
+        return uid.equals("item_stack");
     }
 
     @Override

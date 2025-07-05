@@ -21,7 +21,6 @@ import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttac
 import ru.zznty.create_factory_abstractions.generic.impl.BuiltInPackagerAttachedHandler;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
-import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerAttachedHandler;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerBlockEntity;
 
 @ApiStatus.Internal
@@ -51,11 +50,9 @@ public final class CapabilityAttacher {
         public static final ResourceLocation IDENTIFIER = CreateFactoryLogistics.resource("jar_packager_cap");
 
         private JarPackagerCapabilityProvider(JarPackagerBlockEntity packagerBE) {
-            this.backend = new JarPackagerAttachedHandler(packagerBE);
-            this.handler = LazyOptional.of(() -> backend);
+            this.handler = LazyOptional.of(() -> packagerBE.handler);
         }
 
-        private final JarPackagerAttachedHandler backend;
         private final LazyOptional<PackagerAttachedHandler> handler;
 
         @Override

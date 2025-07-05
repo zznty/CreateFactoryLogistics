@@ -4,12 +4,18 @@ import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
+import ru.zznty.create_factory_logistics.compat.mekanism.MekanismIntegration;
+import ru.zznty.create_factory_logistics.config.ClientConfig;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
 import ru.zznty.create_factory_logistics.data.FactoryDataGen;
+
+import static ru.zznty.create_factory_logistics.FactoryGenericExtension.MEKANISM_ID;
 
 @Mod(CreateFactoryLogistics.MODID)
 public class CreateFactoryLogistics {
@@ -42,7 +48,10 @@ public class CreateFactoryLogistics {
         FactoryBlocks.register();
         FactoryMenus.register();
 
-        context.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
+        if (ModList.get().isLoaded(MEKANISM_ID))
+            MekanismIntegration.register(modEventBus);
+
+        context.registerConfig(ModConfig.Type.SERVER, WorldConfig.SPEC);
         context.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
     }
 

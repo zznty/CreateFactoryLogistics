@@ -18,15 +18,12 @@ import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import com.simibubi.create.foundation.blockEntity.behaviour.inventory.InvManipulationBehaviour;
 import net.createmod.catnip.data.Iterate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -34,7 +31,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import ru.zznty.create_factory_abstractions.api.generic.AbstractionsCapabilities;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackageBuilder;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackageMeasureResult;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttachedHandler;
@@ -49,8 +45,6 @@ import static com.simibubi.create.content.logistics.packager.PackagerBlockEntity
 
 @Mixin(PackagerBlockEntity.class)
 public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity implements GenericPackagerBlockEntity {
-    @Shadow(remap = false)
-    public InvManipulationBehaviour targetInventory;
     @Shadow(remap = false)
     public String signBasedAddress;
     @Shadow(remap = false)
@@ -75,9 +69,6 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
         return null;
     }
 
-    @Shadow
-    public abstract <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side);
-
     public GenericPackagerBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -95,7 +86,7 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
 
     @Overwrite(remap = false)
     public InventorySummary getAvailableItems(boolean scanInputSlots) {
-        Optional<PackagerAttachedHandler> handler = getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED).resolve();
+        Optional<PackagerAttachedHandler> handler = PackagerAttachedHandler.get(this).resolve();
 
         if (availableItems != null && handler.isPresent() && !handler.get().hasChanges())
             return availableItems;
@@ -141,7 +132,7 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
 
         Objects.requireNonNull(level);
 
-        Optional<PackagerAttachedHandler> handler = getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED).resolve();
+        Optional<PackagerAttachedHandler> handler = PackagerAttachedHandler.get(this).resolve();
         if (handler.isEmpty()) return promiseQueues;
 
         for (Direction d : Iterate.directions) {
@@ -192,14 +183,14 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
 
         ItemStack originalBox = box.copy();
 
-        boolean unpacked = getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED).map(handler ->
-                                                                                                 handler.unwrap(level,
-                                                                                                                target,
-                                                                                                                targetState,
-                                                                                                                facing,
-                                                                                                                orderContext,
-                                                                                                                box,
-                                                                                                                simulate))
+        boolean unpacked = PackagerAttachedHandler.get(this).map(handler ->
+                                                                         handler.unwrap(level,
+                                                                                        target,
+                                                                                        targetState,
+                                                                                        facing,
+                                                                                        orderContext,
+                                                                                        box,
+                                                                                        simulate))
                 .orElse(false);
 
         if (unpacked && !simulate) {
@@ -222,8 +213,8 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
             return;
         }
 
-        // use attemptToSendIngredients instead
-        throw new UnsupportedOperationException("Not implemented");
+        // use attemptToSendGeneric instead
+        throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
@@ -279,7 +270,7 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
         int fixedOrderId = 0;
         String fixedAddress = null;
 
-        Optional<PackagerAttachedHandler> target = getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED).resolve();
+        Optional<PackagerAttachedHandler> target = PackagerAttachedHandler.get(this).resolve();
         if (target.isEmpty())
             return Pair.of(ItemStack.EMPTY, null);
 

@@ -60,8 +60,13 @@ class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonReg
             }
 
             @Override
-            public String ingredientTypeUid() {
-                return extension.ingredientTypeUid();
+            public String ingredientTypeUid(Key key) {
+                return extension.ingredientTypeUid(key);
+            }
+
+            @Override
+            public boolean supportsIngredientTypeUid(String uid) {
+                return extension.supportsIngredientTypeUid(uid);
             }
 
             @Override

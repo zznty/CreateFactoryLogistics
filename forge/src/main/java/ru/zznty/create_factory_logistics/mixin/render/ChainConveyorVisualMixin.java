@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import ru.zznty.create_factory_logistics.Config;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 import ru.zznty.create_factory_logistics.render.FluidVisual;
 
@@ -37,7 +37,8 @@ public class ChainConveyorVisualMixin {
             method = "<init>",
             at = @At("RETURN")
     )
-    private void ctor(VisualizationContext context, ChainConveyorBlockEntity blockEntity, float partialTick, CallbackInfo ci) {
+    private void ctor(VisualizationContext context, ChainConveyorBlockEntity blockEntity, float partialTick,
+                      CallbackInfo ci) {
         createFactoryLogistics$fluidVisual = new FluidVisual(context, false, true);
     }
 
@@ -107,7 +108,8 @@ public class ChainConveyorVisualMixin {
                                        @Share("fluid") LocalRef<FluidStack> fluid) {
         if (buf == rigBuffer || buf == boxBuffer) return original.call(instance);
 
-        createFactoryLogistics$fluidVisual.setupBuffer(fluid.get(), Config.jarCapacity, buf, fluidBufferIndex.get(), 8f / 16, 8f / 16);
+        createFactoryLogistics$fluidVisual.setupBuffer(fluid.get(), WorldConfig.jarCapacity, buf,
+                                                       fluidBufferIndex.get(), 8f / 16, 8f / 16);
         fluidBufferIndex.set(fluidBufferIndex.get() + 1);
 
         /*var side = fluidBufferIndex.get() >= Iterate.horizontalDirections.length ? Direction.UP : Iterate.horizontalDirections[fluidBufferIndex.get()];

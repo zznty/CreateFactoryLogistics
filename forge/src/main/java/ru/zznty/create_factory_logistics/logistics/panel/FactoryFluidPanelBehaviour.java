@@ -3,9 +3,11 @@ package ru.zznty.create_factory_logistics.logistics.panel;
 import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.utility.CreateLang;
+import com.tterrag.registrate.util.entry.BlockEntry;
 import net.createmod.catnip.gui.ScreenOpener;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.ChatFormatting;
@@ -22,11 +24,13 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
 import ru.zznty.create_factory_abstractions.api.generic.GenericFilterProvider;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.logistics.generic.FluidGenericStack;
+import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 
 import java.util.List;
 
-public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements GenericFilterProvider {
+public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements GenericFilterProvider, PanelModelProvider {
     public FactoryFluidPanelBehaviour(FactoryFluidPanelBlockEntity be, FactoryFluidPanelBlock.PanelSlot slot) {
         super(be, slot);
     }
@@ -152,5 +156,15 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
     public void displayScreen(Player player) {
         if (player instanceof LocalPlayer)
             ScreenOpener.open(new FactoryFluidPanelScreen(this));
+    }
+
+    @Override
+    public BlockEntry<? extends FactoryPanelBlock> model() {
+        return FactoryBlocks.FACTORY_FLUID_GAUGE;
+    }
+
+    @Override
+    public ItemStack defaultPackage() {
+        return JarPackageItem.getDefaultJar();
     }
 }

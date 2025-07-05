@@ -12,19 +12,20 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
-import ru.zznty.create_factory_logistics.Config;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
 
 import java.util.Optional;
 
 public class JarItemRenderer extends CustomRenderedItemModelRenderer {
-    public void render(ItemStack box, CustomRenderedItemModel model, PartialItemModelRenderer renderer, ItemDisplayContext displayContext, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
+    public void render(ItemStack box, CustomRenderedItemModel model, PartialItemModelRenderer renderer,
+                       ItemDisplayContext displayContext, PoseStack ms, MultiBufferSource buffer, int light,
+                       int overlay) {
         renderer.render(model.getOriginalModel(), light);
-        if (!JarPackageRenderer.entityRendering) {
-            renderFluidContents(box, -1, ms, buffer, light);
-        }
+        renderFluidContents(box, -1, ms, buffer, light);
     }
 
-    public static void renderFluidContents(ItemStack box, float fluidLevel, PoseStack ms, MultiBufferSource buffer, int light) {
+    public static void renderFluidContents(ItemStack box, float fluidLevel, PoseStack ms, MultiBufferSource buffer,
+                                           int light) {
         Optional<FluidStack> containedFluid = FluidUtil.getFluidContained(box);
 
         if (containedFluid.isEmpty() || containedFluid.get().isEmpty()) return;
@@ -38,7 +39,7 @@ public class JarItemRenderer extends CustomRenderedItemModelRenderer {
         float totalHeight = 8f * capHeight - minPuddleHeight;
         float tankWidth = .5f;
 
-        float level = fluidLevel / Config.jarCapacity * totalHeight;
+        float level = fluidLevel / WorldConfig.jarCapacity * totalHeight;
 
         if (level == 0) return;
 
@@ -63,8 +64,8 @@ public class JarItemRenderer extends CustomRenderedItemModelRenderer {
         TransformStack.of(ms).rotate(Direction.UP.getRotation());
         ms.translate(-xMax / 2, level - totalHeight, -zMax / 2);
         ForgeCatnipServices.FLUID_RENDERER.renderFluidBox(containedFluid.get(), xMin, yMin,
-                                                             zMin, xMax, yMax, zMax,
-                                                             buffer, ms, light, false, true);
+                                                          zMin, xMax, yMax, zMax,
+                                                          buffer, ms, light, false, true);
         ms.popPose();
     }
 }

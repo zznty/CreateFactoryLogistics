@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "mekanism:steel_casing"
+    },
+    "c": {
+      "tag": "forge:circuits/advanced"
+    },
+    "s": {
+      "item": "create:stock_link"
+    }
+  },
+  "pattern": [
+    "s",
+    "c",
+    "C"
+  ],
+  "result": {
+    "count": 2,
+    "item": "create_factory_logistics:factory_chemical_gauge"
+  },
+  "show_notification": true
+}

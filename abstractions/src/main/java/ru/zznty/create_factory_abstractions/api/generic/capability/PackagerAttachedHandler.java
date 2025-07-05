@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.AutoRegisterCapability;
 import net.minecraftforge.common.util.LazyOptional;
@@ -37,10 +38,13 @@ public interface PackagerAttachedHandler {
 
     @Nullable IdentifiedInventory identifiedInventory();
 
-    static LazyOptional<PackagerAttachedHandler> get(PackagerBlockEntity blockEntity) {
+    static LazyOptional<PackagerAttachedHandler> get(BlockEntity blockEntity) {
         if (CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE)
             return blockEntity.getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED);
 
-        return LazyOptional.of(() -> new BuiltInPackagerAttachedHandler(blockEntity));
+        if (blockEntity instanceof PackagerBlockEntity pbe)
+            return LazyOptional.of(() -> new BuiltInPackagerAttachedHandler(pbe));
+
+        return LazyOptional.empty();
     }
 }

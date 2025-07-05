@@ -15,7 +15,9 @@ public interface GenericKeyProviderExtension<Key extends GenericKey, Value, Regi
 
     Value unwrap(Key key);
 
-    String ingredientTypeUid();
+    String ingredientTypeUid(Key key);
+
+    boolean supportsIngredientTypeUid(String uid);
 
     Optional<ResourceKey<RegistryValue>> resourceKey(Key key);
 }

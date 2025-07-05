@@ -9,6 +9,8 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
+import ru.zznty.create_factory_logistics.config.ClientConfig;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
 import ru.zznty.create_factory_logistics.ponder.PonderPlugin;
 
 import static ru.zznty.create_factory_logistics.CreateFactoryLogistics.MODID;
@@ -19,14 +21,15 @@ public class CreateFactoryLogisticsClient {
     public static void onClientInit(FMLClientSetupEvent event) {
         BaseConfigScreen.setDefaultActionFor(MODID, base -> base
                 .withButtonLabels(null, null, "Gameplay Settings")
-                .withSpecs(ClientConfig.SPEC, null, Config.SPEC));
+                .withSpecs(ClientConfig.SPEC, null, WorldConfig.SPEC));
 
         PonderIndex.addPlugin(new PonderPlugin());
     }
 
     @SubscribeEvent
     static void onLoadComplete(FMLLoadCompleteEvent event) {
-        ModList.get().getModContainerById(MODID).get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+        ModList.get().getModContainerById(MODID).get().registerExtensionPoint(
+                ConfigScreenHandler.ConfigScreenFactory.class,
                 () -> new ConfigScreenHandler.ConfigScreenFactory(
                         (mc, previousScreen) -> new BaseConfigScreen(previousScreen, MODID)));
     }

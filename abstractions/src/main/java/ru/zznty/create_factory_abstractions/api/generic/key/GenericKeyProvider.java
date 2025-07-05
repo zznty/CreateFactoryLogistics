@@ -14,7 +14,9 @@ public interface GenericKeyProvider<Key extends GenericKey> extends Comparator<K
 
     <T> T unwrap(Key key);
 
-    String ingredientTypeUid();
+    String ingredientTypeUid(Key key);
+
+    boolean supportsIngredientTypeUid(String uid);
 
     <T> Optional<ResourceKey<T>> resourceKey(Key key);
 }

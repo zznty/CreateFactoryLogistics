@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics;
+package ru.zznty.create_factory_logistics.config;
 
 import com.simibubi.create.content.logistics.BigItemStack;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -6,9 +6,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 
 @Mod.EventBusSubscriber(modid = CreateFactoryLogistics.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-public class Config {
+public class WorldConfig {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
     private static final ForgeConfigSpec.BooleanValue FACTORY_GAUGE_CASCADE_REQUEST = BUILDER
@@ -20,10 +21,11 @@ public class Config {
             .defineInRange("jarCapacity", 1000, 1, BigItemStack.INF - 1);
 
     private static final ForgeConfigSpec.BooleanValue JAR_PACKAGER_PREFER_OUTPUTS = BUILDER
-            .comment("Whether jar packager (bottler) should pick output tanks over combined. Useful if you want to keep basin inputs intact")
+            .comment(
+                    "Whether jar packager (bottler) should pick output tanks over combined. Useful if you want to keep basin inputs intact")
             .define("jarPackagerPrefersOutputs", true);
 
-    static final ForgeConfigSpec SPEC = BUILDER.build();
+    public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean factoryGaugeCascadeRequest;
     public static int jarCapacity;

@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_logistics.logistics.panel;
 
 import com.simibubi.create.AllPackets;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsPacket;
 import com.simibubi.create.foundation.utility.CreateLang;
@@ -9,17 +10,22 @@ import net.createmod.catnip.gui.widget.AbstractSimiWidget;
 import net.createmod.catnip.lang.LangNumberFormat;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.CommonComponents;
+import ru.zznty.create_factory_abstractions.api.generic.GenericFilterProvider;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
 
 public class FactoryFluidPanelScreen extends FactoryPanelScreen {
-    private final FactoryFluidPanelBehaviour behaviour;
+    private final FactoryPanelBehaviour behaviour;
+    private final GenericFilterProvider filterProvider;
     private EditBox amountBox;
 
-    public FactoryFluidPanelScreen(FactoryFluidPanelBehaviour behaviour) {
+    public FactoryFluidPanelScreen(FactoryPanelBehaviour behaviour) {
         super(behaviour);
         this.behaviour = behaviour;
+        if (!(behaviour instanceof GenericFilterProvider provider))
+            throw new IllegalArgumentException("Behaviour must implement GenericFilterProvider");
+        this.filterProvider = provider;
     }
 
     @Override
@@ -49,7 +55,7 @@ public class FactoryFluidPanelScreen extends FactoryPanelScreen {
                                                           behaviour.netId()));
         });
         amountBox.setTextColor(UIRenderHelper.COLOR_TEXT.getFirst().getRGB());
-        amountBox.setValue(FactoryFluidPanelBehaviour.formatLevel(behaviour.filter().amount(), false).string());
+        amountBox.setValue(FactoryFluidPanelBehaviour.formatLevel(filterProvider.filter().amount(), false).string());
         addRenderableWidget(amountBox);
     }
 
