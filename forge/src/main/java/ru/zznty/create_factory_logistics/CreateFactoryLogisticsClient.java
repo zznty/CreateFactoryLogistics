@@ -9,19 +9,21 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import ru.zznty.create_factory_logistics.config.ClientConfig;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
 import ru.zznty.create_factory_logistics.ponder.PonderPlugin;
 
 import java.util.function.Supplier;
 
 import static ru.zznty.create_factory_logistics.CreateFactoryLogistics.MODID;
 
-@EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
 public class CreateFactoryLogisticsClient {
     @SubscribeEvent
     public static void onClientInit(FMLClientSetupEvent event) {
         BaseConfigScreen.setDefaultActionFor(MODID, base -> base
                 .withButtonLabels(null, null, "Gameplay Settings")
-                .withSpecs(ClientConfig.SPEC, null, Config.SPEC));
+                .withSpecs(ClientConfig.SPEC, null, WorldConfig.SPEC));
 
         PonderIndex.addPlugin(new PonderPlugin());
     }

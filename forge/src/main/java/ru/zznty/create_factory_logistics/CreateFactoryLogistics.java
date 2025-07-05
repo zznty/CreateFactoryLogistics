@@ -6,11 +6,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
+import ru.zznty.create_factory_logistics.compat.mekanism.MekanismIntegration;
+import ru.zznty.create_factory_logistics.config.ClientConfig;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
 import ru.zznty.create_factory_logistics.data.FactoryDataGen;
+
+import static ru.zznty.create_factory_logistics.FactoryGenericExtension.MEKANISM_ID;
 
 @Mod(CreateFactoryLogistics.MODID)
 public class CreateFactoryLogistics {
@@ -46,7 +52,10 @@ public class CreateFactoryLogistics {
         FactoryMenus.register();
         FactoryPackets.register();
 
-        modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
+        if (ModList.get().isLoaded(MEKANISM_ID))
+            MekanismIntegration.register(modEventBus);
+
+        modContainer.registerConfig(ModConfig.Type.SERVER, WorldConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
     }
 

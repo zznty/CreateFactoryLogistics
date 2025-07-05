@@ -27,10 +27,13 @@ public class FactoryEntities {
             () -> CompositePackageEntityRender::new, MobCategory.MISC, 10, 3, true, false, CompositePackageEntity::build)
             .register();
 
-    private static <T extends Entity> CreateEntityBuilder<T, ?> register(String name, EntityType.EntityFactory<T> factory,
-                                                                         NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T>>> renderer,
-                                                                         MobCategory group, int range, int updateFrequency, boolean sendVelocity, boolean immuneToFire,
-                                                                         NonNullConsumer<EntityType.Builder<T>> propertyBuilder) {
+    public static <T extends Entity> CreateEntityBuilder<T, ?> register(String name,
+                                                                        EntityType.EntityFactory<T> factory,
+                                                                        NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T>>> renderer,
+                                                                        MobCategory group, int range,
+                                                                        int updateFrequency, boolean sendVelocity,
+                                                                        boolean immuneToFire,
+                                                                        NonNullConsumer<EntityType.Builder<T>> propertyBuilder) {
         String id = Lang.asId(name);
         return (CreateEntityBuilder<T, ?>) CreateFactoryLogistics.REGISTRATE
                 .entity(id, factory, group)

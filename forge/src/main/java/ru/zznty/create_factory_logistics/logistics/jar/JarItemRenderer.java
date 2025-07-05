@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
-import ru.zznty.create_factory_logistics.Config;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
 
 import java.util.Optional;
 
@@ -21,9 +21,7 @@ public class JarItemRenderer extends CustomRenderedItemModelRenderer {
                        ItemDisplayContext displayContext, PoseStack ms, MultiBufferSource buffer, int light,
                        int overlay) {
         renderer.render(model.getOriginalModel(), light);
-        if (!JarPackageRenderer.entityRendering) {
-            renderFluidContents(box, -1, ms, buffer, light);
-        }
+        renderFluidContents(box, -1, ms, buffer, light);
     }
 
     public static void renderFluidContents(ItemStack box, float fluidLevel, PoseStack ms, MultiBufferSource buffer,
@@ -41,7 +39,7 @@ public class JarItemRenderer extends CustomRenderedItemModelRenderer {
         float totalHeight = 8f * capHeight - minPuddleHeight;
         float tankWidth = .5f;
 
-        float level = fluidLevel / Config.jarCapacity * totalHeight;
+        float level = fluidLevel / WorldConfig.jarCapacity * totalHeight;
 
         if (level == 0) return;
 

@@ -266,8 +266,8 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
             return;
         }
 
-        // use attemptToSendIngredients instead
-        throw new UnsupportedOperationException("Not implemented");
+        // use attemptToSendGeneric instead
+        throw new UnsupportedOperationException("Not supported");
     }
 
     @Override

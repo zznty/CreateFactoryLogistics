@@ -20,7 +20,6 @@ import net.minecraft.world.level.block.Blocks;
 import ru.zznty.create_factory_logistics.FactoryModels;
 
 public class JarPackageRenderer extends EntityRenderer<JarPackageEntity> {
-    public static boolean entityRendering = false;
 
     public JarPackageRenderer(Context pContext) {
         super(pContext);
@@ -28,14 +27,16 @@ public class JarPackageRenderer extends EntityRenderer<JarPackageEntity> {
     }
 
     @Override
-    public void render(JarPackageEntity entity, float yaw, float pt, PoseStack ms, MultiBufferSource buffer, int light) {
+    public void render(JarPackageEntity entity, float yaw, float pt, PoseStack ms, MultiBufferSource buffer,
+                       int light) {
 //        if (!VisualizationManager.supportsVisualization(entity.level()))
         renderBox(entity, entity.box, yaw, entity.fluidLevel.getValue(pt), ms, buffer, light);
 
         super.render(entity, yaw, pt, ms, buffer, light);
     }
 
-    public static void renderBox(Entity entity, ItemStack box, float yaw, float fluidLevel, PoseStack ms, MultiBufferSource buffer, int light) {
+    public static void renderBox(Entity entity, ItemStack box, float yaw, float fluidLevel, PoseStack ms,
+                                 MultiBufferSource buffer, int light) {
         if (box.isEmpty() || !PackageItem.isPackage(box)) box = AllBlocks.CARDBOARD_BLOCK.asStack();
 
         renderBox(entity, yaw, ms, buffer, light, FactoryModels.JAR);

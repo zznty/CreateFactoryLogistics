@@ -1,9 +1,8 @@
 package ru.zznty.create_factory_logistics.logistics.jar;
 
-import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.box.PackageStyles;
-import com.simibubi.create.foundation.fluid.FluidHelper;
 import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
+import com.tterrag.registrate.util.entry.EntityEntry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,7 +19,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,16 +31,16 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-import net.neoforged.neoforge.fluids.FluidActionResult;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.zznty.create_factory_logistics.Config;
-import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryEntities;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
+import ru.zznty.create_factory_logistics.logistics.abstractions.box.AbstractPackageEntity;
+import ru.zznty.create_factory_logistics.logistics.abstractions.box.AbstractPackageItem;
 import ru.zznty.create_factory_logistics.logistics.jar.unpack.JarUnpackingHandler;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
 
@@ -50,21 +48,16 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class JarPackageItem extends PackageItem {
+public class JarPackageItem extends AbstractPackageItem {
 
     public JarPackageItem(Properties properties, PackageStyles.PackageStyle style) {
         super(properties, style);
-
-        // we don't want our jars appearing from other packaging appliances
-        PackageStyles.ALL_BOXES.remove(this);
-        (style.rare() ? PackageStyles.RARE_BOXES : PackageStyles.STANDARD_BOXES).remove(this);
-
         JarStyles.ALL_JARS.add(this);
     }
 
     @Override
-    public String getDescriptionId() {
-        return "item." + CreateFactoryLogistics.MODID + (style.rare() ? ".rare_jar" : ".jar");
+    protected String getIdSuffix() {
+        return style.rare() ? "rare_jar" : "jar";
     }
 
     @Override
@@ -73,11 +66,14 @@ public class JarPackageItem extends PackageItem {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> open(Level worldIn, Player playerIn, InteractionHand handIn) {
-        ItemStack box = playerIn.getItemInHand(handIn);
+    protected EntityEntry<? extends AbstractPackageEntity> getEntityEntry() {
+        return FactoryEntities.JAR;
+    }
 
-        BlockHitResult hitResult = getPlayerPOVHitResult(worldIn, playerIn, ClipContext.Fluid.NONE);
-
+    @Override
+    public InteractionResultHolder<ItemStack> openServerSide(Level worldIn, Player playerIn,
+                                                             InteractionHand handIn, ItemStack box,
+                                                             BlockHitResult hitResult) {
         if (hitResult.getType() != HitResult.Type.BLOCK)
             return InteractionResultHolder.pass(box);
 
@@ -86,8 +82,8 @@ public class JarPackageItem extends PackageItem {
         IFluidHandlerItem fluidItem = box.getCapability(Capabilities.FluidHandler.ITEM);
         if (fluidItem == null) return InteractionResultHolder.pass(box);
 
-        FluidStack fluid = fluidItem.drain(Config.jarCapacity, IFluidHandler.FluidAction.SIMULATE);
-        if (fluid.getAmount() != Config.jarCapacity ||
+        FluidStack fluid = fluidItem.drain(WorldConfig.jarCapacity, IFluidHandler.FluidAction.SIMULATE);
+        if (fluid.getAmount() != WorldConfig.jarCapacity ||
                 !(fluid.getFluid() instanceof FlowingFluid) ||
                 !worldIn.mayInteract(playerIn, relative) ||
                 !playerIn.mayUseItemAt(relative, hitResult.getDirection(), box) ||
@@ -196,22 +192,6 @@ public class JarPackageItem extends PackageItem {
     public void initializeClient(@NotNull Consumer<IClientItemExtensions> consumer) {
         consumer.accept(SimpleCustomRenderer.create(this, new JarItemRenderer()));
         super.initializeClient(consumer);
-    }
-
-    public static ItemStack slurp(Level world, BlockPos pos, IFluidHandler tank, FluidStack extractedFluid,
-                                  int amount) {
-        if (amount < 1) amount = Config.jarCapacity;
-
-        ItemStack jar = new ItemStack(JarStyles.getRandomJar());
-
-        FluidActionResult result = FluidUtil.tryFillContainer(jar, tank, amount, null, true);
-
-        if (!result.isSuccess())
-            return ItemStack.EMPTY;
-
-        world.playSound(null, pos, FluidHelper.getFillSound(extractedFluid), SoundSource.BLOCKS, .5f, 1);
-
-        return result.getResult();
     }
 
     public static ItemStack getDefaultJar() {

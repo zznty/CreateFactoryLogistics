@@ -42,7 +42,7 @@ public class StockKeeperGuiContainerHandlerMixin {
                 GenericKeyProvider<GenericKey> keyProvider = GenericContentExtender.registrationOf(
                         pair.getFirst()).provider();
                 Optional<IIngredientType<?>> ingredientTypeForUid = ingredientManager.getIngredientTypeForUid(
-                        keyProvider.ingredientTypeUid());
+                        keyProvider.ingredientTypeUid(pair.getFirst()));
                 if (ingredientTypeForUid.isEmpty()) return;
                 cir.setReturnValue(ingredientManager.createClickableIngredient(ingredientTypeForUid.get(),
                                                                                keyProvider.unwrap(pair.getFirst()),

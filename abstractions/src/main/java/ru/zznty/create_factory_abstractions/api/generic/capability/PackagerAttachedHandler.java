@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
@@ -32,7 +33,7 @@ public interface PackagerAttachedHandler {
 
     @Nullable IdentifiedInventory identifiedInventory();
 
-    static @Nullable PackagerAttachedHandler get(PackagerBlockEntity blockEntity) {
+    static @Nullable PackagerAttachedHandler get(BlockEntity blockEntity) {
         if (CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE) {
             PackagerAttachedHandler capability = blockEntity.getLevel().getCapability(
                     AbstractionsCapabilities.PACKAGER_ATTACHED,
@@ -45,6 +46,9 @@ public interface PackagerAttachedHandler {
                 return capability;
         }
 
-        return new BuiltInPackagerAttachedHandler(blockEntity);
+        if (blockEntity instanceof PackagerBlockEntity packagerBlockEntity)
+            return new BuiltInPackagerAttachedHandler(packagerBlockEntity);
+
+        return null;
     }
 }

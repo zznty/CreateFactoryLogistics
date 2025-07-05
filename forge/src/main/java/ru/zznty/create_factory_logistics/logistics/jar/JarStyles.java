@@ -22,7 +22,7 @@ public class JarStyles {
         String id = style.type() + "_package" + (style.rare() ? "" : size);
         return CreateFactoryLogistics.resource(id);
     }
-
+ 
     public static ResourceLocation getRiggingModel(PackageStyles.PackageStyle style) {
         String size = style.width() + "x" + style.height();
         return CreateFactoryLogistics.resource("item/jar/rigging_" + size);

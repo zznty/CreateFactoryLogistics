@@ -26,9 +26,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
-import ru.zznty.create_factory_logistics.FactoryBlocks;
-import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
-import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
+import ru.zznty.create_factory_logistics.logistics.panel.PanelModelProvider;
 
 @Mixin(FactoryPanelScreen.class)
 public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
@@ -46,8 +44,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private ItemStack promisePackageItem(Operation<ItemStack> original) {
-        // todo provider for package model
-        return behaviour instanceof FactoryFluidPanelBehaviour ? JarPackageItem.getDefaultJar() : original.call();
+        return behaviour instanceof PanelModelProvider provider ? provider.defaultPackage() : original.call();
     }
 
     @WrapOperation(
@@ -58,8 +55,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private BlockEntry<? extends FactoryPanelBlock> gaugeItem(Operation<BlockEntry<FactoryPanelBlock>> original) {
-        // todo provider for block model
-        return behaviour instanceof FactoryFluidPanelBehaviour ? FactoryBlocks.FACTORY_FLUID_GAUGE : original.call();
+        return behaviour instanceof PanelModelProvider provider ? provider.model() : original.call();
     }
 
     @WrapOperation(
@@ -73,7 +69,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
     private GuiGameElement.GuiRenderBuilder filterItem(ItemStack stack,
                                                        Operation<GuiGameElement.GuiRenderBuilder> original) {
         // todo provider for block filter render
-        return behaviour instanceof FactoryFluidPanelBehaviour ?
+        return behaviour instanceof PanelModelProvider ?
                GuiGameElement.of(Blocks.AIR) :
                original.call(stack);
     }

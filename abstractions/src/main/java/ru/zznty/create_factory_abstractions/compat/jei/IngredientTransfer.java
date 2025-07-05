@@ -27,7 +27,7 @@ public final class IngredientTransfer {
                                                     ITypedIngredient<?> typedIngredient) {
         String typeUid = typedIngredient.getType().getUid();
         for (GenericKeyRegistration registration : GenericContentExtender.REGISTRATIONS.values()) {
-            if (registration.provider().ingredientTypeUid().equals(typeUid)) {
+            if (registration.provider().supportsIngredientTypeUid(typeUid)) {
                 IIngredientHelper ingredientHelper = ingredientManager.getIngredientHelper(typedIngredient.getType());
                 return Optional.of(new GenericStack(registration.provider().wrap(typedIngredient.getIngredient()),
                                                     (int) ingredientHelper.getAmount(typedIngredient.getIngredient())));
@@ -192,8 +192,8 @@ public final class IngredientTransfer {
 
         IIngredientHelper ingredientHelper = ingredientManager.getIngredientHelper(
                 ingredientManager.getIngredientTypeForUid(
-                        provider.ingredientTypeUid()).orElseThrow());
-        
+                        provider.ingredientTypeUid(availableStack.key())).orElseThrow());
+
         // inlining of variable breaks overload resolution
         Object value = provider.unwrap(availableStack.key());
         return ingredientHelper.getUid(value, context);

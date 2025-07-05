@@ -27,6 +27,7 @@ subprojects {
         maven { url = "https://maven.blamejared.com" } // JEI, Vazkii's Mods
         maven { url = "https://maven.liukrast.net/" } // extra gauges
         mavenCentral()
+        maven { url 'https://modmaven.dev/' }
     }
 
     loom {

@@ -36,8 +36,13 @@ public class EmptyKeyProvider implements GenericKeyProvider<EmptyKey> {
     }
 
     @Override
-    public String ingredientTypeUid() {
+    public String ingredientTypeUid(EmptyKey key) {
         return "empty";
+    }
+
+    @Override
+    public boolean supportsIngredientTypeUid(String uid) {
+        return uid.equals("empty");
     }
 
     @Override

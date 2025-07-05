@@ -24,6 +24,9 @@ dependencies {
         transitive = false
     }
 
+    modCompileOnly "mekanism:Mekanism:${mekanism_version}:api"
+    modImplementation "mekanism:Mekanism:${mekanism_version}"
+
 //    modLocalRuntime "net.liukrast:extra_gauges-${minecraft_version}:${extra_gauges_version}", {
 //        transitive = false
 //    }

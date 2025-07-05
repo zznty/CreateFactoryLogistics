@@ -55,8 +55,13 @@ public class FluidGenericExtension implements GenericKeyProviderExtension<FluidK
     }
 
     @Override
-    public String ingredientTypeUid() {
+    public String ingredientTypeUid(FluidKey key) {
         return "fluid_stack";
+    }
+
+    @Override
+    public boolean supportsIngredientTypeUid(String uid) {
+        return uid.equals("fluid_stack");
     }
 
     @Override

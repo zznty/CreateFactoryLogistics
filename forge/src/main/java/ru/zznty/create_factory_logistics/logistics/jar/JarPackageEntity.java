@@ -22,13 +22,14 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import ru.zznty.create_factory_logistics.FactoryEntities;
+import ru.zznty.create_factory_logistics.logistics.abstractions.box.AbstractPackageEntity;
 import ru.zznty.create_factory_logistics.logistics.jar.unpack.JarUnpackingHandler;
 import ru.zznty.create_factory_logistics.mixin.accessor.PackageEntityAccessor;
 
 import java.util.List;
 import java.util.Optional;
 
-public class JarPackageEntity extends PackageEntity implements IHaveGoggleInformation {
+public class JarPackageEntity extends AbstractPackageEntity implements IHaveGoggleInformation {
     public LerpedFloat fluidLevel = LerpedFloat.linear();
 
     public JarPackageEntity(EntityType<?> entityTypeIn, Level worldIn) {

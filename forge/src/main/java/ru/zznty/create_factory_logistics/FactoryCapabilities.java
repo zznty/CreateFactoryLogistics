@@ -14,6 +14,7 @@ import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistrati
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
+import ru.zznty.create_factory_logistics.config.WorldConfig;
 import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackagerAttachedHandler;
 
 public final class FactoryCapabilities {
@@ -25,7 +26,7 @@ public final class FactoryCapabilities {
                                   (be, b) -> be.inventory);
 
         event.registerItem(Capabilities.FluidHandler.ITEM, (stack, unused) ->
-                                   new FluidHandlerItemStack(FactoryDataComponents.FLUID_CONTENT, stack, Config.jarCapacity),
+                                   new FluidHandlerItemStack(FactoryDataComponents.FLUID_CONTENT, stack, WorldConfig.jarCapacity),
                            FactoryItems.REGULAR_JAR.get());
 
         for (GenericKeyRegistration registration : GenericContentExtender.REGISTRATIONS.values()) {

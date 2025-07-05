@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics;
+package ru.zznty.create_factory_logistics.config;
 
 import com.simibubi.create.content.logistics.BigItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -6,9 +6,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 
-@EventBusSubscriber(modid = CreateFactoryLogistics.MODID, bus = EventBusSubscriber.Bus.MOD)
-public class Config {
+@EventBusSubscriber(modid = CreateFactoryLogistics.MODID)
+public class WorldConfig {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
     private static final ModConfigSpec.BooleanValue FACTORY_GAUGE_CASCADE_REQUEST = BUILDER
@@ -23,7 +24,7 @@ public class Config {
             .comment("Whether jar packager (bottler) should pick output tanks over combined. Useful if you want to keep basin inputs intact")
             .define("jarPackagerPrefersOutputs", true);
 
-    static final ModConfigSpec SPEC = BUILDER.build();
+    public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static boolean factoryGaugeCascadeRequest;
     public static int jarCapacity;
