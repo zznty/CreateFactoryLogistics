@@ -32,7 +32,8 @@
     "logistics.stock.StockCheckingBlockEntityMixin",
     "logistics.stockKeeper.StockTickerBlockEntityMixin",
     "logistics.stockLink.PackagerIngredientLinkBlockEntityMixin",
-    "render.GoggleOverlayRendererMixin"
+    "render.GoggleOverlayRendererMixin",
+    "render.IconAtlasMixin"
   ],
   "client": [
     "accessor.CategoryEntryAccessor",
@@ -43,7 +44,6 @@
     "render.ChainConveyorRendererMixin",
     "render.ChainConveyorVisualMixin",
     "render.FactoryFluidPanelFilterRendererMixin",
-    "render.IconAtlasMixin",
     "render.TransportedJarMixin"
   ],
   "injectors": {
