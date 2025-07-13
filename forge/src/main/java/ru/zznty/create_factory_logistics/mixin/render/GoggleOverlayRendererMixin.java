@@ -61,16 +61,16 @@ public class GoggleOverlayRendererMixin {
 
     @Definition(id = "IHaveGoggleInformation", type = IHaveGoggleInformation.class)
     @Expression("(IHaveGoggleInformation) ?")
-    @ModifyExpressionValue(
+    @WrapOperation(
             method = "renderOverlay",
             at = @At("MIXINEXTRAS:EXPRESSION"),
             remap = false
     )
-    private static IHaveGoggleInformation blockEntityCast(IHaveGoggleInformation original,
+    private static IHaveGoggleInformation blockEntityCast(Object object, Operation<IHaveGoggleInformation> original,
                                                           @Share("cfl$hitResult") LocalRef<EntityHitResult> result) {
         if (result.get() != null && result.get().getEntity() instanceof IHaveGoggleInformation gte) {
             return gte;
         }
-        return original;
+        return original.call(object);
     }
 }
