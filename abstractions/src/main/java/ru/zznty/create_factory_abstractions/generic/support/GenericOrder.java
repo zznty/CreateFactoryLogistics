@@ -14,14 +14,15 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
+import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.stack.GenericStackSerializer;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 public record GenericOrder(List<GenericStack> stacks, List<PackageOrderWithCrafts.CraftingEntry> crafts) {
+
     public CompoundTag write(HolderLookup.Provider levelRegistryAccess) {
         CompoundTag tag = new CompoundTag();
         tag.put("Entries", NBTHelper.writeCompoundList(stacks, s -> {
@@ -56,10 +57,11 @@ public record GenericOrder(List<GenericStack> stacks, List<PackageOrderWithCraft
                                                                                  1)));
     }
 
-    public static GenericOrder of(PanelRequestedStacks ingredients) {
-        return ingredients.hasCraftingContext() ?
-               craftingOrder(ingredients.ingredients(), ingredients.craftingContext()) :
-               order(ingredients.ingredients());
+    public static GenericOrder of(PanelRequestedStacks context, List<StackRequest> ingredients) {
+        List<GenericStack> list = ingredients.stream().map(StackRequest::stack).toList();
+        return context.hasCraftingContext() ?
+               craftingOrder(list, context.craftingContext()) :
+               order(list);
     }
 
     public boolean isEmpty() {
