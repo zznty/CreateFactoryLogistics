@@ -1,6 +1,5 @@
 package ru.zznty.create_factory_logistics.mixin.logistics.panel;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -34,6 +33,7 @@ import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.compat.extra_gauges.AbstractPanelBehaviourStub;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Mixin(FactoryPanelBehaviour.class)
 public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implements MenuProvider {
@@ -144,7 +144,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
     }
 
     @Unique
-    private boolean createFactoryLogistics$requestDependent(Multimap<UUID, PanelRequestedStacks> toRequest,
+    private boolean createFactoryLogistics$requestDependent(List<PanelRequestedStacks> toRequest,
                                                             FactoryPanelConnection sourceConnection,
                                                             FactoryPanelBehaviour context,
                                                             Set<FactoryPanelPosition> visited) {
@@ -187,7 +187,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
             return false;
         }
 
-        toRequest.put(source.network, PanelRequestedStacks.of(source));
+        toRequest.add(PanelRequestedStacks.of(source));
 
         createFactoryLogistics$sendEffect(sourceConnection.from, context.getPanelPosition(), true);
         return true;
@@ -226,7 +226,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
             return;
         }
 
-        Multimap<UUID, PanelRequestedStacks> toRequest = HashMultimap.create();
+        List<PanelRequestedStacks> toRequest = new ArrayList<>();
         Set<FactoryPanelPosition> visited = new HashSet<>();
 
         for (FactoryPanelConnection connection : source.targetedBy.values()) {
@@ -238,34 +238,23 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 
         // If all ingredients are present, request main one
         if (visited.size() == targetedBy.size()) {
-            toRequest.put(source.network, PanelRequestedStacks.of(source));
+            toRequest.add(PanelRequestedStacks.of(source));
         }
 
+        // Map of result -> requests of its ingredients
         // Input items may come from differing networks
         Map<PanelRequestedStacks, Multimap<PackagerBlockEntity, GenericRequest>> requests = new HashMap<>();
 
         // Collect request distributions
-        for (Map.Entry<UUID, Collection<PanelRequestedStacks>> entry : toRequest.asMap().entrySet()) {
-//            Object2IntMap<PanelRequestedIngredients> craftCounts = new Object2IntOpenHashMap<>();
-//
-//            // Compute total number of each ingredient to craft
-//            for (PanelRequestedIngredients requestedIngredient : entry.getValue()) {
-//                if (requestedIngredient.hasCraftingContext())
-//                    craftCounts.mergeInt(requestedIngredient, 1, Integer::sum);
-//            }
-//
-//            for (Object2IntMap.Entry<PanelRequestedIngredients> ingredientEntry : craftCounts.object2IntEntrySet()) {
-//                Multimap<PackagerBlockEntity, IngredientRequest> request =
-//                        IngredientLogisticsManager.findPackagersForRequest(entry.getKey(), IngredientOrder.craftingOrder(ingredientEntry.), null, recipeAddress);
-//                requests.add(request);
-//            }
-
-            for (PanelRequestedStacks requestedStacks : entry.getValue()) {
-                GenericOrder order = GenericOrder.of(requestedStacks);
+        for (PanelRequestedStacks requestContext : toRequest) {
+            // Group ingredients by their source network
+            for (Map.Entry<UUID, List<StackRequest>> entry : requestContext.ingredients().stream().collect(
+                    Collectors.groupingBy(StackRequest::network)).entrySet()) {
+                GenericOrder order = GenericOrder.of(requestContext, entry.getValue());
                 Multimap<PackagerBlockEntity, GenericRequest> request = GenericLogisticsManager.findPackagersForRequest(
-                        entry.getKey(), order, null, requestedStacks.recipeAddress());
-                if (!request.isEmpty())
-                    requests.put(requestedStacks, request);
+                        entry.getKey(), order, null, requestContext.recipeAddress());
+
+                requests.put(requestContext, request);
             }
         }
 
@@ -280,13 +269,11 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
             GenericLogisticsManager.performPackageRequests(entry);
 
         // Keep the output promises
-        RequestPromiseQueue promises = Create.LOGISTICS.getQueuedPromises(network);
-        if (promises != null) {
-            for (Map.Entry<PanelRequestedStacks, Multimap<PackagerBlockEntity, GenericRequest>> entry : requests.entrySet()) {
-                // if all requests were sent, add the output promise
-                if (entry.getValue().isEmpty())
-                    promises.add(new RequestPromise(BigGenericStack.of(entry.getKey().result()).asStack()));
-            }
+        for (Map.Entry<PanelRequestedStacks, Multimap<PackagerBlockEntity, GenericRequest>> entry : requests.entrySet()) {
+            RequestPromiseQueue promises = Create.LOGISTICS.getQueuedPromises(entry.getKey().resultNetwork());
+            // if all requests were sent, add the output promise
+            if (promises != null && entry.getValue().isEmpty())
+                promises.add(new RequestPromise(BigGenericStack.of(entry.getKey().result()).asStack()));
         }
 
         panelBE.advancements.awardPlayer(AllAdvancements.FACTORY_GAUGE);
