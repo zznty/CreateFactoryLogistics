@@ -11,6 +11,7 @@
     "accessor.StockTickerBlockEntityAccessor",
     "bugfixes.ArmBlockEntityMixin",
     "logistics.composite.CompositePackageSawingMixin",
+    "logistics.filter.GenericAttributeFilterItemStackMixin",
     "logistics.jar.ChainConveyorDropMixin",
     "logistics.jar.JarDrainMixin",
     "logistics.packager.GenericPackagerBlockEntityMixin",

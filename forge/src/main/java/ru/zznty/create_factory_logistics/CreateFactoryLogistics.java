@@ -30,6 +30,7 @@ public class CreateFactoryLogistics {
         FactoryRecipes.REGISTER.register(modEventBus);
         FactoryArmInteractionPointTypes.ARM_INTERACTION_POINT_TYPES.register(modEventBus);
         FactoryDataComponents.DATA_COMPONENTS.register(modEventBus);
+        FactoryGenericAttributeTypes.REGISTER.register(modEventBus);
 
         modEventBus.addListener(FactoryEntities::registerEntityAttributes);
         modEventBus.addListener(EventPriority.HIGHEST, FactoryDataGen::gatherDataHighPriority);

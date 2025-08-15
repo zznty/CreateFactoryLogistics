@@ -21,5 +21,9 @@
   "create_factory_logistics.ponder.mixer_upkeep.text_2": "So that blaze burner would be fed only when necessary",
   "create_factory_logistics.ponder.mixer_upkeep.text_3": "When order has arrived, the switch will read new state and react",
   "create_factory_logistics.gui.factory_fluid_panel.place_fluid_to_monitor": "Place Fluid to Monitor",
-  "entity.create_factory_logistics.composite_package": "Composite Package"
+  "entity.create_factory_logistics.composite_package": "Composite Package",
+  "create.item_attributes.is_fluid": "is %1$s",
+  "create.item_attributes.is_fluid.inverted": "is not %1$s",
+  "create.item_attributes.is_fluid_no_nbt": "is %1$s (no NBT)",
+  "create.item_attributes.is_fluid_no_nbt.inverted": "is not %1$s (no NBT)"
 }
