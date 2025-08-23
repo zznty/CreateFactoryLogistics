@@ -12,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 
@@ -153,8 +154,16 @@ public class FactoryRepackagerHelper extends PackageRepackageHelper {
 
             ItemStackHandler target = new ItemStackHandler(PackageItem.SLOTS);
             List<BigItemStack> stacks = craftingEntry.pattern().stacks();
-            for (int currentSlot = 0; currentSlot < Math.min(stacks.size(), target.getSlots()); currentSlot++)
-                target.setStackInSlot(currentSlot, stacks.get(currentSlot).stack.copyWithCount(1));
+//            for (int currentSlot = 0; currentSlot < Math.min(stacks.size(), target.getSlots()); currentSlot++)
+//                target.setStackInSlot(currentSlot, stacks.get(currentSlot).stack.copyWithCount(1));
+
+            for (BigItemStack stack : stacks) {
+                ItemStack leftover = ItemHandlerHelper.insertItemStacked(target, stack.stack.copyWithCount(1), false);
+                if (!leftover.isEmpty()) // more than 9 stacks of items
+                    // i'd like to not fail all recipes in the order, but invalid ones will get voided that way
+                    // so just pretend crafting context is invalid to yield all items back
+                    return List.of();
+            }
 
             ItemStack box = PackageItem.containing(target);
             GenericOrder.set(blockEntity.getLevel().registryAccess(), box, r.nextInt(), 0, true, 0, true,

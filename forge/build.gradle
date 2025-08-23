@@ -6,14 +6,15 @@ plugins {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 dependencies {
-    compileOnly annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
-    include implementation("io.github.llamalad7:mixinextras-${forge_flavour}:0.5.0-rc.3")
+    compileOnly annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0")
+    include implementation("io.github.llamalad7:mixinextras-${forge_flavour}:0.5.0")
 
     implementation(project(path: ":create_factory_abstractions-${minecraft_version}", configuration: 'namedElements')) { transitive false }
     include project(":create_factory_abstractions-${minecraft_version}")
 
     modLocalRuntime "curse.maven:create-vibrant-vaults-1251719:6463890"
 //    modLocalRuntime "curse.maven:create-enchantment-industry-688768:6549319"
+    modLocalRuntime "curse.maven:create-extra-gauges-1263228:6916170"
 //    modLocalRuntime "curse.maven:create-dragon-minus-1216624:6552025"
 //    modLocalRuntime "net.liukrast:extra_gauges-${minecraft_version}:1.1.1", {
 //        transitive = false
