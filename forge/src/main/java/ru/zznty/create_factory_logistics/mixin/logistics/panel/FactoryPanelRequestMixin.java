@@ -21,6 +21,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Math;
+import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -35,6 +36,7 @@ import ru.zznty.create_factory_logistics.compat.extra_gauges.AbstractPanelBehavi
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Debug(export = true)
 @Mixin(FactoryPanelBehaviour.class)
 public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implements MenuProvider {
     @Shadow
@@ -199,7 +201,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
     private void tickRequests(Operation<Void> original) {
         FactoryPanelBehaviour source = (FactoryPanelBehaviour) (Object) this;
 
-        if (AbstractPanelBehaviourStub.is(source)) {
+        if (AbstractPanelBehaviourStub.shouldTick(source)) {
             // we don't want to override mixins from extra gauges so skip to the original
             original.call();
             return;

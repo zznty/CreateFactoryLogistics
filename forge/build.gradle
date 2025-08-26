@@ -20,13 +20,17 @@ dependencies {
     implementation(project(path: ":create_factory_abstractions-${minecraft_version}", configuration: 'namedElements')) { transitive false }
     include project(":create_factory_abstractions-${minecraft_version}")
 
-    modLocalRuntime "curse.maven:create-vibrant-vaults-1251719:6463890"
-//    modLocalRuntime "curse.maven:create-enchantment-industry-688768:6549319"
-    modLocalRuntime "curse.maven:create-extra-gauges-1263228:6916170"
-//    modLocalRuntime "curse.maven:create-dragon-minus-1216624:6552025"
-//    modLocalRuntime "net.liukrast:extra_gauges-${minecraft_version}:1.1.1", {
+    modCompileOnly "net.liukrast:extra_gauges-${minecraft_version}:${extra_gauges_version}", {
+        transitive = false
+    }
+
+//    modLocalRuntime "net.liukrast:extra_gauges-${minecraft_version}:${extra_gauges_version}", {
 //        transitive = false
 //    }
+
+    modLocalRuntime "curse.maven:create-vibrant-vaults-1251719:6463890"
+//    modLocalRuntime "curse.maven:create-enchantment-industry-688768:6549319"
+//    modLocalRuntime "curse.maven:create-dragon-minus-1216624:6552025"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
