@@ -31,9 +31,9 @@ dependencies {
     }
 
     modLocalRuntime "curse.maven:create-vibrant-vaults-1251719:6463880"
-//    modLocalRuntime "net.liukrast:extra_gauges-${minecraft_version}:1.1.1", {
-//        transitive = false
-//    }
+    modCompileOnly "curse.maven:extra_gauges-1263228:7058464", {
+        transitive = false
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

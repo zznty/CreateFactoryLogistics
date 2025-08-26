@@ -199,7 +199,7 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
     private void tickRequests(Operation<Void> original) {
         FactoryPanelBehaviour source = (FactoryPanelBehaviour) (Object) this;
 
-        if (AbstractPanelBehaviourStub.is(source)) {
+        if (AbstractPanelBehaviourStub.shouldTick(source)) {
             // we don't want to override mixins from extra gauges so skip to the original
             original.call();
             return;
