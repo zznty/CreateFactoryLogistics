@@ -2,6 +2,7 @@ package ru.zznty.create_factory_logistics.logistics.composite;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.logistics.box.PackageEntity;
+import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.chute.ChuteBlock;
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.lang.LangBuilder;
@@ -47,7 +48,13 @@ public class CompositePackageEntity extends PackageEntity implements IHaveGoggle
 
     @Override
     protected void dropAllDeathLoot(DamageSource pDamageSource) {
+        // fake item content to drop
+        // in case other mods mixins rely on that method
+        ItemStack actualBox = box;
+        box = PackageItem.containing(CompositePackageItem.getContents(actualBox));
         super.dropAllDeathLoot(pDamageSource);
+        box = actualBox;
+
         for (ItemStack child : children) {
             ItemEntity jarEntity = new ItemEntity(level(), position().x, position().y, position().z, child);
             level().addFreshEntity(jarEntity);

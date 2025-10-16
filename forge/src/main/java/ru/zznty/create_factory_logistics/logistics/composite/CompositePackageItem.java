@@ -5,7 +5,9 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.box.PackageStyles;
 import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import net.createmod.catnip.nbt.NBTHelper;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -18,6 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -39,6 +42,7 @@ import java.util.function.Consumer;
 public class CompositePackageItem extends PackageItem {
 
     public static final String CHILDREN_TAG = "Children";
+    public static final String ITEMS_TAG = "CompositeItems";
 
     public CompositePackageItem(Properties properties) {
         super(properties, PackageStyles.STYLES.get(1));
@@ -55,6 +59,33 @@ public class CompositePackageItem extends PackageItem {
     public void appendHoverText(ItemStack pStack, Level pLevel, List<Component> pTooltipComponents,
                                 TooltipFlag pIsAdvanced) {
         super.appendHoverText(pStack, pLevel, pTooltipComponents, pIsAdvanced);
+
+        int visibleNames = 0;
+        int skippedNames = 0;
+        ItemStackHandler contents = getContents(pStack);
+        for (int i = 0; i < contents.getSlots(); i++) {
+            ItemStack itemstack = contents.getStackInSlot(i);
+            if (itemstack.isEmpty())
+                continue;
+            if (itemstack.getItem() instanceof SpawnEggItem)
+                continue;
+            if (visibleNames > 2) {
+                skippedNames++;
+                continue;
+            }
+
+            visibleNames++;
+            pTooltipComponents.add(itemstack.getHoverName()
+                                           .copy()
+                                           .append(" x")
+                                           .append(String.valueOf(itemstack.getCount()))
+                                           .withStyle(ChatFormatting.GRAY));
+        }
+
+        if (skippedNames > 0)
+            pTooltipComponents.add(Component.translatable("container.shulkerBox.more", skippedNames)
+                                           .withStyle(ChatFormatting.ITALIC));
+
         for (ItemStack child : getChildren(pStack)) {
             child.getItem().appendHoverText(child, pLevel, pTooltipComponents, pIsAdvanced);
         }
@@ -62,13 +93,15 @@ public class CompositePackageItem extends PackageItem {
 
     @Override
     public InteractionResultHolder<ItemStack> open(Level worldIn, Player playerIn, InteractionHand handIn) {
+        ItemStack box = playerIn.getItemInHand(handIn);
+        playerIn.setItemInHand(handIn, PackageItem.containing(getContents(box)));
         InteractionResultHolder<ItemStack> resultHolder = super.open(worldIn, playerIn, handIn);
         if (resultHolder.getResult() == InteractionResult.SUCCESS && !worldIn.isClientSide()) {
-            for (ItemStack child : getChildren(resultHolder.getObject())) {
+            for (ItemStack child : getChildren(box)) {
                 playerIn.getInventory().placeItemBackInInventory(child);
             }
         }
-        return resultHolder;
+        return new InteractionResultHolder<>(resultHolder.getResult(), box);
     }
 
     public static List<ItemStack> getChildren(ItemStack stack) {
@@ -76,14 +109,28 @@ public class CompositePackageItem extends PackageItem {
         return NBTHelper.readCompoundList(stack.getTag().getList(CHILDREN_TAG, Tag.TAG_COMPOUND), ItemStack::of);
     }
 
+    public static ItemStackHandler getContents(ItemStack box) {
+        ItemStackHandler newInv = new ItemStackHandler(PackageItem.SLOTS);
+        CompoundTag invNBT = box.getOrCreateTagElement(ITEMS_TAG);
+        if (!invNBT.isEmpty())
+            newInv.deserializeNBT(invNBT);
+        return newInv;
+    }
+
     public static ItemStack of(ItemStack box, List<ItemStack> children) {
+        if (children.isEmpty()) return box.copy();
+
         ItemStack compositeBox = new ItemStack(FactoryItems.COMPOSITE_PACKAGE);
-        if (box.hasTag())
-            compositeBox.setTag(box.getTag().copy());
+
+        if (box.hasTag()) {
+            CompoundTag tag = box.getTag().copy();
+            tag.remove("Items");
+            compositeBox.setTag(tag);
+        }
 
         children = new ArrayList<>(children);
 
-        ItemStackHandler contents = PackageItem.getContents(compositeBox);
+        ItemStackHandler contents = PackageItem.getContents(box);
 
         ListTag listTag = compositeBox.getOrCreateTag().getList(CHILDREN_TAG, Tag.TAG_COMPOUND);
         if (!listTag.isEmpty()) {
@@ -114,6 +161,7 @@ public class CompositePackageItem extends PackageItem {
         }
 
         compositeBox.addTagElement(CHILDREN_TAG, NBTHelper.writeCompoundList(children, ItemStack::serializeNBT));
+        compositeBox.addTagElement(ITEMS_TAG, contents.serializeNBT());
 
         return compositeBox;
     }

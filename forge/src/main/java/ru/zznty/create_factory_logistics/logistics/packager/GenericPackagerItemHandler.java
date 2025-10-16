@@ -22,7 +22,8 @@ public class GenericPackagerItemHandler extends PackagerItemHandler {
                 if (reminder.isEmpty()) {
                     children.remove(0);
                     // discord children of composite box
-                    return CompositePackageItem.of(PackageItem.containing(PackageItem.getContents(stack)), children);
+                    return CompositePackageItem.of(PackageItem.containing(CompositePackageItem.getContents(stack)),
+                                                   children);
                 } else return stack;
             }
         }
