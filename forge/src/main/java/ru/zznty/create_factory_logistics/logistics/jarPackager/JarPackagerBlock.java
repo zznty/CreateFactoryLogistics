@@ -22,6 +22,7 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import ru.zznty.create_factory_logistics.FactoryBlockEntities;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
+import ru.zznty.create_factory_logistics.compat.packagerspsic.PackagersPSIC;
 
 public class JarPackagerBlock extends PackagerBlock {
     public JarPackagerBlock(Properties properties) {
@@ -46,7 +47,7 @@ public class JarPackagerBlock extends PackagerBlock {
         for (Direction face : context.getNearestLookingDirections()) {
             BlockEntity be = context.getLevel()
                     .getBlockEntity(context.getClickedPos()
-                            .relative(face));
+                                            .relative(face));
             if (be instanceof PackagerBlockEntity)
                 continue;
             if (be != null && (be.getCapability(fluidCap)
@@ -64,9 +65,11 @@ public class JarPackagerBlock extends PackagerBlock {
         }
 
         if (player != null && !(player instanceof FakePlayer)) {
-            if (AllBlocks.PORTABLE_STORAGE_INTERFACE.has(context.getLevel()
-                    .getBlockState(context.getClickedPos()
-                            .relative(preferredFacing.getOpposite())))) {
+            if (!PackagersPSIC.isInstalled() && AllBlocks.PORTABLE_FLUID_INTERFACE.has(context.getLevel()
+                                                                                               .getBlockState(
+                                                                                                       context.getClickedPos()
+                                                                                                               .relative(
+                                                                                                                       preferredFacing.getOpposite())))) {
                 CreateLang.translate("packager.no_portable_storage")
                         .sendStatus(player);
                 return null;
@@ -79,7 +82,8 @@ public class JarPackagerBlock extends PackagerBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
+                                 BlockHitResult hit) {
         if (player == null)
             return InteractionResult.PASS;
 
