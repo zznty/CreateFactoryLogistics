@@ -15,19 +15,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 class BuiltInPackageBuilder implements PackageBuilder {
-    private final ItemStackHandler inventory = new ItemStackHandler(PackageItem.SLOTS);
+    private ItemStackHandler inventory = new ItemStackHandler(PackageItem.SLOTS);
     private boolean hasBulky = false;
+    private boolean isEmpty = true;
 
     @Override
     public int add(GenericStack content) {
         if (hasBulky) return -1;
 
-
         if (content.key() instanceof ItemKey itemKey) {
             hasBulky = measure(itemKey) == PackageMeasureResult.BULKY;
 
-            return ItemHandlerHelper.insertItemStacked(inventory, itemKey.stack().copyWithCount(content.amount()),
-                                                       false).getCount();
+            ItemStack stack = itemKey.stack();
+            if (PackageItem.isPackage(stack)) {
+                // TODO figure out a better check if this is an items package
+                // just strict class comparison for PackageItem wont fit since mods could extend it for their new packages
+                if (stack.getTagElement("Items") == null || stack.getTagElement("Items").isEmpty()) return -1;
+
+                if (!isEmpty) return -1;
+
+                // assume if we have a complete package that we can fit it
+                inventory = PackageItem.getContents(stack);
+                isEmpty = false;
+                return 0;
+            }
+
+            int result = ItemHandlerHelper.insertItemStacked(inventory, stack.copyWithCount(content.amount()),
+                                                             false).getCount();
+            if (result != content.amount()) isEmpty = false;
+            return result;
         }
 
         throw new IllegalArgumentException("Unsupported content: " + content);

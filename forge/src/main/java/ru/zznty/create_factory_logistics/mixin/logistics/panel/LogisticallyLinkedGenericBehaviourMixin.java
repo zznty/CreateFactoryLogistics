@@ -25,7 +25,7 @@ public abstract class LogisticallyLinkedGenericBehaviourMixin extends BlockEntit
     public Pair<PackagerBlockEntity, GenericRequest> processRequest(GenericStack stack, String address, int linkIndex,
                                                                     MutableBoolean finalLink, int orderId,
                                                                     @Nullable GenericOrder orderContext,
-                                                                    @javax.annotation.Nullable IdentifiedInventory ignoredHandler) {
+                                                                    @Nullable IdentifiedInventory ignoredHandler) {
         if (blockEntity instanceof GenericPackagerLinkBlockEntity plbe)
             return plbe.processRequest(stack, address, linkIndex, finalLink, orderId, orderContext,
                                        ignoredHandler);
