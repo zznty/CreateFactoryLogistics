@@ -210,6 +210,8 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
         FactoryPanelBlockEntity panelBE = panelBE();
         if (targetedBy.isEmpty() && !panelBE.restocker)
             return;
+        if (panelBE.restocker)
+            restockerPromises.tick();
         if (satisfied || promisedSatisfied || waitingForNetwork || redstonePowered)
             return;
         if (timer > 0) {
