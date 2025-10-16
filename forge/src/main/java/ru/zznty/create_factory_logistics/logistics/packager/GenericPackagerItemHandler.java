@@ -28,7 +28,9 @@ public class GenericPackagerItemHandler extends PackagerItemHandler {
                     children.removeFirst();
                     // discord children of composite box
                     return CompositePackageItem.of(registryAccess,
-                                                   PackageItem.containing(PackageItem.getContents(stack)), children);
+                                                   PackageItem.containing(
+                                                           CompositePackageItem.getContents(registryAccess, stack)),
+                                                   children);
                 } else return stack;
             }
         }

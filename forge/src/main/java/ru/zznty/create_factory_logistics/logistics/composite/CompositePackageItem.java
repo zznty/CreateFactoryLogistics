@@ -1,13 +1,16 @@
 package ru.zznty.create_factory_logistics.logistics.composite;
 
+import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.AllEntityTypes;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.box.PackageStyles;
 import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import net.createmod.catnip.nbt.NBTHelper;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -21,6 +24,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
@@ -42,6 +46,7 @@ import java.util.function.Consumer;
 public class CompositePackageItem extends PackageItem {
 
     public static final String CHILDREN_TAG = "Children";
+    public static final String ITEMS_TAG = "CompositeItems";
 
     public CompositePackageItem(Properties properties) {
         super(properties, PackageStyles.STYLES.get(1));
@@ -58,6 +63,33 @@ public class CompositePackageItem extends PackageItem {
     public void appendHoverText(ItemStack stack, TooltipContext tooltipContext, List<Component> tooltipComponents,
                                 TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, tooltipContext, tooltipComponents, tooltipFlag);
+
+        int visibleNames = 0;
+        int skippedNames = 0;
+        ItemStackHandler contents = getContents(tooltipContext.registries(), stack);
+        for (int i = 0; i < contents.getSlots(); i++) {
+            ItemStack itemstack = contents.getStackInSlot(i);
+            if (itemstack.isEmpty())
+                continue;
+            if (itemstack.getItem() instanceof SpawnEggItem)
+                continue;
+            if (visibleNames > 2) {
+                skippedNames++;
+                continue;
+            }
+
+            visibleNames++;
+            tooltipComponents.add(itemstack.getHoverName()
+                                          .copy()
+                                          .append(" x")
+                                          .append(String.valueOf(itemstack.getCount()))
+                                          .withStyle(ChatFormatting.GRAY));
+        }
+
+        if (skippedNames > 0)
+            tooltipComponents.add(Component.translatable("container.shulkerBox.more", skippedNames)
+                                          .withStyle(ChatFormatting.ITALIC));
+
         for (ItemStack child : getChildren(tooltipContext.registries(), stack)) {
             child.getItem().appendHoverText(child, tooltipContext, tooltipComponents, tooltipFlag);
         }
@@ -65,13 +97,15 @@ public class CompositePackageItem extends PackageItem {
 
     @Override
     public InteractionResultHolder<ItemStack> open(Level worldIn, Player playerIn, InteractionHand handIn) {
+        ItemStack box = playerIn.getItemInHand(handIn);
+        playerIn.setItemInHand(handIn, PackageItem.containing(getContents(box)));
         InteractionResultHolder<ItemStack> resultHolder = super.open(worldIn, playerIn, handIn);
         if (resultHolder.getResult() == InteractionResult.SUCCESS && !worldIn.isClientSide()) {
-            for (ItemStack child : getChildren(worldIn.registryAccess(), resultHolder.getObject())) {
+            for (ItemStack child : getChildren(worldIn.registryAccess(), box)) {
                 playerIn.getInventory().placeItemBackInInventory(child);
             }
         }
-        return resultHolder;
+        return new InteractionResultHolder<>(resultHolder.getResult(), box);
     }
 
     public static List<ItemStack> getChildren(HolderLookup.Provider lookupProvider, ItemStack stack) {
@@ -81,14 +115,27 @@ public class CompositePackageItem extends PackageItem {
         return NBTHelper.readCompoundList(listTag, t -> ItemStack.parseOptional(lookupProvider, t));
     }
 
+    public static ItemStackHandler getContents(HolderLookup.Provider lookupProvider, ItemStack box) {
+        ItemStackHandler newInv = new ItemStackHandler(PackageItem.SLOTS);
+
+        CustomData customData = box.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        if (customData.contains(ITEMS_TAG)) {
+            //noinspection deprecation
+            newInv.deserializeNBT(lookupProvider, customData.getUnsafe().getCompound(ITEMS_TAG));
+        }
+        return newInv;
+    }
+
     public static ItemStack of(HolderLookup.Provider lookupProvider, ItemStack box, List<ItemStack> originalChildren) {
         ItemStack compositeBox = new ItemStack(FactoryItems.COMPOSITE_PACKAGE.get());
 
-        compositeBox.applyComponents(box.getComponents());
+        PatchedDataComponentMap components = new PatchedDataComponentMap(box.getComponents());
+        components.remove(AllDataComponents.PACKAGE_CONTENTS);
+        compositeBox.applyComponents(components);
 
         List<ItemStack> children = new ArrayList<>(originalChildren);
 
-        ItemStackHandler contents = PackageItem.getContents(compositeBox);
+        ItemStackHandler contents = PackageItem.getContents(box);
 
         CompoundTag tag = compositeBox.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
 
@@ -120,9 +167,11 @@ public class CompositePackageItem extends PackageItem {
             }
         }
 
-        CustomData.update(DataComponents.CUSTOM_DATA, compositeBox, t ->
-                t.put(CHILDREN_TAG,
-                      NBTHelper.writeCompoundList(children, s -> (CompoundTag) s.saveOptional(lookupProvider))));
+        CustomData.update(DataComponents.CUSTOM_DATA, compositeBox, t -> {
+            t.put(CHILDREN_TAG,
+                  NBTHelper.writeCompoundList(children, s -> (CompoundTag) s.saveOptional(lookupProvider)));
+            t.put(ITEMS_TAG, contents.serializeNBT(lookupProvider));
+        });
 
         return compositeBox;
     }
