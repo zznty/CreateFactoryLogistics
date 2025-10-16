@@ -20,6 +20,7 @@ import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import ru.zznty.create_factory_logistics.FactoryBlockEntities;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
+import ru.zznty.create_factory_logistics.compat.packagerspsic.PackagersPSIC;
 
 public class JarPackagerBlock extends PackagerBlock {
     public JarPackagerBlock(Properties properties) {
@@ -43,7 +44,7 @@ public class JarPackagerBlock extends PackagerBlock {
         for (Direction face : context.getNearestLookingDirections()) {
             BlockEntity be = context.getLevel()
                     .getBlockEntity(context.getClickedPos()
-                            .relative(face));
+                                            .relative(face));
             if (be instanceof PackagerBlockEntity)
                 continue;
             if (be != null && (FluidUtil.getFluidHandler(context.getLevel(), context.getClickedPos()
@@ -62,9 +63,11 @@ public class JarPackagerBlock extends PackagerBlock {
         }
 
         if (player != null && !(player instanceof FakePlayer)) {
-            if (AllBlocks.PORTABLE_STORAGE_INTERFACE.has(context.getLevel()
-                    .getBlockState(context.getClickedPos()
-                            .relative(preferredFacing.getOpposite())))) {
+            if (!PackagersPSIC.isInstalled() && AllBlocks.PORTABLE_FLUID_INTERFACE.has(context.getLevel()
+                                                                                               .getBlockState(
+                                                                                                       context.getClickedPos()
+                                                                                                               .relative(
+                                                                                                                       preferredFacing.getOpposite())))) {
                 CreateLang.translate("packager.no_portable_storage")
                         .sendStatus(player);
                 return null;

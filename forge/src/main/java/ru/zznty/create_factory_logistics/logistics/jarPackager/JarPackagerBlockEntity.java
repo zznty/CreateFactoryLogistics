@@ -1,6 +1,6 @@
 package ru.zznty.create_factory_logistics.logistics.jarPackager;
 
-import com.simibubi.create.content.contraptions.actors.psi.PortableStorageInterfaceBlockEntity;
+import com.simibubi.create.content.contraptions.actors.psi.PortableFluidInterfaceBlockEntity;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.generic.support.GenericIdentifiedInventory;
 import ru.zznty.create_factory_logistics.Config;
+import ru.zznty.create_factory_logistics.compat.packagerspsic.PackagersPSIC;
 
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class JarPackagerBlockEntity extends PackagerBlockEntity {
     }
 
     private boolean supportsBlockEntity(BlockEntity target) {
-        return target != null && !(target instanceof PortableStorageInterfaceBlockEntity);
+        return target != null && (PackagersPSIC.isInstalled() || !(target instanceof PortableFluidInterfaceBlockEntity));
     }
 
     @Override
