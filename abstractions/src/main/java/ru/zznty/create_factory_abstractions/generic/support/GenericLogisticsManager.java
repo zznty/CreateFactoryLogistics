@@ -1,6 +1,6 @@
 package ru.zznty.create_factory_abstractions.generic.support;
 
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
@@ -40,7 +40,7 @@ public final class GenericLogisticsManager {
                                                                                         String address) {
         List<GenericStack> stacks = order.stacks();
 
-        Multimap<PackagerBlockEntity, GenericRequest> requests = HashMultimap.create();
+        Multimap<PackagerBlockEntity, GenericRequest> requests = ArrayListMultimap.create();
 
         // Packages need to track their index and successors for successful defrag
         Iterable<LogisticallyLinkedBehaviour> availableLinks = LogisticallyLinkedBehaviour.getAllPresent(freqId, true);
