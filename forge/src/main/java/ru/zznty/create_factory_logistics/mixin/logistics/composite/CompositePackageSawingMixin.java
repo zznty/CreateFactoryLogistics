@@ -38,7 +38,7 @@ public abstract class CompositePackageSawingMixin extends BlockBreakingKineticBl
                                         @Local List<ItemStack> list) {
         if (input.getItem() instanceof CompositePackageItem) {
             inventory.clear();
-            ItemStackHandler results = CompositePackageItem.getContents(input);
+            ItemStackHandler results = CompositePackageItem.getContents(getLevel().registryAccess(), input);
             for (int i = 0; i < results.getSlots(); i++) {
                 ItemStack stack = results.getStackInSlot(i);
                 if (!stack.isEmpty())

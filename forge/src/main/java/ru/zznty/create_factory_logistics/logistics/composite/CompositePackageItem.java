@@ -98,7 +98,7 @@ public class CompositePackageItem extends PackageItem {
     @Override
     public InteractionResultHolder<ItemStack> open(Level worldIn, Player playerIn, InteractionHand handIn) {
         ItemStack box = playerIn.getItemInHand(handIn);
-        playerIn.setItemInHand(handIn, PackageItem.containing(getContents(box)));
+        playerIn.setItemInHand(handIn, PackageItem.containing(getContents(worldIn.registryAccess(), box)));
         InteractionResultHolder<ItemStack> resultHolder = super.open(worldIn, playerIn, handIn);
         if (resultHolder.getResult() == InteractionResult.SUCCESS && !worldIn.isClientSide()) {
             for (ItemStack child : getChildren(worldIn.registryAccess(), box)) {
@@ -127,6 +127,9 @@ public class CompositePackageItem extends PackageItem {
     }
 
     public static ItemStack of(HolderLookup.Provider lookupProvider, ItemStack box, List<ItemStack> originalChildren) {
+        if (originalChildren.isEmpty())
+            return PackageItem.containing(PackageItem.getContents(box));
+
         ItemStack compositeBox = new ItemStack(FactoryItems.COMPOSITE_PACKAGE.get());
 
         PatchedDataComponentMap components = new PatchedDataComponentMap(box.getComponents());
