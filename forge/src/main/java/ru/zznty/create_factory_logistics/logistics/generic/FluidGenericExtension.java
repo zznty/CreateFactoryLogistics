@@ -3,13 +3,35 @@ package ru.zznty.create_factory_logistics.logistics.generic;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.registries.ForgeRegistries;
+import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventorySummaryProvider;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.GenericKeyProviderExtension;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericCapabilityWrapperProvider;
 
 import java.util.Optional;
 
-public class FluidGenericExtension implements GenericKeyProviderExtension<FluidKey, FluidStack, Fluid> {
+public class FluidGenericExtension implements GenericKeyProviderExtension<FluidKey, FluidStack, Fluid, IFluidHandler> {
+    private final GenericCapabilityWrapperProvider<IFluidHandler> provider = new GenericCapabilityWrapperProvider<>() {
+        @Override
+        public Capability<IFluidHandler> capability() {
+            return ForgeCapabilities.FLUID_HANDLER;
+        }
+
+        @Override
+        public IFluidHandler wrap(GenericInventorySummaryProvider summaryProvider) {
+            return new NetworkFluidHandler(summaryProvider);
+        }
+
+        @Override
+        public GenericInventorySummaryProvider unwrap(IFluidHandler capability) {
+            return new FluidInventorySummaryProvider(capability);
+        }
+    };
+
     @Override
     public FluidKey defaultKey() {
         return wrap(FluidStack.EMPTY);
@@ -38,6 +60,11 @@ public class FluidGenericExtension implements GenericKeyProviderExtension<FluidK
     @Override
     public Optional<ResourceKey<Fluid>> resourceKey(FluidKey key) {
         return ForgeRegistries.FLUIDS.getResourceKey(key.fluid());
+    }
+
+    @Override
+    public GenericCapabilityWrapperProvider<IFluidHandler> capabilityWrapperProvider() {
+        return provider;
     }
 
     @Override

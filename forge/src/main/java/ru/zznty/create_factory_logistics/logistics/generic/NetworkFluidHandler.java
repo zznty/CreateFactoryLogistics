@@ -1,27 +1,32 @@
-package ru.zznty.create_factory_logistics.logistics.networkLink;
+package ru.zznty.create_factory_logistics.logistics.generic;
 
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
+import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventorySummaryProvider;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
-import ru.zznty.create_factory_logistics.logistics.generic.FluidKey;
+import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 
-import java.util.UUID;
+import java.util.List;
 
-public class NetworkFluidHandler extends BaseNetworkHandler implements IFluidHandler {
-    public NetworkFluidHandler(UUID network, NetworkLinkMode mode) {
-        super(network, mode);
+final class NetworkFluidHandler implements IFluidHandler {
+    private final List<GenericStack> stacks;
+
+    public NetworkFluidHandler(GenericInventorySummaryProvider summaryProvider) {
+        GenericInventorySummary summary = GenericInventorySummary.empty();
+        summaryProvider.apply(false, summary);
+        stacks = summary.get().stream().filter(s -> s.key() instanceof FluidKey).toList();
     }
 
     @Override
     public int getTanks() {
-        return summary().size();
+        return stacks.size();
     }
 
     @Override
     public @NotNull FluidStack getFluidInTank(int tank) {
-        return asFluid(summary().get(tank));
+        return asFluid(stacks.get(tank));
     }
 
     @Override
@@ -31,7 +36,7 @@ public class NetworkFluidHandler extends BaseNetworkHandler implements IFluidHan
 
     @Override
     public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
-        return asFluid(summary().get(tank)).isFluidEqual(stack);
+        return getFluidInTank(tank).isFluidEqual(stack);
     }
 
     @Override
@@ -45,7 +50,7 @@ public class NetworkFluidHandler extends BaseNetworkHandler implements IFluidHan
             return FluidStack.EMPTY;
 
         int amount = 0;
-        for (GenericStack stack : summary()) {
+        for (GenericStack stack : stacks) {
             FluidStack fluidStack = asFluid(stack);
             if (fluidStack.isFluidEqual(resource))
                 amount += Math.min(fluidStack.getAmount(), resource.getAmount() - amount);
@@ -58,7 +63,7 @@ public class NetworkFluidHandler extends BaseNetworkHandler implements IFluidHan
     @Override
     public @NotNull FluidStack drain(int maxDrain, FluidAction action) {
         FluidStack resource = FluidStack.EMPTY;
-        for (GenericStack stack : summary()) {
+        for (GenericStack stack : stacks) {
             FluidStack fluidStack = asFluid(stack);
             if (!fluidStack.isEmpty()) {
                 resource = fluidStack;

@@ -1,28 +1,33 @@
-package ru.zznty.create_factory_logistics.logistics.networkLink;
+package ru.zznty.create_factory_abstractions.generic.key.item;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.NotNull;
+import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventorySummaryProvider;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
-import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
+import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 
-import java.util.UUID;
+import java.util.List;
 
-public class NetworkItemHandler extends BaseNetworkHandler implements IItemHandler {
+final class NetworkItemHandler implements IItemHandler {
 
-    public NetworkItemHandler(UUID network, NetworkLinkMode mode) {
-        super(network, mode);
+    private final List<GenericStack> stacks;
+
+    public NetworkItemHandler(GenericInventorySummaryProvider summaryProvider) {
+        GenericInventorySummary summary = GenericInventorySummary.empty();
+        summaryProvider.apply(false, summary);
+        stacks = summary.get().stream().filter(s -> s.key() instanceof ItemKey).toList();
     }
 
     @Override
     public int getSlots() {
-        return summary().size();
+        return stacks.size();
     }
 
     @Override
     public @NotNull ItemStack getStackInSlot(int slot) {
-        return asItem(summary().get(slot));
+        return asItem(stacks.get(slot));
     }
 
     @Override
@@ -48,7 +53,7 @@ public class NetworkItemHandler extends BaseNetworkHandler implements IItemHandl
 
     @Override
     public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-        return ItemHandlerHelper.canItemStacksStack(asItem(summary().get(slot)), stack);
+        return ItemHandlerHelper.canItemStacksStack(getStackInSlot(slot), stack);
     }
 
     private static ItemStack asItem(GenericStack stack) {

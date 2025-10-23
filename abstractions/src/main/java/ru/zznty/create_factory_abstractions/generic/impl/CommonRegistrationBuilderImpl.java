@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.CommonRegistrationBuilder;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.GenericKeyProviderExtension;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericCapabilityWrapperProvider;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyProvider;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeySerializer;
@@ -24,13 +25,13 @@ class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonReg
     }
 
     @Override
-    public <Value, RegistryValue> CommonRegistrationBuilder<Key> provider(
-            Supplier<GenericKeyProviderExtension<Key, Value, RegistryValue>> provider) {
+    public <Value, RegistryValue, Capability> CommonRegistrationBuilder<Key> provider(
+            Supplier<GenericKeyProviderExtension<Key, Value, RegistryValue, Capability>> provider) {
         if (this.provider != null) {
             throw new IllegalStateException("Provider already set");
         }
         this.provider = () -> new GenericKeyProvider<>() {
-            private final GenericKeyProviderExtension<Key, Value, RegistryValue> extension = provider.get();
+            private final GenericKeyProviderExtension<Key, Value, RegistryValue, Capability> extension = provider.get();
 
             @Override
             public Key defaultKey() {
@@ -75,6 +76,12 @@ class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonReg
             @Override
             public int compare(Key o1, Key o2) {
                 return extension.compare(o1, o2);
+            }
+
+            @Override
+            public @Nullable <Cap> GenericCapabilityWrapperProvider<Cap> capabilityWrapperProvider() {
+                //noinspection unchecked
+                return (GenericCapabilityWrapperProvider<Cap>) extension.capabilityWrapperProvider();
             }
         };
         return this;

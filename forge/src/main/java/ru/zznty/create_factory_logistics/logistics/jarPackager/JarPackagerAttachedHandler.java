@@ -1,8 +1,6 @@
 package ru.zznty.create_factory_logistics.logistics.jarPackager;
 
 import com.simibubi.create.api.packager.InventoryIdentifier;
-import com.simibubi.create.content.fluids.tank.CreativeFluidTankBlockEntity;
-import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.fluid.FluidHelper;
@@ -22,9 +20,10 @@ import ru.zznty.create_factory_abstractions.api.generic.capability.PackageBuilde
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackageMeasureResult;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttachedHandler;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistration;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
+import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.support.GenericIdentifiedInventory;
-import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 import ru.zznty.create_factory_logistics.Config;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.logistics.generic.FluidGenericStack;
@@ -86,32 +85,8 @@ public class JarPackagerAttachedHandler implements PackagerAttachedHandler {
     }
 
     @Override
-    public boolean hasChanges() {
-        return true;
-    }
-
-    @Override
-    public void collectAvailable(boolean scanInputSlots, GenericInventorySummary summary) {
-        if (!packagerBE.drainInventory.hasInventory()) {
-            // in case inventory didn't load in the first tick
-            packagerBE.drainInventory.findNewCapability();
-            if (!packagerBE.drainInventory.hasInventory())
-                return;
-        }
-
-        IFluidHandler fluidHandler = packagerBE.drainInventory.getInventory();
-
-        for (int i = 0; i < fluidHandler.getTanks(); i++) {
-            FluidStack stack = fluidHandler.getFluidInTank(i);
-            if (!stack.isEmpty()) {
-                if (!scanInputSlots)
-                    stack = fluidHandler.drain(stack, IFluidHandler.FluidAction.SIMULATE);
-                if (fluidHandler instanceof CreativeFluidTankBlockEntity.CreativeSmartFluidTank)
-                    stack.setAmount(BigItemStack.INF);
-
-                summary.add(FluidGenericStack.wrap(stack));
-            }
-        }
+    public GenericKeyRegistration supportedKey() {
+        return GenericContentExtender.REGISTRATIONS.get(FluidKey.class);
     }
 
     @Override

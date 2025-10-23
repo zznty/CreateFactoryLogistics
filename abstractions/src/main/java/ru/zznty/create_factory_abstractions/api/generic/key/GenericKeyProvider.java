@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_abstractions.api.generic.key;
 
 import net.minecraft.resources.ResourceKey;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -17,4 +18,8 @@ public interface GenericKeyProvider<Key extends GenericKey> extends Comparator<K
     String ingredientTypeUid();
 
     <T> Optional<ResourceKey<T>> resourceKey(Key key);
+
+    default <Cap> @Nullable GenericCapabilityWrapperProvider<Cap> capabilityWrapperProvider() {
+        return null;
+    }
 }

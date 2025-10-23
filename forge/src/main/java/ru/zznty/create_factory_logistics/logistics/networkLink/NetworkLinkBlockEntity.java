@@ -1,7 +1,11 @@
 package ru.zznty.create_factory_logistics.logistics.networkLink;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
+import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
+import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
+import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
@@ -23,8 +27,11 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericCapabilityWrapperProvider;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistration;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
+import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
+import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 
 import java.util.List;
 
@@ -68,13 +75,30 @@ public class NetworkLinkBlockEntity extends SmartBlockEntity {
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (registration != null && (side == null || getConnectedDirection(getBlockState())
                 .getOpposite() == side)) {
-            NetworkLinkCapabilityFactory capabilityFactory = NetworkLinkCapabilityFactory.FACTORY_MAP.get(
-                    registration);
-            LazyOptional<T> optional = capabilityFactory == null ?
-                                       LazyOptional.empty() :
-                                       capabilityFactory.create(cap, scroll.get(), link);
-            if (optional.isPresent())
-                return optional;
+            GenericCapabilityWrapperProvider<Object> provider = registration.provider().capabilityWrapperProvider();
+
+            if (provider != null) {
+                return provider.capability().orEmpty(cap,
+                                                     LazyOptional.of(() -> provider.wrap((scanInputSlots, summary) -> {
+                                                         if (scroll.get().includesStored()) {
+                                                             summary.add(GenericInventorySummary.of(
+                                                                     LogisticsManager.getSummaryOfNetwork(link.freqId,
+                                                                                                          true)));
+                                                         }
+                                                         if (scroll.get().includesPromised()) {
+                                                             RequestPromiseQueue queue = Create.LOGISTICS.getQueuedPromises(
+                                                                     link.freqId);
+                                                             if (queue != null)
+                                                                 for (RequestPromise promise : queue.flatten(false)) {
+                                                                     BigGenericStack stack = BigGenericStack.of(
+                                                                             promise.promisedStack);
+
+                                                                     if (!stack.get().isEmpty())
+                                                                         summary.add(stack.get());
+                                                                 }
+                                                         }
+                                                     })).cast());
+            }
         }
         return super.getCapability(cap, side);
     }

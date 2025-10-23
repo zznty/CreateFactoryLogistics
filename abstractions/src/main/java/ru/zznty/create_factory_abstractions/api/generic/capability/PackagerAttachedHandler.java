@@ -14,9 +14,9 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.AbstractionsCapabilities;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistration;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.BuiltInPackagerAttachedHandler;
-import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 
 @AutoRegisterCapability
 public interface PackagerAttachedHandler {
@@ -29,9 +29,7 @@ public interface PackagerAttachedHandler {
 
     PackageBuilder newPackage();
 
-    boolean hasChanges();
-
-    void collectAvailable(boolean scanInputSlots, GenericInventorySummary summary);
+    GenericKeyRegistration supportedKey();
 
     Block supportedGauge();
 

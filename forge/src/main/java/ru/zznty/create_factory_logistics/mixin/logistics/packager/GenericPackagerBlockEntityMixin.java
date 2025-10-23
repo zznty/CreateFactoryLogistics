@@ -18,28 +18,37 @@ import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.inventory.CapManipulationBehaviourBase;
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.InvManipulationBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
 import net.createmod.catnip.data.Iterate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import ru.zznty.create_factory_abstractions.api.generic.AbstractionsCapabilities;
+import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventorySummaryProvider;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackageBuilder;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackageMeasureResult;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttachedHandler;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.*;
+import ru.zznty.create_factory_logistics.logistics.generic.GeneticInventoryBehaviour;
 import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkBlockEntity;
 import ru.zznty.create_factory_logistics.logistics.packager.GenericPackagerItemHandler;
 
@@ -67,6 +76,9 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
     private InventorySummary availableItems;
 
     @Shadow(remap = false)
+    private VersionedInventoryTrackerBehaviour invVersionTracker;
+
+    @Shadow(remap = false)
     public void triggerStockCheck() {
     }
 
@@ -75,11 +87,30 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
         return null;
     }
 
+    @Shadow(remap = false)
+    private boolean supportsBlockEntity(BlockEntity target) {
+        return false;
+    }
+
     @Shadow
     public abstract <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side);
 
+    @Unique
+    private GeneticInventoryBehaviour createFactoryLogistics$inventoryBehaviour;
+
     public GenericPackagerBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Inject(
+            method = "addBehaviours",
+            at = @At("TAIL"),
+            remap = false
+    )
+    private void addBehaviours(List<BlockEntityBehaviour> behaviours, CallbackInfo ci) {
+        behaviours.add(createFactoryLogistics$inventoryBehaviour = new GeneticInventoryBehaviour(this,
+                                                                                                 CapManipulationBehaviourBase.InterfaceProvider.oppositeOfBlockFacing())
+                .withFilter(this::supportsBlockEntity));
     }
 
     @Redirect(
@@ -95,17 +126,24 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
 
     @Overwrite(remap = false)
     public InventorySummary getAvailableItems(boolean scanInputSlots) {
-        Optional<PackagerAttachedHandler> handler = getCapability(AbstractionsCapabilities.PACKAGER_ATTACHED).resolve();
-
-        if (availableItems != null && handler.isPresent() && !handler.get().hasChanges())
+        if (availableItems != null && invVersionTracker.stillWaiting(targetInventory))
             return availableItems;
 
         GenericInventorySummary available = GenericInventorySummary.empty();
 
-        if (handler.isPresent()) {
-            handler.get().collectAvailable(scanInputSlots, available);
-            createFactoryLogistics$submitNewArrivals(
-                    availableItems == null ? null : GenericInventorySummary.of(availableItems), available);
+        if (createFactoryLogistics$inventoryBehaviour.hasInventory()) {
+            @Nullable PackagerAttachedHandler handler = PackagerAttachedHandler.get(
+                    (PackagerBlockEntity) (Object) this).orElse(null);
+            if (handler != null) {
+                GenericInventorySummaryProvider summaryProvider = createFactoryLogistics$inventoryBehaviour.getInventory().get(
+                        handler.supportedKey());
+                if (summaryProvider != null) {
+                    summaryProvider.apply(scanInputSlots, available);
+                    invVersionTracker.awaitNewVersion(targetInventory);
+                    createFactoryLogistics$submitNewArrivals(
+                            availableItems == null ? null : GenericInventorySummary.of(availableItems), available);
+                }
+            }
         }
 
         availableItems = available.asSummary();

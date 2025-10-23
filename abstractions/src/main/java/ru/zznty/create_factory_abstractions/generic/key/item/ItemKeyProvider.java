@@ -2,14 +2,37 @@ package ru.zznty.create_factory_abstractions.generic.key.item;
 
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventorySummaryProvider;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericCapabilityWrapperProvider;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyProvider;
 
 import java.util.Optional;
 
 @ApiStatus.Internal
 public class ItemKeyProvider implements GenericKeyProvider<ItemKey> {
+    private final GenericCapabilityWrapperProvider<IItemHandler> provider = new GenericCapabilityWrapperProvider<>() {
+        @Override
+        public Capability<IItemHandler> capability() {
+            return ForgeCapabilities.ITEM_HANDLER;
+        }
+
+        @Override
+        public IItemHandler wrap(GenericInventorySummaryProvider summaryProvider) {
+            return new NetworkItemHandler(summaryProvider);
+        }
+
+        @Override
+        public GenericInventorySummaryProvider unwrap(IItemHandler capability) {
+            return new ItemInventorySummaryProvider(capability);
+        }
+    };
+
     @Override
     public ItemKey defaultKey() {
         return new ItemKey(ItemStack.EMPTY);
@@ -53,5 +76,11 @@ public class ItemKeyProvider implements GenericKeyProvider<ItemKey> {
     @Override
     public int compare(ItemKey o1, ItemKey o2) {
         return Integer.compare(o1.stack().getItem().hashCode(), o2.stack().getItem().hashCode());
+    }
+
+    @Override
+    public @Nullable <Cap> GenericCapabilityWrapperProvider<Cap> capabilityWrapperProvider() {
+        //noinspection unchecked
+        return (GenericCapabilityWrapperProvider<Cap>) provider;
     }
 }
