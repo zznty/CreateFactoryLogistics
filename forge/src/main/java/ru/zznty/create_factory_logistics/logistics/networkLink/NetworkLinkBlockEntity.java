@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class NetworkLinkBlockEntity extends SmartBlockEntity {
-    private LogisticallyLinkedBehaviour link;
+    public LogisticallyLinkedBehaviour link;
     @Nullable
     private GenericKeyRegistration registration;
     private ScrollOptionBehaviour<NetworkLinkMode> scroll;

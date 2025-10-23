@@ -12,9 +12,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.AbstractionsCapabilities;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistration;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.BuiltInPackagerAttachedHandler;
-import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 
 public interface PackagerAttachedHandler {
     int slotCount();
@@ -26,9 +26,7 @@ public interface PackagerAttachedHandler {
 
     PackageBuilder newPackage();
 
-    boolean hasChanges();
-
-    void collectAvailable(GenericInventorySummary summary);
+    GenericKeyRegistration supportedKey();
 
     Block supportedGauge();
 

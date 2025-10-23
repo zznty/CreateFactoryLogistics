@@ -4,14 +4,10 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.api.packager.InventoryIdentifier;
 import com.simibubi.create.api.packager.unpacking.UnpackingHandler;
-import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
-import com.simibubi.create.content.logistics.crate.BottomlessItemHandler;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
-import com.simibubi.create.content.logistics.packager.PackagerItemHandler;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
-import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
 import com.simibubi.create.foundation.item.ItemHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,8 +21,9 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackageBuilder;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttachedHandler;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistration;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
-import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
+import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
 
 import java.util.List;
 
@@ -72,30 +69,8 @@ public record BuiltInPackagerAttachedHandler(PackagerBlockEntity packagerBE) imp
     }
 
     @Override
-    public boolean hasChanges() {
-        return !packagerBE.getBehaviour(VersionedInventoryTrackerBehaviour.TYPE).stillWaiting(
-                packagerBE.targetInventory);
-    }
-
-    @Override
-    public void collectAvailable(GenericInventorySummary summary) {
-        if (!packagerBE.targetInventory.hasInventory() || packagerBE.targetInventory.getInventory() instanceof PackagerItemHandler)
-            return;
-
-        IItemHandler targetInv = packagerBE.targetInventory.getInventory();
-
-        if (targetInv instanceof BottomlessItemHandler bih) {
-            summary.add(GenericStack.wrap(bih.getStackInSlot(0)).withAmount(BigItemStack.INF));
-            return;
-        }
-
-        for (int slot = 0; slot < targetInv.getSlots(); slot++) {
-            int slotLimit = targetInv.getSlotLimit(slot);
-            ItemStack stack = targetInv.getStackInSlot(slot);
-            summary.add(GenericStack.wrap(stack));
-        }
-
-        packagerBE.getBehaviour(VersionedInventoryTrackerBehaviour.TYPE).awaitNewVersion(packagerBE.targetInventory);
+    public GenericKeyRegistration supportedKey() {
+        return GenericContentExtender.REGISTRATIONS.get(ItemKey.class);
     }
 
     @Override

@@ -52,7 +52,6 @@ public class CreateFactoryLogistics {
 
     public static void init(final FMLCommonSetupEvent event) {
         event.enqueueWork(FactoryInventoryIdentifiers::register);
-        event.enqueueWork(FactoryNetworkLinkCapabilities::register);
         event.enqueueWork(FactoryJarUnpackingHandlers::register);
     }
 
