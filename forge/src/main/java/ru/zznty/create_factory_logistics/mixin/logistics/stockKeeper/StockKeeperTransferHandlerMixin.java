@@ -4,7 +4,7 @@ import com.simibubi.create.compat.jei.StockKeeperTransferHandler;
 import com.simibubi.create.content.logistics.stockTicker.CraftableBigItemStack;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
-import com.simibubi.create.foundation.blockEntity.LegacyRecipeWrapper;
+import com.simibubi.create.foundation.blockEntity.ItemHandlerContainer;
 import com.simibubi.create.foundation.utility.CreateLang;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -66,7 +66,7 @@ public class StockKeeperTransferHandlerMixin {
             return null;
 
         List<GenericStack> availableStacks = summary.get();
-        Container outputDummy = new LegacyRecipeWrapper(new ItemStackHandler(9));
+        Container outputDummy = new ItemHandlerContainer(new ItemStackHandler(9));
         List<Slot> craftingSlots = new ArrayList<>();
         for (int i = 0; i < outputDummy.getContainerSize(); i++)
             craftingSlots.add(new Slot(outputDummy, i, 0, 0));
