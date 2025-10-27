@@ -41,6 +41,7 @@
     "accessor.CategoryEntryAccessor",
     "logistics.panel.FactoryPanelScreenMixin",
     "logistics.redstoneRequester.RedstoneRequesterScreenMixin",
+    "logistics.stockKeeper.StockKeeperGuiContainerHandlerMixin",
     "logistics.stockKeeper.StockKeeperRequestScreenMixin",
     "logistics.stockKeeper.StockKeeperTransferHandlerMixin",
     "render.ChainConveyorRendererMixin",
