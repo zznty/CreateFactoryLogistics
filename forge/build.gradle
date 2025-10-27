@@ -30,7 +30,7 @@ dependencies {
         annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
     }
 
-    modLocalRuntime "curse.maven:create-vibrant-vaults-1251719:6463880"
+    modLocalRuntime "curse.maven:create-vibrant-vaults-1251719:7153710"
     modCompileOnly "curse.maven:extra_gauges-1263228:7058464", {
         transitive = false
     }

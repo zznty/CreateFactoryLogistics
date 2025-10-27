@@ -9,11 +9,13 @@ import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScree
 import com.simibubi.create.content.logistics.stockTicker.StockTickerBlockEntity;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import net.createmod.catnip.animation.LerpedFloat;
+import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -21,14 +23,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_abstractions.api.generic.crafting.OrderProvider;
 import ru.zznty.create_factory_abstractions.api.generic.crafting.RecipeRequestHelper;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
 import ru.zznty.create_factory_abstractions.api.generic.search.CategoriesProvider;
 import ru.zznty.create_factory_abstractions.api.generic.search.GenericSearch;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
@@ -36,6 +36,7 @@ import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.CraftableGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.ingredient.ClickableIngredientProvider;
 import ru.zznty.create_factory_logistics.mixin.accessor.CategoryEntryAccessor;
 import ru.zznty.create_factory_logistics.mixin.accessor.StockTickerBlockEntityAccessor;
 
@@ -43,7 +44,7 @@ import java.util.*;
 import java.util.function.Function;
 
 @Mixin(StockKeeperRequestScreen.class)
-public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContainerScreen<StockKeeperRequestMenu> implements OrderProvider, CategoriesProvider {
+public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContainerScreen<StockKeeperRequestMenu> implements OrderProvider, CategoriesProvider, ClickableIngredientProvider {
     public StockKeeperRequestScreenMixin(StockKeeperRequestMenu container, Inventory inv, Component title) {
         super(container, inv, title);
     }
@@ -78,12 +79,15 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     @Shadow(remap = false)
     public EditBox searchBox;
 
+    @Final
     @Shadow(remap = false)
-    final int cols = 9;
+    int cols, rows;
 
+    @Final
     @Shadow(remap = false)
-    final int rowHeight = 20;
+    int rowHeight, colWidth;
 
+    @Final
     @Shadow(remap = false)
     private Set<Integer> hiddenCategories;
 
@@ -109,6 +113,21 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
 
     @Shadow
     public List<StockKeeperRequestScreen.CategoryEntry> categories;
+
+    @Final
+    @Shadow(remap = false)
+    Couple<Integer> noneHovered;
+
+    @Shadow(remap = false)
+    int itemsX, itemsY;
+
+    @Shadow(remap = false)
+    int windowWidth;
+
+    @Shadow(remap = false)
+    private Couple<Integer> getHoveredSlot(int x, int y) {
+        return noneHovered;
+    }
 
     @Redirect(
             method = "containerTick",
@@ -474,5 +493,50 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     @Override
     public List<List<BigGenericStack>> currentItemSource() {
         return currentItemSource;
+    }
+
+    @Override
+    public Pair<GenericKey, Rect2i> getHoveredKey(int mouseX, int mouseY) {
+        Couple<Integer> hoveredSlot = getHoveredSlot(mouseX, mouseY);
+
+        if (hoveredSlot != noneHovered) {
+            int index = hoveredSlot.getSecond();
+            boolean recipeHovered = hoveredSlot.getFirst() == -2;
+            boolean orderHovered = hoveredSlot.getFirst() == -1;
+
+            int x, y;
+            BigGenericStack entry;
+            if (recipeHovered) {
+                int jeiX = getGuiLeft() + (windowWidth - colWidth * recipesToOrder.size()) / 2 + 1;
+                int jeiY = orderY - 31;
+
+                x = jeiX + (index * colWidth);
+                y = jeiY;
+
+                entry = recipesToOrder.get(index);
+            } else {
+                if (orderHovered) {
+                    x = itemsX + index * colWidth;
+                    y = orderY;
+
+                    entry = itemsToOrder.get(index);
+                } else {
+                    int categoryIndex = hoveredSlot.getFirst();
+                    int categoryY = categories.isEmpty() ?
+                                    0 :
+                                    ((CategoryEntryAccessor) categories.get(categoryIndex)).getY();
+
+                    x = itemsX + (index % cols) * colWidth;
+                    y = itemsY + categoryY + (categories.isEmpty() ? 4 : rowHeight) + (index / cols) * rowHeight;
+
+                    entry = displayedItems.get(categoryIndex).get(index);
+                }
+            }
+
+            Rect2i bounds = new Rect2i(x, y, x + 18, y + 18);
+            return Pair.of(entry.get().key(), bounds);
+        }
+
+        return Pair.of(GenericKey.EMPTY, new Rect2i(0, 0, 0, 0));
     }
 }

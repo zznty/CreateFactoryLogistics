@@ -11,4 +11,7 @@ public interface CategoryEntryAccessor {
 
     @Accessor(remap = false)
     void setHidden(boolean hidden);
+
+    @Accessor(remap = false)
+    int getY();
 }
