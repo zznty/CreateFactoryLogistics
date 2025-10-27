@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
+import ru.zznty.create_factory_abstractions.generic.support.GenericFilterItemStack;
 import ru.zznty.create_factory_logistics.logistics.generic.FluidKey;
 
 @Mixin(StockTickerBlockEntity.class)
@@ -27,12 +28,14 @@ public class StockTickerBlockEntityMixin {
                                        @Local BigItemStack bigStack) {
         BigGenericStack stack = BigGenericStack.of(bigStack);
 
-        // TODO add generic variant of filter
-        // probably when https://github.com/Creators-of-Create/Create/issues/7706 gets resolved
-        if (stack.get().key() instanceof ItemKey itemKey) {
-            return instance.test(world, itemKey.stack());
-        } else if (stack.get().key() instanceof FluidKey fluidKey) {
-            return instance.test(world, fluidKey.stack());
+        if (instance instanceof GenericFilterItemStack genericFilter) {
+            return genericFilter.test(world, stack.get());
+        } else {
+            if (stack.get().key() instanceof ItemKey itemKey) {
+                return instance.test(world, itemKey.stack());
+            } else if (stack.get().key() instanceof FluidKey fluidKey) {
+                return instance.test(world, fluidKey.stack());
+            }
         }
 
         return false;
