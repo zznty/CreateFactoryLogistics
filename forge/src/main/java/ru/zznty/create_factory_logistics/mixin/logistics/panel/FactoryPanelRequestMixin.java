@@ -256,7 +256,10 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
                 Multimap<PackagerBlockEntity, GenericRequest> request = GenericLogisticsManager.findPackagersForRequest(
                         entry.getKey(), order, null, requestContext.recipeAddress());
 
-                requests.put(requestContext, request);
+                requests.merge(requestContext, request, (a, b) -> {
+                    a.putAll(b);
+                    return a;
+                });
             }
         }
 
