@@ -7,6 +7,7 @@
   "refmap": "create_factory_logistics-1.20.1-create_factory_logistics-1.20.1-refmap.json",
   "plugin": "ru.zznty.create_factory_logistics.mixin.CreateFactoryLogisticsMixinPlugin",
   "mixins": [
+    "accessor.HosePulleyFluidHandlerAccessor",
     "accessor.PackageEntityAccessor",
     "accessor.StockTickerBlockEntityAccessor",
     "bugfixes.ArmBlockEntityMixin",
