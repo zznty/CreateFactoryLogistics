@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import ru.zznty.create_factory_logistics.compat.mekanism.MekanismIntegration;
 import ru.zznty.create_factory_logistics.config.ClientConfig;
 import ru.zznty.create_factory_logistics.config.WorldConfig;
+import ru.zznty.create_factory_abstractions.compat.computercraft.AbstractionsComputerCraftCompat;
+import ru.zznty.create_factory_logistics.compat.computercraft.ComputerCraftCompat;
 import ru.zznty.create_factory_logistics.data.FactoryDataGen;
 
 import static ru.zznty.create_factory_logistics.FactoryGenericExtension.MEKANISM_ID;
@@ -62,6 +64,8 @@ public class CreateFactoryLogistics {
     public static void init(final FMLCommonSetupEvent event) {
         event.enqueueWork(FactoryInventoryIdentifiers::register);
         event.enqueueWork(FactoryJarUnpackingHandlers::register);
+        if (ModList.get().isLoaded(AbstractionsComputerCraftCompat.MOD_ID))
+            event.enqueueWork(ComputerCraftCompat::register);
     }
 
     public static ResourceLocation resource(String path) {

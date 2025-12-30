@@ -34,6 +34,14 @@ dependencies {
 //    modLocalRuntime "curse.maven:create-vibrant-vaults-1251719:6463890"
 //    modLocalRuntime "curse.maven:create-enchantment-industry-688768:6549319"
 //    modLocalRuntime "curse.maven:create-dragon-minus-1216624:6552025"
+
+    forgeRuntimeLibrary "org.squiddev:Cobalt:0.7.3"
+    forgeRuntimeLibrary "com.jcraft:jzlib:1.1.3"
+    forgeRuntimeLibrary "io.netty:netty-codec-http:4.1.82.Final"
+    forgeRuntimeLibrary "io.netty:netty-codec-socks:4.1.82.Final"
+    forgeRuntimeLibrary "io.netty:netty-handler-proxy:4.1.82.Final"
+
+    modLocalRuntime "cc.tweaked:cc-tweaked-${minecraft_version}-forge:${cc_tweaked_version}"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

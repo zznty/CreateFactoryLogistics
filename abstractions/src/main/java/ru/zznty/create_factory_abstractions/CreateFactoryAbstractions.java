@@ -4,6 +4,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import ru.zznty.create_factory_abstractions.compat.computercraft.AbstractionsComputerCraftCompat;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.registry.TypeRegistries;
 
@@ -16,5 +18,10 @@ public final class CreateFactoryAbstractions {
     public CreateFactoryAbstractions(IEventBus modEventBus, ModContainer modContainer) {
         TypeRegistries.register(modEventBus);
         GenericContentExtender.register(modEventBus);
+    }
+
+    public static void init(final FMLCommonSetupEvent event) {
+        if (ModList.get().isLoaded(AbstractionsComputerCraftCompat.MOD_ID))
+            event.enqueueWork(AbstractionsComputerCraftCompat::register);
     }
 }
