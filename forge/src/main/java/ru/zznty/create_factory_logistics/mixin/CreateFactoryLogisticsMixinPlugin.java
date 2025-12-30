@@ -1,8 +1,10 @@
 package ru.zznty.create_factory_logistics.mixin;
 
+import net.minecraftforge.fml.loading.LoadingModList;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
+import ru.zznty.create_factory_abstractions.compat.computercraft.AbstractionsComputerCraftCompat;
 
 import java.util.List;
 import java.util.Set;
@@ -28,6 +30,12 @@ public class CreateFactoryLogisticsMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
+        if (LoadingModList.get().getModFileById(AbstractionsComputerCraftCompat.MOD_ID) != null)
+            return List.of(
+                    "compat.computercraft.StockTickerPeripheralMixin",
+                    "compat.computercraft.GenericRedstoneRequesterPeripheralMixin"
+            );
+
         return null;
     }
 

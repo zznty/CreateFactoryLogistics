@@ -26,6 +26,7 @@ subprojects {
         maven { url = "https://maven.blamejared.com" } // JEI, Vazkii's Mods
         maven { url = "https://maven.liukrast.net/" } // extra gauges
         maven { url = "https://repo.spongepowered.org/maven/" } // Sponge Mixins
+        maven { url = "https://maven.squiddev.cc" } // CC: Tweaked
         mavenCentral()
     }
 
@@ -54,6 +55,11 @@ subprojects {
         modCompileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
         modCompileOnly "mezz.jei:jei-${minecraft_version}-forge:${jei_version}"
         modRuntimeOnly "mezz.jei:jei-${minecraft_version}-forge:${jei_version}"
+
+        compileOnly "cc.tweaked:cc-tweaked-${minecraft_version}-core-api:${cc_tweaked_version}"
+        modCompileOnly "cc.tweaked:cc-tweaked-${minecraft_version}-forge-api:${cc_tweaked_version}", {
+            transitive = false
+        }
 
         modImplementation "com.simibubi.create:create-${minecraft_version}:${create_version}:slim", { transitive = false }
         modImplementation "net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}"

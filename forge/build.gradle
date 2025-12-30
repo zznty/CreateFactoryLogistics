@@ -34,6 +34,14 @@ dependencies {
     modCompileOnly "curse.maven:extra_gauges-1263228:7058464", {
         transitive = false
     }
+
+    forgeRuntimeLibrary "org.squiddev:Cobalt:0.7.3"
+    forgeRuntimeLibrary "com.jcraft:jzlib:1.1.3"
+    forgeRuntimeLibrary "io.netty:netty-codec-http:4.1.82.Final"
+    forgeRuntimeLibrary "io.netty:netty-codec-socks:4.1.82.Final"
+    forgeRuntimeLibrary "io.netty:netty-handler-proxy:4.1.82.Final"
+
+    modLocalRuntime "cc.tweaked:cc-tweaked-${minecraft_version}-forge:${cc_tweaked_version}"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

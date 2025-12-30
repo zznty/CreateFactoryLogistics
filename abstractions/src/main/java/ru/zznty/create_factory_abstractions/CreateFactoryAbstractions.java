@@ -2,7 +2,9 @@ package ru.zznty.create_factory_abstractions;
 
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import ru.zznty.create_factory_abstractions.compat.computercraft.AbstractionsComputerCraftCompat;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.registry.TypeRegistries;
 
@@ -15,5 +17,11 @@ public final class CreateFactoryAbstractions {
     public CreateFactoryAbstractions(FMLJavaModLoadingContext context) {
         TypeRegistries.register(context.getModEventBus());
         GenericContentExtender.register(context.getModEventBus());
+        context.getModEventBus().addListener(CreateFactoryAbstractions::init);
+    }
+
+    public static void init(final FMLCommonSetupEvent event) {
+        if (ModList.get().isLoaded(AbstractionsComputerCraftCompat.MOD_ID))
+            event.enqueueWork(AbstractionsComputerCraftCompat::register);
     }
 }

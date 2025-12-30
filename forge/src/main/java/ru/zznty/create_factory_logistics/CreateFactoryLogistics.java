@@ -4,11 +4,14 @@ import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
+import ru.zznty.create_factory_abstractions.compat.computercraft.AbstractionsComputerCraftCompat;
+import ru.zznty.create_factory_logistics.compat.computercraft.ComputerCraftCompat;
 import ru.zznty.create_factory_logistics.data.FactoryDataGen;
 
 @Mod(CreateFactoryLogistics.MODID)
@@ -50,6 +53,8 @@ public class CreateFactoryLogistics {
     public static void init(final FMLCommonSetupEvent event) {
         event.enqueueWork(FactoryInventoryIdentifiers::register);
         event.enqueueWork(FactoryJarUnpackingHandlers::register);
+        if (ModList.get().isLoaded(AbstractionsComputerCraftCompat.MOD_ID))
+            event.enqueueWork(ComputerCraftCompat::register);
     }
 
     public static ResourceLocation resource(String path) {
