@@ -2,6 +2,7 @@ package ru.zznty.create_factory_abstractions.generic.key;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.ApiStatus;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
@@ -56,5 +57,15 @@ public class EmptyKeyProvider implements GenericKeyProvider<EmptyKey> {
     @Override
     public int compare(EmptyKey o1, EmptyKey o2) {
         return 0;
+    }
+
+    @Override
+    public int stackSize(EmptyKey key) {
+        return Item.DEFAULT_MAX_STACK_SIZE;
+    }
+
+    @Override
+    public int maxStackSize(EmptyKey key) {
+        return Item.DEFAULT_MAX_STACK_SIZE;
     }
 }

@@ -1,31 +1,41 @@
 package ru.zznty.create_factory_abstractions.generic.key.item;
 
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventorySummaryProvider;
+import ru.zznty.create_factory_abstractions.api.generic.capability.PackageBuilder;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericCapabilityWrapperProvider;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyProvider;
+import ru.zznty.create_factory_abstractions.generic.impl.BuiltInPackageBuilder;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @ApiStatus.Internal
 public class ItemKeyProvider implements GenericKeyProvider<ItemKey> {
-    private final GenericCapabilityWrapperProvider<IItemHandler> provider = new GenericCapabilityWrapperProvider<>() {
+    private final GenericCapabilityWrapperProvider<IItemHandler, IItemHandler> provider = new GenericCapabilityWrapperProvider<>() {
         @Override
         public BlockCapability<IItemHandler, Direction> capability() {
             return Capabilities.ItemHandler.BLOCK;
         }
 
         @Override
-        public IItemHandler wrap(GenericInventorySummaryProvider summaryProvider) {
-            return new NetworkItemHandler(summaryProvider);
+        public ItemCapability<IItemHandler, Void> capabilityItem() {
+            return Capabilities.ItemHandler.ITEM;
+        }
+
+        @Override
+        public IItemHandler wrap(GenericInventorySummaryProvider summaryProvider, HolderLookup.Provider registries) {
+            return new NetworkItemHandler(summaryProvider, registries);
         }
 
         @Override
@@ -85,8 +95,23 @@ public class ItemKeyProvider implements GenericKeyProvider<ItemKey> {
     }
 
     @Override
-    public @Nullable <Cap> GenericCapabilityWrapperProvider<Cap> capabilityWrapperProvider() {
+    public @Nullable <Cap, ItemCap> GenericCapabilityWrapperProvider<Cap, ItemCap> capabilityWrapperProvider() {
         //noinspection unchecked
-        return (GenericCapabilityWrapperProvider<Cap>) provider;
+        return (GenericCapabilityWrapperProvider<Cap, ItemCap>) provider;
+    }
+
+    @Override
+    public @Nullable Supplier<PackageBuilder> packageBuilder() {
+        return BuiltInPackageBuilder::new;
+    }
+
+    @Override
+    public int stackSize(ItemKey key) {
+        return key.stack().getMaxStackSize();
+    }
+
+    @Override
+    public int maxStackSize(ItemKey key) {
+        return stackSize(key);
     }
 }

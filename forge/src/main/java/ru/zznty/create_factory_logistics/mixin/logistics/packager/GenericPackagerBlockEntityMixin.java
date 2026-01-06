@@ -140,7 +140,7 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
                 GenericInventorySummaryProvider summaryProvider = createFactoryLogistics$inventoryBehaviour.getInventory().get(
                         handler.supportedKey());
                 if (summaryProvider != null) {
-                    summaryProvider.apply(available);
+                    summaryProvider.apply(available, getLevel().registryAccess());
                     invVersionTracker.awaitNewVersion(targetInventory);
                     createFactoryLogistics$submitNewArrivals(
                             availableItems == null ? null : GenericInventorySummary.of(availableItems), available);

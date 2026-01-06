@@ -45,16 +45,6 @@ public class FluidClientGuiHandler implements GenericKeyClientGuiHandler<FluidKe
         return CreateLang.fluidName(key.stack());
     }
 
-    @Override
-    public int stackSize(FluidKey key) {
-        return 1000;
-    }
-
-    @Override
-    public int maxStackSize(FluidKey key) {
-        return -1;
-    }
-
     public static String formatValue(int count) {
         return FactoryFluidPanelBehaviour.formatLevelShort(count).string();
     }

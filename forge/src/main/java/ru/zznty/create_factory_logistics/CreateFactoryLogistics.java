@@ -18,11 +18,10 @@ import ru.zznty.create_factory_abstractions.compat.computercraft.AbstractionsCom
 import ru.zznty.create_factory_logistics.compat.computercraft.ComputerCraftCompat;
 import ru.zznty.create_factory_logistics.data.FactoryDataGen;
 
-import static ru.zznty.create_factory_logistics.FactoryGenericExtension.MEKANISM_ID;
-
 @Mod(CreateFactoryLogistics.MODID)
 public class CreateFactoryLogistics {
     public static final String MODID = "create_factory_logistics";
+    public static final String MEKANISM_ID = "mekanism";
 
     public static final Logger LOGGER = LogUtils.getLogger();
 

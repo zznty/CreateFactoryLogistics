@@ -4,7 +4,6 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyClientGuiHandler;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyClientProvider;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyClientRenderHandler;
@@ -36,16 +35,6 @@ public class EmptyKeyClientProvider implements GenericKeyClientProvider<EmptyKey
             @Override
             public LangBuilder nameBuilder(EmptyKey key) {
                 return CreateLang.text("");
-            }
-
-            @Override
-            public int stackSize(EmptyKey key) {
-                return Item.DEFAULT_MAX_STACK_SIZE;
-            }
-
-            @Override
-            public int maxStackSize(EmptyKey key) {
-                return Item.DEFAULT_MAX_STACK_SIZE;
             }
         };
     }

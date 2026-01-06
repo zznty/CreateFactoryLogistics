@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(HosePulleyFluidHandler.class)
 public interface HosePulleyFluidHandlerAccessor {
-    @Accessor
+    @Accessor(remap = false)
     FluidDrainingBehaviour getDrainer();
 }

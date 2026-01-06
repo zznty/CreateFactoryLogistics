@@ -16,17 +16,4 @@ public interface GenericKeyClientGuiHandler<K extends GenericKey> {
     List<Component> tooltipBuilder(K key, int amount);
 
     LangBuilder nameBuilder(K key);
-
-    /**
-     * Returns stack (shift-click) size of a key
-     * Note: it is here because I don't feel it would be useful anywhere except client gui
-     */
-    int stackSize(K key);
-
-    /**
-     * Returns max stack (shift-click) size of a key
-     * Note: it is here because I don't feel it would be useful anywhere except client gui
-     * Return negative value if size is unlimited e.g. fluids
-     */
-    int maxStackSize(K key);
 }

@@ -48,16 +48,6 @@ class ItemKeyGuiHandler implements GenericKeyClientGuiHandler<ItemKey> {
         return CreateLang.itemName(key.stack());
     }
 
-    @Override
-    public int stackSize(ItemKey key) {
-        return key.stack().getMaxStackSize();
-    }
-
-    @Override
-    public int maxStackSize(ItemKey key) {
-        return stackSize(key);
-    }
-
     private static String formatValue(int count) {
         if (count >= BigItemStack.INF) return "\u221E";
 

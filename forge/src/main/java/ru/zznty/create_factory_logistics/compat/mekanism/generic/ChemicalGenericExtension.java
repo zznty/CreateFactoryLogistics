@@ -6,24 +6,34 @@ import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalHandler;
 import mekanism.common.capabilities.Capabilities;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.ItemCapability;
 import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventorySummaryProvider;
+import ru.zznty.create_factory_abstractions.api.generic.capability.PackageBuilder;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.GenericKeyProviderExtension;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericCapabilityWrapperProvider;
+import ru.zznty.create_factory_logistics.compat.mekanism.logistics.barrelPackager.BarrelPackageBuilder;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
-public class ChemicalGenericExtension implements GenericKeyProviderExtension<ChemicalKey, ChemicalStack, Chemical, IChemicalHandler> {
-    private final GenericCapabilityWrapperProvider<IChemicalHandler> provider = new GenericCapabilityWrapperProvider<>() {
+public class ChemicalGenericExtension implements GenericKeyProviderExtension<ChemicalKey, ChemicalStack, Chemical, IChemicalHandler, IChemicalHandler> {
+    private final GenericCapabilityWrapperProvider<IChemicalHandler, IChemicalHandler> provider = new GenericCapabilityWrapperProvider<>() {
         @Override
         public BlockCapability<IChemicalHandler, Direction> capability() {
             return Capabilities.CHEMICAL.block();
         }
 
         @Override
-        public IChemicalHandler wrap(GenericInventorySummaryProvider summaryProvider) {
-            return new NetworkChemicalHandler(summaryProvider);
+        public ItemCapability<IChemicalHandler, Void> capabilityItem() {
+            return Capabilities.CHEMICAL.item();
+        }
+
+        @Override
+        public IChemicalHandler wrap(GenericInventorySummaryProvider summaryProvider, HolderLookup.Provider registries) {
+            return new NetworkChemicalHandler(summaryProvider, registries);
         }
 
         @Override
@@ -69,12 +79,27 @@ public class ChemicalGenericExtension implements GenericKeyProviderExtension<Che
     }
 
     @Override
-    public GenericCapabilityWrapperProvider<IChemicalHandler> capabilityWrapperProvider() {
-        return null;
+    public GenericCapabilityWrapperProvider<IChemicalHandler, IChemicalHandler> capabilityWrapperProvider() {
+        return provider;
+    }
+
+    @Override
+    public Supplier<PackageBuilder> packageBuilder() {
+        return BarrelPackageBuilder::new;
     }
 
     @Override
     public int compare(ChemicalKey a, ChemicalKey b) {
         return a.chemical().getRegisteredName().compareTo(b.chemical().getRegisteredName());
+    }
+
+    @Override
+    public int stackSize(ChemicalKey key) {
+        return 1000;
+    }
+
+    @Override
+    public int maxStackSize(ChemicalKey key) {
+        return -1;
     }
 }

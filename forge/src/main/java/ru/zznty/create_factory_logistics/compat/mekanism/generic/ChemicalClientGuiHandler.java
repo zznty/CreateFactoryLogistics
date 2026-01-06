@@ -58,14 +58,4 @@ public class ChemicalClientGuiHandler implements GenericKeyClientGuiHandler<Chem
     public LangBuilder nameBuilder(ChemicalKey key) {
         return CreateLang.builder().add(key.chemical().value().getTextComponent());
     }
-
-    @Override
-    public int stackSize(ChemicalKey key) {
-        return 1000;
-    }
-
-    @Override
-    public int maxStackSize(ChemicalKey key) {
-        return -1;
-    }
 }

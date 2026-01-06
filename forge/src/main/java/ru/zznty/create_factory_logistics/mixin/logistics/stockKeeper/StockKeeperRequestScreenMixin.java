@@ -243,8 +243,8 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     )
     private int getMaxStackSize(ItemStack instance, @Local BigItemStack itemStack) {
         BigGenericStack stack = BigGenericStack.of(itemStack);
-        return GenericContentExtender.registrationOf(stack.get().key()).clientProvider().guiHandler().stackSize(
-                stack.get().key());
+        return GenericContentExtender.registrationOf(stack.get().key()).provider()
+                .stackSize(stack.get().key());
     }
 
     @Redirect(

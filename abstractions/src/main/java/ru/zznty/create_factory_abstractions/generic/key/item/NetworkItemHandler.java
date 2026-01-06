@@ -3,6 +3,7 @@ package ru.zznty.create_factory_abstractions.generic.key.item;
 import com.simibubi.create.foundation.item.ItemHelper;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraft.core.HolderLookup;
 import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventorySummaryProvider;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
@@ -14,9 +15,9 @@ final class NetworkItemHandler implements IItemHandler {
 
     private final List<GenericStack> stacks;
 
-    public NetworkItemHandler(GenericInventorySummaryProvider summaryProvider) {
+    public NetworkItemHandler(GenericInventorySummaryProvider summaryProvider, HolderLookup.Provider registries) {
         GenericInventorySummary summary = GenericInventorySummary.empty();
-        summaryProvider.apply(summary);
+        summaryProvider.apply(summary, registries);
         stacks = summary.get().stream().filter(s -> s.key() instanceof ItemKey).toList();
     }
 

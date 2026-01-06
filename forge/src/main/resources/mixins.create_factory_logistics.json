@@ -12,6 +12,7 @@
     "accessor.StockTickerBlockEntityAccessor",
     "bugfixes.ArmBlockEntityMixin",
     "logistics.composite.CompositePackageSawingMixin",
+    "logistics.composite.CompositePackageStyleMixin",
     "logistics.filter.GenericAttributeFilterItemStackMixin",
     "logistics.filter.GenericFilterItemStackMixin",
     "logistics.jar.ChainConveyorDropMixin",
@@ -41,6 +42,8 @@
   ],
   "client": [
     "accessor.CategoryEntryAccessor",
+    "logistics.composite.CompositePackageChainConveyorRendererMixin",
+    "logistics.composite.CompositePackageChainConveyorVisualMixin",
     "logistics.panel.FactoryPanelScreenMixin",
     "logistics.redstoneRequester.RedstoneRequesterScreenMixin",
     "logistics.stockKeeper.StockKeeperGuiContainerHandlerMixin",

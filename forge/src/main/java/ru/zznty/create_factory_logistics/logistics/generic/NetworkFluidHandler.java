@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_logistics.logistics.generic;
 
 import com.simibubi.create.foundation.fluid.FluidHelper;
+import net.minecraft.core.HolderLookup;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
@@ -13,9 +14,9 @@ import java.util.List;
 final class NetworkFluidHandler implements IFluidHandler {
     private final List<GenericStack> stacks;
 
-    public NetworkFluidHandler(GenericInventorySummaryProvider summaryProvider) {
+    public NetworkFluidHandler(GenericInventorySummaryProvider summaryProvider, HolderLookup.Provider registries) {
         GenericInventorySummary summary = GenericInventorySummary.empty();
-        summaryProvider.apply(summary);
+        summaryProvider.apply(summary, registries);
         stacks = summary.get().stream().filter(s -> s.key() instanceof FluidKey).toList();
     }
 

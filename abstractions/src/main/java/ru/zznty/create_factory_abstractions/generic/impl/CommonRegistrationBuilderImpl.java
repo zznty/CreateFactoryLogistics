@@ -3,6 +3,7 @@ package ru.zznty.create_factory_abstractions.generic.impl;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_abstractions.api.generic.capability.PackageBuilder;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.CommonRegistrationBuilder;
 import ru.zznty.create_factory_abstractions.api.generic.extensibility.GenericKeyProviderExtension;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericCapabilityWrapperProvider;
@@ -25,13 +26,13 @@ class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonReg
     }
 
     @Override
-    public <Value, RegistryValue, Capability> CommonRegistrationBuilder<Key> provider(
-            Supplier<GenericKeyProviderExtension<Key, Value, RegistryValue, Capability>> provider) {
+    public <Value, RegistryValue, Capability, ItemCapability> CommonRegistrationBuilder<Key> provider(
+            Supplier<GenericKeyProviderExtension<Key, Value, RegistryValue, Capability, ItemCapability>> provider) {
         if (this.provider != null) {
             throw new IllegalStateException("Provider already set");
         }
         this.provider = () -> new GenericKeyProvider<>() {
-            private final GenericKeyProviderExtension<Key, Value, RegistryValue, Capability> extension = provider.get();
+            private final GenericKeyProviderExtension<Key, Value, RegistryValue, Capability, ItemCapability> extension = provider.get();
 
             @Override
             public Key defaultKey() {
@@ -84,9 +85,24 @@ class CommonRegistrationBuilderImpl<Key extends GenericKey> implements CommonReg
             }
 
             @Override
-            public @Nullable <Cap> GenericCapabilityWrapperProvider<Cap> capabilityWrapperProvider() {
+            public @Nullable <Cap, ItemCap> GenericCapabilityWrapperProvider<Cap, ItemCap> capabilityWrapperProvider() {
                 //noinspection unchecked
-                return (GenericCapabilityWrapperProvider<Cap>) extension.capabilityWrapperProvider();
+                return (GenericCapabilityWrapperProvider<Cap, ItemCap>) extension.capabilityWrapperProvider();
+            }
+
+            @Override
+            public @Nullable Supplier<PackageBuilder> packageBuilder() {
+                return extension.packageBuilder();
+            }
+
+            @Override
+            public int stackSize(Key key) {
+                return extension.stackSize(key);
+            }
+
+            @Override
+            public int maxStackSize(Key key) {
+                return extension.maxStackSize(key);
             }
         };
         return this;

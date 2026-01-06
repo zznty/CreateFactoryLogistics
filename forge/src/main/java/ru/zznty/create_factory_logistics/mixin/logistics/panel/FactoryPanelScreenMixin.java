@@ -306,7 +306,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                                         @Local BigItemStack itemStack) {
         BigGenericStack stack = BigGenericStack.of(itemStack);
 
-        int maxStackSize = GenericContentExtender.registrationOf(stack.get().key()).clientProvider().guiHandler()
+        int maxStackSize = GenericContentExtender.registrationOf(stack.get().key()).provider()
                 .maxStackSize(stack.get().key());
 
         if (maxStackSize < 0)
@@ -326,7 +326,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
     private int scrollOutputClampRemoval(int value, int min, int max, Operation<Integer> original) {
         BigGenericStack stack = BigGenericStack.of(outputConfig);
 
-        int maxStackSize = GenericContentExtender.registrationOf(stack.get().key()).clientProvider().guiHandler()
+        int maxStackSize = GenericContentExtender.registrationOf(stack.get().key()).provider()
                 .maxStackSize(stack.get().key());
 
         if (maxStackSize < 0)

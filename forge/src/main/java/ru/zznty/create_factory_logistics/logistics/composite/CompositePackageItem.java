@@ -9,8 +9,10 @@ import net.createmod.catnip.nbt.NBTHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -36,6 +38,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryItems;
 
 import java.lang.ref.WeakReference;
@@ -126,6 +129,27 @@ public class CompositePackageItem extends PackageItem {
         return newInv;
     }
 
+    public static boolean hasContent(ItemStack box) {
+        return box.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains(ITEMS_TAG);
+    }
+
+    public static ItemStack getEffectiveBox(HolderLookup.Provider lookupProvider, ItemStack box) {
+        if (!(box.getItem() instanceof CompositePackageItem) || hasContent(box)) return box;
+        List<ItemStack> children = getChildren(lookupProvider, box);
+        if (children.isEmpty()) return box;
+        return children.get(0);
+    }
+
+    private static final HolderLookup.Provider BUILTIN_LOOKUP = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);
+
+    public static List<ItemStack> getChildren(ItemStack stack) {
+        return getChildren(BUILTIN_LOOKUP, stack);
+    }
+
+    public static ItemStack getEffectiveBox(ItemStack box) {
+        return getEffectiveBox(BUILTIN_LOOKUP, box);
+    }
+
     public static ItemStack of(HolderLookup.Provider lookupProvider, ItemStack box, List<ItemStack> originalChildren) {
         if (originalChildren.isEmpty())
             return PackageItem.containing(PackageItem.getContents(box));
@@ -173,7 +197,9 @@ public class CompositePackageItem extends PackageItem {
         CustomData.update(DataComponents.CUSTOM_DATA, compositeBox, t -> {
             t.put(CHILDREN_TAG,
                   NBTHelper.writeCompoundList(children, s -> (CompoundTag) s.saveOptional(lookupProvider)));
-            t.put(ITEMS_TAG, contents.serializeNBT(lookupProvider));
+            CompoundTag stackTag = contents.serializeNBT(lookupProvider);
+            if (!stackTag.getList("Items", Tag.TAG_COMPOUND).isEmpty())
+                t.put(ITEMS_TAG, stackTag);
         });
 
         return compositeBox;
@@ -185,6 +211,11 @@ public class CompositePackageItem extends PackageItem {
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         consumer.accept(SimpleCustomRenderer.create(this, new CompositePackageRenderer()));
         super.initializeClient(consumer);
+    }
+
+    @Override
+    public String getDescriptionId() {
+        return "item." + CreateFactoryLogistics.MODID + ".composite_package";
     }
 
     @Override

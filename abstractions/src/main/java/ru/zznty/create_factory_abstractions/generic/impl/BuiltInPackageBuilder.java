@@ -15,7 +15,7 @@ import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
 import java.util.ArrayList;
 import java.util.List;
 
-class BuiltInPackageBuilder implements PackageBuilder {
+public class BuiltInPackageBuilder implements PackageBuilder {
     private ItemStackHandler inventory = new ItemStackHandler(PackageItem.SLOTS);
     private boolean hasBulky = false;
     private boolean isEmpty = true;

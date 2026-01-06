@@ -3,6 +3,7 @@ package ru.zznty.create_factory_logistics.compat.mekanism.generic;
 import mekanism.api.Action;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalHandler;
+import net.minecraft.core.HolderLookup;
 import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventorySummaryProvider;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
@@ -13,9 +14,9 @@ import java.util.List;
 public class NetworkChemicalHandler implements IChemicalHandler {
     private final List<GenericStack> stacks;
 
-    public NetworkChemicalHandler(GenericInventorySummaryProvider summaryProvider) {
+    public NetworkChemicalHandler(GenericInventorySummaryProvider summaryProvider, HolderLookup.Provider registries) {
         GenericInventorySummary summary = GenericInventorySummary.empty();
-        summaryProvider.apply(summary);
+        summaryProvider.apply(summary, registries);
         stacks = summary.get().stream().filter(s -> s.key() instanceof ChemicalKey).toList();
     }
 

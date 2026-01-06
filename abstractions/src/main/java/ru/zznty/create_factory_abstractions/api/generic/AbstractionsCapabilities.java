@@ -3,6 +3,7 @@ package ru.zznty.create_factory_abstractions.api.generic;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.ItemCapability;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventory;
 import ru.zznty.create_factory_abstractions.api.generic.capability.PackagerAttachedHandler;
@@ -16,4 +17,9 @@ public class AbstractionsCapabilities {
             BlockCapability.create(
                     ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "generic_inventory"),
                     GenericInventory.class, Direction.class);
+
+    public static final ItemCapability<GenericInventory, Void> GENERIC_INVENTORY_ITEM =
+            ItemCapability.create(
+                    ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "generic_inventory_item"),
+                    GenericInventory.class, Void.class);
 }
