@@ -59,7 +59,7 @@ subprojects {
         modRuntimeOnly "mezz.jei:jei-${minecraft_version}-${forge_flavour}:${jei_version}"
 
         modImplementation "com.simibubi.create:create-${minecraft_version}:${create_version}:slim", { transitive = false }
-        modImplementation "net.createmod.ponder:Ponder-${forge_flavour_pascal}-${minecraft_version}:${ponder_version}"
+        modImplementation "net.createmod.ponder:ponder-${forge_flavour}:${ponder_version}+mc${minecraft_version}"
         modCompileOnly "dev.engine-room.flywheel:flywheel-${forge_flavour}-api-${minecraft_version}:${flywheel_version}"
         modRuntimeOnly "dev.engine-room.flywheel:flywheel-${forge_flavour}-${minecraft_version}:${flywheel_version}"
         modImplementation "com.tterrag.registrate:Registrate:${registrate_version}"

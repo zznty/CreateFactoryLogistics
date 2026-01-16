@@ -182,7 +182,6 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
         Objects.requireNonNull(level);
 
         PackagerAttachedHandler handler = PackagerAttachedHandler.get((PackagerBlockEntity) (Object) this);
-        ;
         if (handler == null) return promiseQueues;
 
         for (Direction d : Iterate.directions) {
@@ -472,15 +471,17 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
             method = "read",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/createmod/catnip/codecs/CatnipCodecUtils;decode(Lcom/mojang/serialization/Codec;Lnet/minecraft/core/HolderLookup$Provider;Lnet/minecraft/nbt/Tag;)Ljava/util/Optional;"
+                    target = "Lnet/createmod/catnip/codecs/CatnipCodecUtils;decodeOrNull(Lcom/mojang/serialization/Codec;Lnet/minecraft/core/HolderLookup$Provider;Lnet/minecraft/nbt/Tag;)Ljava/lang/Object;"
             )
     )
-    private Optional<InventorySummary> readLastSummary(Codec<InventorySummary> codec, HolderLookup.Provider registries,
-                                                       Tag tag, Operation<Optional<InventorySummary>> original) {
-        GenericInventorySummary summary = GenericInventorySummary.empty();
-        if (tag instanceof ListTag listTag)
+    private Object readLastSummary(Codec<InventorySummary> codec, HolderLookup.Provider registries,
+                                   Tag tag, Operation<Optional<InventorySummary>> original) {
+        if (tag instanceof ListTag listTag) {
+            GenericInventorySummary summary = GenericInventorySummary.empty();
             NBTHelper.iterateCompoundList(listTag, t -> summary.add(GenericStackSerializer.read(registries, t)));
-        return Optional.of(summary.asSummary());
+            return summary;
+        }
+        return null;
     }
 
     @Redirect(
