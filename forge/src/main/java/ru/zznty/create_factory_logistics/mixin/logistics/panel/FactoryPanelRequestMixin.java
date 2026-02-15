@@ -245,7 +245,8 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
 
         // Map of result -> requests of its ingredients
         // Input items may come from differing networks
-        Map<PanelRequestedStacks, Multimap<PackagerBlockEntity, GenericRequest>> requests = new HashMap<>();
+        Map<PanelRequestedStacks, Multimap<PackagerBlockEntity, GenericRequest>> requests = new LinkedHashMap<>();
+        Set<PanelRequestedStacks> contextsWithRequests = new HashSet<>();
 
         // Collect request distributions
         for (PanelRequestedStacks requestContext : toRequest) {
@@ -255,6 +256,9 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
                 GenericOrder order = GenericOrder.of(requestContext, entry.getValue());
                 Multimap<PackagerBlockEntity, GenericRequest> request = GenericLogisticsManager.findPackagersForRequest(
                         entry.getKey(), order, null, requestContext.recipeAddress());
+                if (!request.isEmpty()) {
+                    contextsWithRequests.add(requestContext);
+                }
 
                 requests.merge(requestContext, request, (a, b) -> {
                     a.putAll(b);
@@ -274,11 +278,20 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
             GenericLogisticsManager.performPackageRequests(entry);
 
         // Keep the output promises
-        for (Map.Entry<PanelRequestedStacks, Multimap<PackagerBlockEntity, GenericRequest>> entry : requests.entrySet()) {
-            RequestPromiseQueue promises = Create.LOGISTICS.getQueuedPromises(entry.getKey().resultNetwork());
+        for (PanelRequestedStacks requestContext : toRequest) {
+            if (!contextsWithRequests.contains(requestContext)) {
+                continue;
+            }
+
+            Multimap<PackagerBlockEntity, GenericRequest> request = requests.get(requestContext);
+            if (request == null || !request.isEmpty()) {
+                continue;
+            }
+
+            RequestPromiseQueue promises = Create.LOGISTICS.getQueuedPromises(requestContext.resultNetwork());
             // if all requests were sent, add the output promise
-            if (promises != null && entry.getValue().isEmpty())
-                promises.add(new RequestPromise(BigGenericStack.of(entry.getKey().result()).asStack()));
+            if (promises != null)
+                promises.add(new RequestPromise(BigGenericStack.of(requestContext.result()).asStack()));
         }
 
         panelBE.advancements.awardPlayer(AllAdvancements.FACTORY_GAUGE);
