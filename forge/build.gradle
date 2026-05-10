@@ -20,7 +20,7 @@ dependencies {
     implementation(project(path: ":create_factory_abstractions-${minecraft_version}", configuration: 'namedElements')) { transitive false }
     include project(":create_factory_abstractions-${minecraft_version}")
 
-    modCompileOnly "net.liukrast:extra_gauges-${minecraft_version}:${extra_gauges_version}", {
+    modCompileOnly "net.liukrast:deployer-${minecraft_version}:${deployer_version}", {
         transitive = false
     }
 
