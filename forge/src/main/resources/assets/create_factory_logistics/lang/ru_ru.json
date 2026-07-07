@@ -11,7 +11,7 @@
   "itemGroup.create_factory_logistics.base": "Create Factory Logistics",
   "create_factory_logistics.gui.ingredient_type_qualified_item": "Тип содержимого:",
   "create_factory_logistics.gui.ingredient_type.fluid": "Жидкость",
-  "create_factory_logistics.gui.ingredient_type.item": "Предмет",
+  "create_factory_abstractions.gui.ingredient_type.item": "Предмет",
   "create_factory_logistics.gui.network_link.mode": "Источник содержимого",
   "create_factory_logistics.gui.network_link.mode.stored": "На складе",
   "create_factory_logistics.gui.network_link.mode.promised": "Заказанное",
@@ -20,5 +20,10 @@
   "create_factory_logistics.ponder.mixer_upkeep.text_1": "Сетевые ссылки могут быть подключены к устройству чтения инвентаря, например, пороговому переключателю",
   "create_factory_logistics.ponder.mixer_upkeep.text_2": "Так что горелка всполоха будет накормлена только при необходимости",
   "create_factory_logistics.ponder.mixer_upkeep.text_3": "По прибытии заказа, переключатель будет считывать новые состояния и реагировать на них",
-  "create_factory_logistics.gui.factory_fluid_panel.place_fluid_to_monitor": "Разместите жидкость"
+  "create_factory_logistics.gui.factory_fluid_panel.place_fluid_to_monitor": "Разместите жидкость",
+  "entity.create_factory_logistics.composite_package": "Composite Package",
+  "create.item_attributes.is_fluid": "is %1$s",
+  "create.item_attributes.is_fluid.inverted": "is not %1$s",
+  "create.item_attributes.is_fluid_no_nbt": "is %1$s (no NBT)",
+  "create.item_attributes.is_fluid_no_nbt.inverted": "is not %1$s (no NBT)"
 }
