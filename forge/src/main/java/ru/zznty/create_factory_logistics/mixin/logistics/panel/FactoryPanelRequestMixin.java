@@ -289,9 +289,9 @@ public abstract class FactoryPanelRequestMixin extends FilteringBehaviour implem
     @ModifyVariable(
             method = "tickStorageMonitor",
             at = @At("STORE"),
-            ordinal = 0
+            name = "shouldSatisfy"
     )
-    private boolean setSatisfied(boolean value, @Local(ordinal = 1) int promised) {
-        return value && promised == 0;
+    private boolean setSatisfied(boolean shouldSatisfy, @Local(name = "promised") int promised) {
+        return shouldSatisfy && promised == 0;
     }
 }

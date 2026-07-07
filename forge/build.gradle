@@ -28,7 +28,7 @@ dependencies {
 //        transitive = false
 //    }
 
-    modLocalRuntime "curse.maven:create-vibrant-vaults-1251719:6463890"
+//    modLocalRuntime "curse.maven:create-vibrant-vaults-1251719:6463890"
 //    modLocalRuntime "curse.maven:create-enchantment-industry-688768:6549319"
 //    modLocalRuntime "curse.maven:create-dragon-minus-1216624:6552025"
 }
