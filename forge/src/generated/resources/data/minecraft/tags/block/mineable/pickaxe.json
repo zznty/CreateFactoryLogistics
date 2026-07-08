@@ -3,7 +3,13 @@
     "create_factory_logistics:jar_packager",
     "create_factory_logistics:factory_fluid_gauge",
     "create_factory_logistics:network_link",
-    "create_factory_logistics:factory_chemical_gauge",
-    "create_factory_logistics:barrel_packager"
+    {
+      "id": "create_factory_logistics:factory_chemical_gauge",
+      "required": false
+    },
+    {
+      "id": "create_factory_logistics:barrel_packager",
+      "required": false
+    }
   ]
 }

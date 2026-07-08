@@ -33,6 +33,7 @@ public class FactoryMekanismBlocks {
                     .initialProperties(SharedProperties::copperMetal)
                     .properties(BlockBehaviour.Properties::noOcclusion)
                     .properties(BlockBehaviour.Properties::forceSolidOn)
+                    .asOptional()
                     .transform(pickaxeOnly())
                     .blockstate((c, p) -> p.horizontalFaceBlock(c.get(), AssetLookup.partialBaseModel(c, p)))
                     .onRegister(CreateRegistrate.blockModel(() -> FactoryChemicalPanelModel::new))
@@ -59,7 +60,8 @@ public class FactoryMekanismBlocks {
                     .register();
 
     public static final BlockEntry<BarrelPackagerBlock> BARREL_PACKAGER = REGISTRATE.block("barrel_packager",
-                                                                                           BarrelPackagerBlock::new)
+                                                                                            BarrelPackagerBlock::new)
+            .asOptional()
             .transform(BuilderTransformers.packager())
             .blockstate(new JarPackagerGenerator()::generate)
             .recipe((c, b) ->

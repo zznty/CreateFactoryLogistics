@@ -37,6 +37,11 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
 
     @Override
     public boolean matches(CraftingInput p_44002_, Level p_44003_) {
+        // The recipe for this key was generated while its generic type was registered (e.g. "chemical" with
+        // Mekanism installed) but the type is not present in this environment, so the recipe can never match.
+        if (!GenericContentExtender.REGISTRY.containsKey(key))
+            return false;
+
         List<ItemStack> list = new ArrayList<>(p_44002_.items());
         list.removeIf(ItemStack::isEmpty);
         boolean isEmpty = key.equals(ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "empty"));
@@ -61,6 +66,9 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
 
     @Override
     public ItemStack assemble(CraftingInput p_44001_, HolderLookup.Provider p_267165_) {
+        if (!GenericContentExtender.REGISTRY.containsKey(key))
+            return ItemStack.EMPTY;
+
         ItemStack link = null;
         ResourceLocation qualifier = null;
         boolean air = true;
