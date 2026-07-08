@@ -79,33 +79,42 @@ public class CompositeRepackagerHelper extends FactoryRepackagerHelper {
 
             for (int i = 0; i < allStacks.size(); i++) {
                 GenericStack entry = allStacks.get(i);
-                int targetAmount = entry.amount();
-                if (targetAmount == 0)
+                int remaining = entry.amount();
+                if (remaining == 0)
                     continue;
+                int targetAmount = remaining;
                 if (targetedEntry != null) {
                     targetAmount = targetedEntry.amount();
                     if (!entry.canStack(targetedEntry))
                         continue;
                 }
 
-                while (targetAmount > 0) {
+                while (targetAmount > 0 && remaining > 0) {
                     int maxStackSize = GenericContentExtender.registrationOf(entry.key()).provider().maxStackSize(
                             entry.key());
                     int removedAmount = Math.min(maxStackSize > 0 ? Math.min(targetAmount, maxStackSize) : targetAmount,
-                                                 entry.amount());
+                                                 remaining);
+                    if (removedAmount <= 0)
+                        break;
 
-                    GenericStack output = entry.withAmount(removedAmount);
+                    outputSummary.add(entry.withAmount(removedAmount));
                     targetAmount -= removedAmount;
+                    remaining -= removedAmount;
                     if (targetedEntry != null)
                         targetedEntry = targetedEntry.withAmount(targetAmount);
-                    allStacks.set(i, entry.withAmount(entry.amount() - removedAmount));
-                    if (allStacks.get(i).isEmpty())
-                        allStacks.remove(i);
-                    outputSummary.add(output);
                 }
+
+                allStacks.set(i, entry.withAmount(remaining));
+                if (allStacks.get(i).isEmpty())
+                    allStacks.remove(i);
 
                 continue Repack;
             }
+
+            // no entry matched the targeted stack; drop it so we don't spin on the same target forever
+            if (targetedEntry != null)
+                continue;
+            break;
         }
 
 
@@ -174,12 +183,18 @@ public class CompositeRepackagerHelper extends FactoryRepackagerHelper {
         for (GenericStack stack : outputStacks) {
             if (!(stack.key() instanceof ItemKey itemKey))
                 continue;
-            target.setStackInSlot(currentSlot++, itemKey.stack().copyWithCount(stack.amount()));
-            if (currentSlot < PackageItem.SLOTS)
-                continue;
-            exportingPackages.add(new BigItemStack(PackageItem.containing(target), 1));
-            target = new ItemStackHandler(PackageItem.SLOTS);
-            currentSlot = 0;
+            int maxStackSize = itemKey.stack().getMaxStackSize();
+            int remaining = stack.amount();
+            while (remaining > 0) {
+                int chunk = maxStackSize > 0 ? Math.min(remaining, maxStackSize) : remaining;
+                target.setStackInSlot(currentSlot++, itemKey.stack().copyWithCount(chunk));
+                remaining -= chunk;
+                if (currentSlot < PackageItem.SLOTS)
+                    continue;
+                exportingPackages.add(new BigItemStack(PackageItem.containing(target), 1));
+                target = new ItemStackHandler(PackageItem.SLOTS);
+                currentSlot = 0;
+            }
         }
         if (currentSlot > 0)
             exportingPackages.add(new BigItemStack(PackageItem.containing(target), 1));
