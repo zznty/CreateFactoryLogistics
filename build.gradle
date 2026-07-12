@@ -1,5 +1,6 @@
 plugins {
-    id 'dev.architectury.loom' version '1.14-SNAPSHOT' apply false
+    id 'net.zznty.forgegradle' version '7.0.42' apply false
+    id 'net.zznty.jarjar' version '0.2.3' apply false
 }
 
 allprojects {
@@ -10,10 +11,24 @@ println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty '
 println "Version: ${version}"
 
 subprojects {
-    apply plugin: 'dev.architectury.loom'
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'net.zznty.forgegradle'
     apply plugin: 'maven-publish'
 
+    if (project.name == "${rootProject.mod_id}-${minecraft_version}") {
+        apply plugin: 'net.zznty.jarjar'
+        jarJar.register { loader = forge_flavour }
+        configurations.named('jarJarRuntimeElements') {
+            outgoing.artifacts.clear()
+            outgoing.artifact(tasks.named('jarJar')) { classifier = null }
+        }
+    }
+
     repositories {
+        minecraft.mavenizer(it)
+        maven fg.neoForgeMaven
+        maven fg.minecraftLibsMaven
         maven {
             url "https://cursemaven.com"
             content {
@@ -31,55 +46,46 @@ subprojects {
         maven { url 'https://modmaven.dev/' }
     }
 
-    loom {
-        silentMojangMappingsLicense()
-
+    minecraft {
+        mappings channel: 'parchment', version: "${mapping_version}-${minecraft_version}"
         runs {
             configureEach {
-//            jvmArg '-XX:+AllowEnhancedClassRedefinition'
+                workingDir.convention layout.projectDirectory.dir('run')
+                systemProperty 'neoforge.logging.console.level', 'debug'
             }
-            data {
-                data()
-                programArgs '--all', '--mod', project.name
-                programArgs '--output', project.layout.projectDirectory.file("src/generated/resources/").asFile.absolutePath
-                programArgs '--existing', project.layout.projectDirectory.file('src/main/resources/').asFile.absolutePath
+            register('client') {}
+            register('server') { args '--nogui' }
+            register('serverData') {
+                args '--all', '--mod', project.mod_id
+                args '--output', layout.projectDirectory.dir('src/generated/resources').asFile.absolutePath
+                args '--existing', layout.projectDirectory.dir('src/main/resources').asFile.absolutePath
             }
         }
     }
 
     dependencies {
-        minecraft "net.minecraft:minecraft:${minecraft_version}"
-        mappings loom.layered() {
-            officialMojangMappings()
-            parchment("org.parchmentmc.data:parchment-${minecraft_version}:${mapping_version}@zip")
-        }
-        neoForge "${forge_group_id}:${forge_flavour}:${forge_version}"
+        implementation minecraft.dependency("${forge_group_id}:${forge_flavour}:${forge_version}")
 
-        modCompileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
-        modCompileOnly "mezz.jei:jei-${minecraft_version}-${forge_flavour}-api:${jei_version}"
-        modCompileOnly "mezz.jei:jei-${minecraft_version}-${forge_flavour}:${jei_version}"
-        modRuntimeOnly "mezz.jei:jei-${minecraft_version}-${forge_flavour}:${jei_version}"
+        compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+        compileOnly "mezz.jei:jei-${minecraft_version}-${forge_flavour}-api:${jei_version}"
+        compileOnly "mezz.jei:jei-${minecraft_version}-${forge_flavour}:${jei_version}"
+        runtimeOnly "mezz.jei:jei-${minecraft_version}-${forge_flavour}:${jei_version}"
 
         compileOnly "cc.tweaked:cc-tweaked-${minecraft_version}-core-api:${cc_tweaked_version}"
-        modCompileOnly "cc.tweaked:cc-tweaked-${minecraft_version}-forge-api:${cc_tweaked_version}", {
+        compileOnly "cc.tweaked:cc-tweaked-${minecraft_version}-forge-api:${cc_tweaked_version}", {
             transitive = false
         }
 
-        modImplementation "com.simibubi.create:create-${minecraft_version}:${create_version}:slim", { transitive = false }
-        modImplementation "net.createmod.ponder:ponder-${forge_flavour}:${ponder_version}+mc${minecraft_version}"
-        modCompileOnly "dev.engine-room.flywheel:flywheel-${forge_flavour}-api-${minecraft_version}:${flywheel_version}"
-        modRuntimeOnly "dev.engine-room.flywheel:flywheel-${forge_flavour}-${minecraft_version}:${flywheel_version}"
-        modImplementation "com.tterrag.registrate:Registrate:${registrate_version}"
+        implementation "com.simibubi.create:create-${minecraft_version}:${create_version}:slim", { transitive = false }
+        implementation "net.createmod.ponder:ponder-${forge_flavour}:${ponder_version}+mc${minecraft_version}"
+        compileOnly "dev.engine-room.flywheel:flywheel-${forge_flavour}-api-${minecraft_version}:${flywheel_version}"
+        runtimeOnly "dev.engine-room.flywheel:flywheel-${forge_flavour}-${minecraft_version}:${flywheel_version}"
+        implementation "com.tterrag.registrate:Registrate:${registrate_version}"
     }
 
     java {
-        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-        // if it is present.
-        // If you remove this line, sources will not be generated.
         withSourcesJar()
-
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        toolchain.languageVersion = JavaLanguageVersion.of(21)
     }
 
     tasks.withType(JavaCompile).configureEach {
@@ -105,7 +111,12 @@ subprojects {
         publications {
             mavenJava(MavenPublication) {
                 artifactId = base.archivesName.get()
-                from components.java
+                if (project.name == "${rootProject.mod_id}-${minecraft_version}") {
+                    from components.jarJar
+                    artifact tasks.named('sourcesJar')
+                } else {
+                    from components.java
+                }
             }
         }
 
@@ -120,4 +131,6 @@ subprojects {
             }
         }
     }
+
+    idea.module { downloadJavadoc = downloadSources = true }
 }

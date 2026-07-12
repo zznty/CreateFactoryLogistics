@@ -32,6 +32,11 @@ jobs:
           distribution: jetbrains
           java-version: 21
 
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Verify distribution jar
+        run: ./gradlew -Pversion=${{ steps.version.outputs.version }} --no-daemon :create_factory_logistics-1.21.1:verifyJarJarMetadata
+
       - name: Publish with Gradle
         run: ./gradlew -Dorg.gradle.s3.endpoint=${{ secrets.S3_ENDPOINT }} -Pversion=${{ steps.version.outputs.version }} publish
         env:
@@ -66,7 +71,7 @@ jobs:
 #          write-mode: 'overwrite'
 
       - name: Publish Mods with Gradle
-        run: ./gradlew -Pversion=${{ steps.version.outputs.version }} :create_factory_logistics:publishMods
+        run: ./gradlew -Pversion=${{ steps.version.outputs.version }} :create_factory_logistics-1.21.1:publishMods
         env:
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
