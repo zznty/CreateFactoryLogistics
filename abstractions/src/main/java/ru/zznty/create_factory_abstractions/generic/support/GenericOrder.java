@@ -65,7 +65,7 @@ public record GenericOrder(List<GenericStack> stacks, List<PackageOrderWithCraft
     }
 
     public boolean isEmpty() {
-        return stacks.isEmpty();
+        return stacks.isEmpty() && crafts.isEmpty();
     }
 
     public static GenericOrder read(HolderLookup.Provider levelRegistryAccess, CompoundTag tag) {

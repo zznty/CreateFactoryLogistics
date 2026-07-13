@@ -24,6 +24,9 @@ public final class GenericLogisticsManager {
         Multimap<PackagerBlockEntity, GenericRequest> requests =
                 findPackagersForRequest(freqId, order, ignoredHandler, address);
 
+        if (requests.isEmpty())
+            return false;
+
         // Check if packagers have accumulated too many packages already
         for (PackagerBlockEntity packager : requests.keySet())
             if (packager.isTooBusyFor(type))

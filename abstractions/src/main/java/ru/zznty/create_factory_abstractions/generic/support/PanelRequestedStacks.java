@@ -5,6 +5,7 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public record PanelRequestedStacks(GenericStack result, List<StackRequest> ingredients,
@@ -41,12 +42,16 @@ public record PanelRequestedStacks(GenericStack result, List<StackRequest> ingre
     @Override
     public boolean equals(Object obj) {
         return obj instanceof PanelRequestedStacks panelRequestedIngredient &&
-                panelRequestedIngredient.result.equals(result);
+                panelRequestedIngredient.result.equals(result) &&
+                panelRequestedIngredient.ingredients.equals(ingredients) &&
+                panelRequestedIngredient.craftingContext.equals(craftingContext) &&
+                panelRequestedIngredient.recipeAddress.equals(recipeAddress) &&
+                panelRequestedIngredient.resultNetwork.equals(resultNetwork);
     }
 
     @Override
     public int hashCode() {
-        return result.hashCode();
+        return Objects.hash(result, ingredients, craftingContext, recipeAddress, resultNetwork);
     }
 }
 

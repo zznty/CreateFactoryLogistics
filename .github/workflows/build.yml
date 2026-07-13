@@ -4,6 +4,10 @@ on:
     branches:
       - master
       - '1.21'
+  pull_request:
+    branches:
+      - master
+      - '1.21'
 
 jobs:
   build:
@@ -27,7 +31,7 @@ jobs:
         uses: paulhatch/semantic-version@v5.3.0
         with:
           tag_prefix: '${{ steps.tag-prefix.outputs.prefix }}-'
-          major_pattern: '/\w+(?:\([\w.]+\))?!:.+/'
+          major_pattern: '/\w+(?:\([\w.]+\))?!?:.+/'
           minor_pattern: '/feat(?:\([\w.]+\))?:.+/'
 
       - uses: actions/setup-java@v4
@@ -39,3 +43,30 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew -Pversion=${{ steps.version.outputs.version }} --no-daemon build
+
+  gametests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: jetbrains
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile GameTests
+        run: ./gradlew :create_factory_logistics-1.21.1:testClasses --no-daemon
+
+      - name: Run GameTests
+        run: ./gradlew :create_factory_logistics-1.21.1:runGameTestServer --no-daemon
+
+      - name: Upload GameTest logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gametest-logs
+          path: forge/run/logs
+          if-no-files-found: ignore

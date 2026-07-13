@@ -1,5 +1,5 @@
 plugins {
-    id 'net.zznty.forgegradle' version '7.0.42' apply false
+    id 'net.zznty.forgegradle' version '7.0.46' apply false
     id 'net.zznty.jarjar' version '0.2.3' apply false
 }
 

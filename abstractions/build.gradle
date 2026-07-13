@@ -12,8 +12,10 @@ tasks.named('processResources', ProcessResources).configure {
     ]
     inputs.properties replaceProperties
 
+    // NOTE: do not add `project` to the expand map: it drags the live Project into the task's
+    // serialized inputs and breaks the configuration cache. No resource template references it.
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
+        expand replaceProperties
     }
 
     if (forge_flavour != 'forge') {

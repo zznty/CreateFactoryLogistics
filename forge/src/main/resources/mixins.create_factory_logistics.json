@@ -52,6 +52,8 @@
     "render.ChainConveyorRendererMixin",
     "render.ChainConveyorVisualMixin",
     "render.FactoryFluidPanelFilterRendererMixin",
+    "render.FactoryPanelBulbMixin",
+    "render.FactoryPanelRendererMixin",
     "render.TransportedJarMixin"
   ],
   "injectors": {

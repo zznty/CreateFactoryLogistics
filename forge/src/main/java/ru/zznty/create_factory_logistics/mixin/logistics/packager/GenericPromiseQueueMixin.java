@@ -129,12 +129,14 @@ public class GenericPromiseQueueMixin implements GenericPromiseQueue {
     public void add(RequestPromise promise) {
         BigGenericStack promisedStack = BigGenericStack.of(promise.promisedStack);
 
+        if (promisedStack.get().isEmpty())
+            return;
+
         createFactoryLogistics$promises.put(
                 GenericContentExtender.registrationOf(promisedStack.get().key()).provider().wrapGeneric(
                         promisedStack.get().key()), promise);
 
-        if (!promisedStack.get().isEmpty())
-            onChanged.run();
+        onChanged.run();
     }
 
     @Overwrite
