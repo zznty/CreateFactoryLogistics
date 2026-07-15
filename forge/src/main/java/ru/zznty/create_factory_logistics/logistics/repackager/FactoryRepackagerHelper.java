@@ -147,10 +147,17 @@ public class FactoryRepackagerHelper extends PackageRepackageHelper {
                         continue;
                     if (summary.getCountOf(required.stack) <= 0)
                         break Crafts;
+                }
+                for (BigItemStack required : craftingEntry.pattern().stacks()) {
+                    if (required.stack.isEmpty())
+                        continue;
                     summary.add(required.stack, -1);
                 }
                 packagesToCreate++;
             }
+
+            if (packagesToCreate == 0)
+                continue;
 
             ItemStackHandler target = new ItemStackHandler(PackageItem.SLOTS);
             List<BigItemStack> stacks = craftingEntry.pattern().stacks();

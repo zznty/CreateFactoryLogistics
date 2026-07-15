@@ -18,6 +18,7 @@ import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventoryHelper;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
+import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 import ru.zznty.create_factory_logistics.logistics.composite.CompositePackageItem;
 
@@ -205,4 +206,5 @@ public class CompositeRepackagerHelper extends FactoryRepackagerHelper {
         Supplier<PackageBuilder> supplier = GenericContentExtender.registrationOf(stack.key()).provider().packageBuilder();
         return supplier != null ? supplier.get() : null;
     }
+
 }
