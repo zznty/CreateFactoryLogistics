@@ -106,6 +106,13 @@ publishMods {
         minecraftVersions.add(minecraft_version)
     }
 
+    discord {
+        webhookUrl = providers.environmentVariable("DISCORD_WEBHOOK_URL")
+        username = "$mod_name Updates"
+        avatarUrl = "https://raw.githubusercontent.com/zznty/CreateFactoryLogistics/1.21/forge/src/main/resources/icon.png"
+        setContent(displayName + " has been released!")
+    }
+
     dryRun = providers.environmentVariable("MODRINTH_TOKEN").getOrNull() == null
 }
 
