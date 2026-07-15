@@ -88,8 +88,9 @@ tasks.named('processResources', ProcessResources).configure {
 
 publishMods {
     file = tasks.named('jarJar').flatMap { it.archiveFile }
-    changelog = rootProject.layout.projectDirectory.file('forge/CHANGELOG.md').asFile.exists() ?
+    def changelogText = rootProject.layout.projectDirectory.file('forge/CHANGELOG.md').asFile.exists() ?
             rootProject.layout.projectDirectory.file('forge/CHANGELOG.md').asFile.text : ''
+    changelog = changelogText
     type = BETA
     def name = "$mod_name $project.version"
     displayName = name
@@ -112,7 +113,10 @@ publishMods {
         webhookUrl = providers.environmentVariable("DISCORD_WEBHOOK_URL")
         username = "$mod_name Updates"
         avatarUrl = "https://raw.githubusercontent.com/zznty/CreateFactoryLogistics/1.21/forge/src/main/resources/icon.png"
-        setContent(name + " has been released!")
+        def content = "$name has been released!"
+        if (changelogText != null && !changelogText.isBlank())
+            content += "\n\n$changelogText"
+        setContent(content)
     }
 
     dryRun = providers.environmentVariable("MODRINTH_TOKEN").getOrNull() == null
