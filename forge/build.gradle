@@ -91,12 +91,14 @@ publishMods {
     changelog = rootProject.layout.projectDirectory.file('forge/CHANGELOG.md').asFile.exists() ?
             rootProject.layout.projectDirectory.file('forge/CHANGELOG.md').asFile.text : ''
     type = BETA
-    displayName = "$mod_name $project.version"
+    def name = "$mod_name $project.version"
+    displayName = name
     modLoaders.add(forge_flavour)
 
     curseforge {
         accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
         projectId = "1218807"
+        projectSlug = "create-factory-logistics"
         minecraftVersions.add(minecraft_version)
     }
 
@@ -110,7 +112,7 @@ publishMods {
         webhookUrl = providers.environmentVariable("DISCORD_WEBHOOK_URL")
         username = "$mod_name Updates"
         avatarUrl = "https://raw.githubusercontent.com/zznty/CreateFactoryLogistics/1.21/forge/src/main/resources/icon.png"
-        setContent(displayName + " has been released!")
+        setContent(name + " has been released!")
     }
 
     dryRun = providers.environmentVariable("MODRINTH_TOKEN").getOrNull() == null
