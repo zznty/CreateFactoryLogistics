@@ -37,8 +37,10 @@ public class FluidGenericAttribute implements GenericAttribute {
     @Override
     public boolean appliesTo(GenericStack stack, Level world) {
         if (fluid == null) return false;
-        if (!(stack.key() instanceof FluidKey fluidKey)) return false;
-        return fluid.equals(fluidKey);
+        for (FluidKey fluidKey : extractFluids(stack, world)) {
+            if (fluid.equals(fluidKey)) return true;
+        }
+        return false;
     }
 
     @Override

@@ -1,16 +1,21 @@
 package ru.zznty.create_factory_logistics.gametest;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
 import ru.zznty.create_factory_logistics.FactoryItems;
 import ru.zznty.create_factory_logistics.compat.mekanism.FactoryMekanismBlocks;
 import ru.zznty.create_factory_logistics.compat.mekanism.FactoryMekanismItems;
+import ru.zznty.create_factory_logistics.logistics.networkLink.NetworkLinkQualificationRecipe;
 
 @GameTestHolder(CreateFactoryLogistics.MODID)
 @PrefixGameTestTemplate(false)
@@ -39,6 +44,33 @@ public final class BootstrapGameTests {
         helper.assertTrue(FactoryMekanismBlocks.BARREL_PACKAGER.get() != null, "barrel packager is not registered");
         helper.assertTrue(FactoryMekanismBlocks.FACTORY_CHEMICAL_GAUGE.get() != null, "chemical gauge is not registered");
         helper.assertTrue(FactoryMekanismItems.REGULAR_BARREL.get() != null, "chemical barrel is not registered");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "bootstrap")
+    public static void networkLinkQualifierTagsArePopulated(GameTestHelper helper) {
+        for (ResourceLocation key : GenericContentExtender.REGISTRY.keySet()) {
+            TagKey<Item> tag = NetworkLinkQualificationRecipe.tag(key);
+            int count = 0;
+            for (var holder : BuiltInRegistries.ITEM.getTagOrEmpty(tag))
+                count++;
+            helper.assertTrue(count > 0,
+                    "network_link_qualifier/" + key.getNamespace() + "/" + key.getPath()
+                            + " tag has " + count + " entries, expected > 0");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "bootstrap")
+    public static void emptyQualifierTagHasEntries(GameTestHelper helper) {
+        ResourceLocation emptyKey = ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "empty");
+        TagKey<Item> tag = NetworkLinkQualificationRecipe.tag(emptyKey);
+        int count = 0;
+        for (var holder : BuiltInRegistries.ITEM.getTagOrEmpty(tag))
+            count++;
+        helper.assertTrue(count > 0,
+                "network_link_qualifier/create_factory_abstractions/empty tag has "
+                        + count + " entries, expected > 0 (bug #168)");
         helper.succeed();
     }
 

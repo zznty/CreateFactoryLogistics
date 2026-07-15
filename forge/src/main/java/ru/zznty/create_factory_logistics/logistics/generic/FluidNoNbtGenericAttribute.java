@@ -20,8 +20,10 @@ public class FluidNoNbtGenericAttribute extends FluidGenericAttribute {
     @Override
     public boolean appliesTo(GenericStack stack, Level world) {
         if (fluid == null) return false;
-        if (!(stack.key() instanceof FluidKey fluidKey)) return false;
-        return fluid.holder().equals(fluidKey.holder());
+        for (FluidKey fluidKey : extractFluids(stack, world)) {
+            if (fluid.holder().equals(fluidKey.holder())) return true;
+        }
+        return false;
     }
 
     @Override

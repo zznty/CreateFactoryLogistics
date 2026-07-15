@@ -13,11 +13,18 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
+import ru.zznty.create_factory_logistics.logistics.composite.CompositePackageItem;
+import ru.zznty.create_factory_logistics.logistics.generic.FluidGenericStack;
+import ru.zznty.create_factory_logistics.logistics.jarPackager.JarPackageBuilder;
 import ru.zznty.create_factory_logistics.logistics.repackager.CompositeRepackagerHelper;
 
 import java.lang.reflect.Field;
@@ -221,6 +228,109 @@ public final class RepackagerGameTests {
         helper.succeed();
     }
 
+    // --- jar / fluid repackager tests (#159 / #156) ---
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void singleJarIsRepackagedIntact(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        ItemStack jar = makeJar(Fluids.WATER, 1000);
+        setOrder(be, jar, 1, GenericOrder.empty());
+        putPackages(rh, 1, List.of(jar));
+
+        List<BigItemStack> result = rh.repack(1, RandomSource.createNewThreadLocalInstance());
+        helper.assertValueEqual(result.size(), 1, "single jar should yield 1 output, got " + result.size());
+        FluidStack fluid = FluidUtil.getFluidContained(result.get(0).stack).orElse(FluidStack.EMPTY);
+        helper.assertValueEqual(fluid.getAmount(), 1000,
+                "output jar should contain 1000mb water, got " + fluid.getAmount());
+        helper.assertTrue(FluidStack.isSameFluidSameComponents(fluid, new FluidStack(Fluids.WATER, 1)),
+                "output fluid should be water");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void multipleJarsProduceCompositePackage(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        ItemStack jar1 = makeJar(Fluids.WATER, 1000);
+        ItemStack jar2 = makeJar(Fluids.LAVA, 1000);
+        setOrder(be, jar1, 1, GenericOrder.empty());
+        setOrder(be, jar2, 1, GenericOrder.empty());
+        putPackages(rh, 1, List.of(jar1, jar2));
+
+        List<BigItemStack> result = rh.repack(1, RandomSource.createNewThreadLocalInstance());
+        helper.assertValueEqual(result.size(), 1,
+                "two different jars should produce 1 composite, got " + result.size());
+        List<ItemStack> children = CompositePackageItem.getChildren(be.getLevel().registryAccess(),
+                                                                     result.get(0).stack);
+        helper.assertValueEqual(children.size(), 2,
+                "composite should have 2 children, got " + children.size());
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void jarAndItemPackageProduceComposite(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        ItemStack jar = makeJar(Fluids.WATER, 1000);
+        ItemStack pkg = makePackage(Items.IRON_INGOT, 4);
+        setOrder(be, jar, 1, GenericOrder.empty());
+        setOrder(be, pkg, 1, GenericOrder.empty());
+        putPackages(rh, 1, List.of(jar, pkg));
+
+        List<BigItemStack> result = rh.repack(1, RandomSource.createNewThreadLocalInstance());
+        helper.assertValueEqual(result.size(), 1,
+                "jar + item should produce 1 composite, got " + result.size());
+        helper.assertTrue(result.get(0).stack.getItem() instanceof CompositePackageItem,
+                "output should be a composite package");
+        helper.succeed();
+    }
+
+    // --- same-type merge regression (#240) ---
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void multiplePackagesSameItemTypeMergeIntoOne(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        ItemStack pkg1 = makePackage(Items.IRON_INGOT, 16);
+        ItemStack pkg2 = makePackage(Items.IRON_INGOT, 16);
+        setOrder(be, pkg1, 1, GenericOrder.empty());
+        setOrder(be, pkg2, 1, GenericOrder.empty());
+        putPackages(rh, 1, List.of(pkg1, pkg2));
+
+        List<BigItemStack> result = rh.repack(1, RandomSource.createNewThreadLocalInstance());
+        helper.assertValueEqual(itemCount(result), 32,
+                "two 16-iron packages should merge to 32 items, got " + itemCount(result)
+                        + " across " + result.size() + " boxes");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void multiplePackagesSameItemTypeNoRecipePreserveCount(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        ItemStack pkg1 = makePackage(Items.REDSTONE, 32);
+        ItemStack pkg2 = makePackage(Items.REDSTONE, 32);
+        ItemStack pkg3 = makePackage(Items.REDSTONE, 32);
+        putPackages(rh, 1, List.of(pkg1, pkg2, pkg3));
+
+        List<BigItemStack> result = rh.repack(1, RandomSource.createNewThreadLocalInstance());
+        helper.assertValueEqual(itemCount(result), 96,
+                "three 32-redstone packages should merge to 96 items, got " + itemCount(result)
+                        + " across " + result.size() + " boxes");
+        helper.succeed();
+    }
+
     // --- helpers ---
 
     private static RepackagerBlockEntity placeRepackager(GameTestHelper helper) {
@@ -294,5 +404,11 @@ public final class RepackagerGameTests {
                 total += contents.getStackInSlot(slot).getCount() * box.count;
         }
         return total;
+    }
+
+    private static ItemStack makeJar(Fluid fluid, int amount) {
+        JarPackageBuilder builder = new JarPackageBuilder();
+        builder.add(FluidGenericStack.wrap(new FluidStack(fluid, amount)));
+        return builder.build();
     }
 }
