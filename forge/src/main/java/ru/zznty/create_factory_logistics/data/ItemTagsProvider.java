@@ -1,6 +1,7 @@
 package ru.zznty.create_factory_logistics.data;
 
 import com.simibubi.create.AllBlocks;
+import mekanism.common.tags.MekanismTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -41,6 +42,9 @@ public class ItemTagsProvider extends TagsProvider<Item> {
                 .add(asKey(AllBlocks.CREATIVE_FLUID_TANK))
                 .add(asKey(Items.BUCKET))
                 .add(asKey(Items.GLASS_BOTTLE));
+
+        tag(NetworkLinkQualificationRecipe.tag(CreateFactoryLogistics.resource("chemical")))
+                .add(TagEntry.optionalTag(MekanismTags.Blocks.STORAGE_BLOCKS_CHARCOAL.location()));
     }
 
     private ResourceKey<Item> asKey(ItemLike item) {

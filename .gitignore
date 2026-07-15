@@ -25,3 +25,6 @@ run-data
 # Files from Forge MDK
 forge*changelog.txt
 forge/CHANGELOG.md
+
+# Generated lang files — hand-maintained in src/main/resources
+forge/src/generated/resources/assets/*/lang/

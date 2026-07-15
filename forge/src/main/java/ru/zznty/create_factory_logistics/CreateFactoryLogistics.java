@@ -40,7 +40,6 @@ public class CreateFactoryLogistics {
         FactoryGenericAttributeTypes.REGISTER.register(modEventBus);
 
         modEventBus.addListener(FactoryEntities::registerEntityAttributes);
-        modEventBus.addListener(EventPriority.HIGHEST, FactoryDataGen::gatherDataHighPriority);
         modEventBus.addListener(EventPriority.LOWEST, FactoryDataGen::gatherData);
         modEventBus.addListener(CreateFactoryLogistics::init);
         modEventBus.addListener(FactoryCapabilities::register);

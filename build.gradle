@@ -55,7 +55,7 @@ subprojects {
             }
             register('client') {}
             register('server') { args '--nogui' }
-            register('serverData') {
+            register('data') {
                 args '--all', '--mod', project.mod_id
                 args '--output', layout.projectDirectory.dir('src/generated/resources').asFile.absolutePath
                 args '--existing', layout.projectDirectory.dir('src/main/resources').asFile.absolutePath

@@ -1,11 +1,11 @@
-// 1.21.1	2026-07-09T02:14:59.344341506	Registrate Provider for create_factory_logistics [Registries, Data Maps, Recipes, Advancements, Loot Tables, Tags (blocks), Tags (enchantments), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Blockstates, Item models, Lang (en_us/en_ud), generic_client_provider]
+// 1.21.1	2026-07-16T03:44:54.650290403	Registrate Provider for create_factory_logistics [Registries, Data Maps, Recipes, Advancements, Loot Tables, Tags (blocks), Tags (enchantments), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Blockstates, Item models, Lang (en_us/en_ud), generic_client_provider]
 c28fe89e6020566a853d31073bec0320b25cf064 assets/create_factory_logistics/blockstates/barrel_packager.json
 4c8941aea481d57a55e2d7a55f365e59a1bac73f assets/create_factory_logistics/blockstates/factory_chemical_gauge.json
 8808975dd6f90df154a752d53cb0e5c5002deaab assets/create_factory_logistics/blockstates/factory_fluid_gauge.json
 9ad0dd76a0402de36e97e4563c0b3fcb473f0b40 assets/create_factory_logistics/blockstates/jar_packager.json
 58208f197fd47e4bb129648c8026ce0873cee36c assets/create_factory_logistics/blockstates/network_link.json
-35e1bae9ec81b8eb33ebd468aad0762a5980f513 assets/create_factory_logistics/lang/en_ud.json
-455c5284ebdb1b6f52a2e65b522cb769ccdbdd4c assets/create_factory_logistics/lang/en_us.json
+2837690d6bda4b5474b2cb59f524883eaf298f4f assets/create_factory_logistics/lang/en_ud.json
+976d00de8af4f70f951c710fae339be124656ddc assets/create_factory_logistics/lang/en_us.json
 7e668306befcab41d65c2825ae453bd1ba7ff181 assets/create_factory_logistics/models/item/barrel_packager.json
 f58ca558d92da88bdff1eb4de53b7b11c50d73e5 assets/create_factory_logistics/models/item/chemical_barrel_package_8x10.json
 cc1968db784ecef7480349d263ce3154c5fdfc7c assets/create_factory_logistics/models/item/copper_jar_package_8x8.json
