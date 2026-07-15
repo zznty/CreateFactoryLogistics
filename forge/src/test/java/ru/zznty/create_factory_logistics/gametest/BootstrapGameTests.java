@@ -49,7 +49,10 @@ public final class BootstrapGameTests {
 
     @GameTest(template = "empty", batch = "bootstrap")
     public static void networkLinkQualifierTagsArePopulated(GameTestHelper helper) {
+        ResourceLocation emptyKey = ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "empty");
         for (ResourceLocation key : GenericContentExtender.REGISTRY.keySet()) {
+            if (key.equals(emptyKey))
+                continue;
             TagKey<Item> tag = NetworkLinkQualificationRecipe.tag(key);
             int count = 0;
             for (var holder : BuiltInRegistries.ITEM.getTagOrEmpty(tag))
@@ -62,15 +65,15 @@ public final class BootstrapGameTests {
     }
 
     @GameTest(template = "empty", batch = "bootstrap")
-    public static void emptyQualifierTagHasEntries(GameTestHelper helper) {
+    public static void emptyQualifierTagIsIntentionallyEmpty(GameTestHelper helper) {
         ResourceLocation emptyKey = ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "empty");
         TagKey<Item> tag = NetworkLinkQualificationRecipe.tag(emptyKey);
         int count = 0;
         for (var holder : BuiltInRegistries.ITEM.getTagOrEmpty(tag))
             count++;
-        helper.assertTrue(count > 0,
-                "network_link_qualifier/create_factory_abstractions/empty tag has "
-                        + count + " entries, expected > 0 (bug #168)");
+        helper.assertTrue(count == 0,
+                "empty qualifier tag should be empty (it is a reset recipe, not a material match); got "
+                        + count + " entries");
         helper.succeed();
     }
 

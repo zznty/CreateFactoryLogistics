@@ -110,8 +110,10 @@ public class NetworkLinkQualificationRecipe extends CustomRecipe {
     }
 
     @Override
-    public boolean canCraftInDimensions(int p_43999_, int p_44000_) {
-        return p_43999_ * p_44000_ >= 2;
+    public boolean canCraftInDimensions(int width, int height) {
+        if (key.equals(ResourceLocation.fromNamespaceAndPath(CreateFactoryAbstractions.ID, "empty")))
+            return width * height >= 1;
+        return width * height >= 2;
     }
 
     @Override
