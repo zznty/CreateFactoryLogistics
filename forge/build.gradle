@@ -111,28 +111,30 @@ publishMods {
 
 tasks.register('verifyJarJarMetadata') {
     dependsOn tasks.named('jarJar')
-    inputs.file(tasks.named('jarJar').flatMap { it.archiveFile })
+    def archiveFile = tasks.named('jarJar').flatMap { it.archiveFile }
+    inputs.file(archiveFile)
+    def ver = project.version.toString()
 
     doLast {
-        def archive = tasks.named('jarJar').get().archiveFile.get().asFile
-        def zip = new java.util.zip.ZipFile(archive)
+        def zip = new java.util.zip.ZipFile(inputs.files.singleFile)
         try {
             def metadataEntry = zip.getEntry('META-INF/jarjar/metadata.json')
             assert metadataEntry != null: 'Missing META-INF/jarjar/metadata.json'
             def metadata = new groovy.json.JsonSlurper().parse(zip.getInputStream(metadataEntry))
+            assert metadata.jars.size() == 2
             def expected = [
-                    'create_factory_abstractions-1.21.1': project.version.toString(),
-                    'mixinextras-neoforge'                  : '0.5.0'
+                    ('ru.zznty'): ['create_factory_abstractions-1.21.1': ver],
+                    ('io.github.llamalad7'): ['mixinextras-neoforge': '0.5.0']
             ]
-
-            assert metadata.jars.size() == expected.size()
-            expected.each { artifact, artifactVersion ->
-                def nested = metadata.jars.find { it.identifier.group == (artifact.startsWith('create_factory') ? 'ru.zznty' : 'io.github.llamalad7') && it.identifier.artifact == artifact }
-                assert nested != null: "Missing JarJar metadata for ${artifact}"
-                assert nested.version.artifactVersion == artifactVersion
-                assert nested.version.range == "[${artifactVersion},)"
-                assert nested.path.startsWith('META-INF/jarjar/')
-                assert zip.getEntry(nested.path) != null: "Missing nested jar ${nested.path}"
+            expected.each { group, artifacts ->
+                artifacts.each { artifact, artifactVersion ->
+                    def nested = metadata.jars.find { it.identifier.group == group && it.identifier.artifact == artifact }
+                    assert nested != null: "Missing JarJar metadata for ${artifact}"
+                    assert nested.version.artifactVersion == artifactVersion
+                    assert nested.version.range == "[${artifactVersion},)"
+                    assert nested.path.startsWith('META-INF/jarjar/')
+                    assert zip.getEntry(nested.path) != null: "Missing nested jar ${nested.path}"
+                }
             }
         } finally {
             zip.close()
