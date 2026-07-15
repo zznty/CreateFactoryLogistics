@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics.logistics.abstractions.packager;
+package ru.zznty.create_factory_abstractions.logistics.packager;
 
 import com.simibubi.create.content.contraptions.actors.psi.PortableStorageInterfaceBlockEntity;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
@@ -24,7 +24,8 @@ public abstract class AbstractPackagerBlockEntity extends PackagerBlockEntity {
     protected abstract PackagerAttachedHandler createHandler();
 
     protected boolean supportsBlockEntity(BlockEntity target) {
-        return target != null && !(target instanceof PortableStorageInterfaceBlockEntity);
+        return target != null
+                && (PackagersPSIC.isInstalled() || !(target instanceof PortableStorageInterfaceBlockEntity));
     }
 
     @Override

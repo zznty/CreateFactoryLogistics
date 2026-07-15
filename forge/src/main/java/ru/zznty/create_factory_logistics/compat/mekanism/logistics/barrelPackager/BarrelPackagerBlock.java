@@ -5,8 +5,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import ru.zznty.create_factory_logistics.compat.mekanism.FactoryMekanismBlockEntities;
-import ru.zznty.create_factory_logistics.logistics.abstractions.packager.AbstractPackagerBlock;
-import ru.zznty.create_factory_logistics.logistics.abstractions.packager.AbstractPackagerBlockEntity;
+import ru.zznty.create_factory_abstractions.logistics.packager.AbstractPackagerBlock;
+import ru.zznty.create_factory_abstractions.logistics.packager.AbstractPackagerBlockEntity;
 
 public class BarrelPackagerBlock extends AbstractPackagerBlock {
     public BarrelPackagerBlock(Properties properties) {

@@ -24,7 +24,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import ru.zznty.create_factory_abstractions.api.generic.GenericFilterProvider;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
-import ru.zznty.create_factory_logistics.logistics.abstractions.panel.AbstractFactoryPanelBehaviour;
+import ru.zznty.create_factory_abstractions.logistics.panel.AbstractFactoryPanelBehaviour;
 import ru.zznty.create_factory_logistics.logistics.generic.FluidGenericStack;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 

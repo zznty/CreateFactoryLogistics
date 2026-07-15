@@ -22,7 +22,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import ru.zznty.create_factory_logistics.FactoryEntities;
-import ru.zznty.create_factory_logistics.logistics.abstractions.box.AbstractPackageEntity;
+import ru.zznty.create_factory_abstractions.logistics.box.AbstractPackageEntity;
 import ru.zznty.create_factory_logistics.logistics.jar.unpack.JarUnpackingHandler;
 import ru.zznty.create_factory_logistics.mixin.accessor.PackageEntityAccessor;
 

@@ -5,8 +5,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import ru.zznty.create_factory_logistics.FactoryBlockEntities;
-import ru.zznty.create_factory_logistics.logistics.abstractions.packager.AbstractPackagerBlock;
-import ru.zznty.create_factory_logistics.logistics.abstractions.packager.AbstractPackagerBlockEntity;
+import ru.zznty.create_factory_abstractions.logistics.packager.AbstractPackagerBlock;
+import ru.zznty.create_factory_abstractions.logistics.packager.AbstractPackagerBlockEntity;
 
 public class JarPackagerBlock extends AbstractPackagerBlock {
     public JarPackagerBlock(Properties properties) {

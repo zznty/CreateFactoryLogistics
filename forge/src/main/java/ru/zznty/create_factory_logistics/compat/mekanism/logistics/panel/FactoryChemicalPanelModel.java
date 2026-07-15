@@ -4,7 +4,7 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.minecraft.client.resources.model.BakedModel;
 import ru.zznty.create_factory_logistics.compat.mekanism.FactoryMekanismModels;
-import ru.zznty.create_factory_logistics.logistics.abstractions.panel.AbstractPanelModel;
+import ru.zznty.create_factory_abstractions.logistics.panel.AbstractPanelModel;
 
 public class FactoryChemicalPanelModel extends AbstractPanelModel {
     public FactoryChemicalPanelModel(BakedModel originalModel) {

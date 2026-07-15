@@ -12,6 +12,7 @@ import ru.zznty.create_factory_abstractions.registry.TypeRegistries;
 @Mod(CreateFactoryAbstractions.ID)
 public final class CreateFactoryAbstractions {
     public static final String ID = "create_factory_abstractions";
+    public static final String CFL_MODID = "create_factory_logistics";
 
     public static final boolean EXTENSIBILITY_AVAILABLE = ModList.get().isLoaded("create_factory_logistics");
 

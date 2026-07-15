@@ -39,8 +39,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_logistics.FactoryEntities;
 import ru.zznty.create_factory_logistics.config.WorldConfig;
-import ru.zznty.create_factory_logistics.logistics.abstractions.box.AbstractPackageEntity;
-import ru.zznty.create_factory_logistics.logistics.abstractions.box.AbstractPackageItem;
+import ru.zznty.create_factory_abstractions.logistics.box.AbstractPackageEntity;
+import ru.zznty.create_factory_abstractions.logistics.box.AbstractPackageItem;
 import ru.zznty.create_factory_logistics.logistics.jar.unpack.JarUnpackingHandler;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
 

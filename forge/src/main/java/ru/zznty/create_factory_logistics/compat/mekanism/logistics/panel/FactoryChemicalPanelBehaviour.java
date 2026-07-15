@@ -28,7 +28,7 @@ import ru.zznty.create_factory_abstractions.api.generic.GenericFilterProvider;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_logistics.compat.mekanism.FactoryMekanismBlocks;
 import ru.zznty.create_factory_logistics.compat.mekanism.generic.ChemicalGenericStack;
-import ru.zznty.create_factory_logistics.logistics.abstractions.panel.AbstractFactoryPanelBehaviour;
+import ru.zznty.create_factory_abstractions.logistics.panel.AbstractFactoryPanelBehaviour;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBlock;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelScreen;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryPanelSetFluidMenu;

@@ -1,6 +1,6 @@
-package ru.zznty.create_factory_logistics.logistics.abstractions.packager;
+package ru.zznty.create_factory_abstractions.logistics.packager;
 
-import com.simibubi.create.AllBlocks;
+import com.simibubi.create.content.contraptions.actors.psi.PortableStorageInterfaceBlockEntity;
 import com.simibubi.create.content.logistics.packager.PackagerBlock;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.foundation.utility.CreateLang;
@@ -17,7 +17,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import ru.zznty.create_factory_logistics.compat.packagerspsic.PackagersPSIC;
 
 public abstract class AbstractPackagerBlock extends PackagerBlock {
     public AbstractPackagerBlock(Properties properties) {
@@ -60,11 +59,10 @@ public abstract class AbstractPackagerBlock extends PackagerBlock {
         }
 
         if (player != null && !(player instanceof FakePlayer)) {
-            if (!PackagersPSIC.isInstalled() && AllBlocks.PORTABLE_FLUID_INTERFACE.has(context.getLevel()
-                    .getBlockState(
-                            context.getClickedPos()
-                                    .relative(
-                                            preferredFacing.getOpposite())))) {
+            BlockPos targetPos = context.getClickedPos().relative(preferredFacing.getOpposite());
+            if (!PackagersPSIC.isInstalled()
+                    && context.getLevel().getBlockEntity(targetPos)
+                               instanceof PortableStorageInterfaceBlockEntity) {
                 CreateLang.translate("packager.no_portable_storage")
                         .sendStatus(player);
                 return null;

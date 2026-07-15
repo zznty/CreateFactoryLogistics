@@ -20,8 +20,8 @@ import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
 import ru.zznty.create_factory_logistics.compat.mekanism.FactoryMekanismEntities;
 import ru.zznty.create_factory_logistics.compat.mekanism.logistics.panel.FactoryChemicalPanelBehaviour;
-import ru.zznty.create_factory_logistics.logistics.abstractions.box.AbstractPackageEntity;
-import ru.zznty.create_factory_logistics.logistics.abstractions.box.AbstractPackageItem;
+import ru.zznty.create_factory_abstractions.logistics.box.AbstractPackageEntity;
+import ru.zznty.create_factory_abstractions.logistics.box.AbstractPackageItem;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
 
 import java.util.List;

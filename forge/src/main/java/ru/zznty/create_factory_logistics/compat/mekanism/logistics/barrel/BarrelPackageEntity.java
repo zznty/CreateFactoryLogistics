@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import ru.zznty.create_factory_logistics.compat.mekanism.FactoryMekanismEntities;
 import ru.zznty.create_factory_logistics.compat.mekanism.logistics.panel.FactoryChemicalPanelBehaviour;
-import ru.zznty.create_factory_logistics.logistics.abstractions.box.AbstractPackageEntity;
+import ru.zznty.create_factory_abstractions.logistics.box.AbstractPackageEntity;
 import ru.zznty.create_factory_logistics.mixin.accessor.PackageEntityAccessor;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics.logistics.abstractions.panel;
+package ru.zznty.create_factory_abstractions.logistics.panel;
 
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;

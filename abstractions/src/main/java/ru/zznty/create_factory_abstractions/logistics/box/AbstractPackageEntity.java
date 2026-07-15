@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics.logistics.abstractions.box;
+package ru.zznty.create_factory_abstractions.logistics.box;
 
 import com.simibubi.create.content.logistics.box.PackageEntity;
 import net.minecraft.world.entity.EntityType;

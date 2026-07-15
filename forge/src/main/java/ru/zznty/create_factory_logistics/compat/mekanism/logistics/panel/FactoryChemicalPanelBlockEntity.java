@@ -6,8 +6,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import ru.zznty.create_factory_logistics.compat.mekanism.FactoryMekanismBlocks;
-import ru.zznty.create_factory_logistics.logistics.abstractions.panel.AbstractFactoryPanelBehaviour;
-import ru.zznty.create_factory_logistics.logistics.abstractions.panel.AbstractFactoryPanelBlockEntity;
+import ru.zznty.create_factory_abstractions.logistics.panel.AbstractFactoryPanelBehaviour;
+import ru.zznty.create_factory_abstractions.logistics.panel.AbstractFactoryPanelBlockEntity;
 
 public class FactoryChemicalPanelBlockEntity extends AbstractFactoryPanelBlockEntity {
     public FactoryChemicalPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {

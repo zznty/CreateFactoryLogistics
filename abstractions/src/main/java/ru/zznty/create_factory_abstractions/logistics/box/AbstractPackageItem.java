@@ -1,4 +1,4 @@
-package ru.zznty.create_factory_logistics.logistics.abstractions.box;
+package ru.zznty.create_factory_abstractions.logistics.box;
 
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.box.PackageItem;
@@ -26,7 +26,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
+import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
 
 import java.lang.ref.WeakReference;
 
@@ -41,7 +41,7 @@ public abstract class AbstractPackageItem extends PackageItem {
 
     @Override
     public String getDescriptionId() {
-        return "item." + CreateFactoryLogistics.MODID + (style.rare() ? ".rare_" : ".") + getIdSuffix();
+        return "item." + CreateFactoryAbstractions.CFL_MODID + (style.rare() ? ".rare_" : ".") + getIdSuffix();
     }
 
     protected abstract String getIdSuffix();

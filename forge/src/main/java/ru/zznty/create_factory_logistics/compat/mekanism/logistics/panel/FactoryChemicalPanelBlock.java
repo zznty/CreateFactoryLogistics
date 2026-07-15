@@ -5,8 +5,8 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import ru.zznty.create_factory_logistics.compat.mekanism.FactoryMekanismBlockEntities;
 import ru.zznty.create_factory_logistics.compat.mekanism.FactoryMekanismBlocks;
-import ru.zznty.create_factory_logistics.logistics.abstractions.panel.AbstractFactoryPanelBlock;
-import ru.zznty.create_factory_logistics.logistics.abstractions.panel.AbstractFactoryPanelBlockEntity;
+import ru.zznty.create_factory_abstractions.logistics.panel.AbstractFactoryPanelBlock;
+import ru.zznty.create_factory_abstractions.logistics.panel.AbstractFactoryPanelBlockEntity;
 
 public class FactoryChemicalPanelBlock extends AbstractFactoryPanelBlock {
     public FactoryChemicalPanelBlock(Properties p_53182_) {
