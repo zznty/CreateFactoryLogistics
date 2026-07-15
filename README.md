@@ -16,6 +16,8 @@ For development of mods that depend on FL, you would want to compile against bot
 
 Both projects are available on my public maven repository.
 
+For task-oriented integration examples, start with the [Create Factory Abstractions cookbook](docs/cookbook/README.md).
+
 ```groovy
 repositories {
     // ... other repositories
