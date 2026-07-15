@@ -331,7 +331,141 @@ public final class RepackagerGameTests {
         helper.succeed();
     }
 
-    // --- helpers ---
+    // --- fragment collection (#159 / #156 / #240 end-to-end via addPackageFragment) ---
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void isFragmentedTrueForJarWithFragment(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+
+        ItemStack jar = makeJar(Fluids.WATER, 1000);
+        GenericOrder.set(be.getLevel().registryAccess(), jar, 42, 0, true, 0, true, GenericOrder.empty());
+
+        helper.assertTrue(rh.isFragmented(jar),
+                "jar with Fragment tag should be marked as fragmented");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void isFragmentedFalseForUntaggedJar(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+
+        ItemStack jar = makeJar(Fluids.WATER, 1000);
+
+        helper.assertFalse(rh.isFragmented(jar),
+                "jar without Fragment tag should not be marked as fragmented");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void addPackageFragmentAcceptsSingleJar(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        ItemStack jar = makeJar(Fluids.WATER, 1000);
+        GenericOrder.set(be.getLevel().registryAccess(), jar, 42, 0, true, 0, true, GenericOrder.empty());
+
+        int result = rh.addPackageFragment(jar);
+        helper.assertValueEqual(result, 42,
+                "jar with IsFinal+IsFinalLink fragment should complete order, got " + result);
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void addPackageFragmentRejectsUntaggedJar(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        ItemStack jar = makeJar(Fluids.WATER, 1000);
+
+        int result = rh.addPackageFragment(jar);
+        helper.assertValueEqual(result, -1,
+                "jar without Fragment tag should be rejected, got " + result);
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void addPackageFragmentCollectsTwoJars(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        ItemStack jar1 = makeJar(Fluids.WATER, 1000);
+        ItemStack jar2 = makeJar(Fluids.LAVA, 1000);
+        GenericOrder.set(be.getLevel().registryAccess(), jar1, 42, 0, true, 0, false, null);
+        GenericOrder.set(be.getLevel().registryAccess(), jar2, 42, 0, true, 1, true, null);
+
+        int r1 = rh.addPackageFragment(jar1);
+        int r2 = rh.addPackageFragment(jar2);
+
+        helper.assertValueEqual(r1, -1, "fragment 0 alone should not complete order");
+        helper.assertTrue(r2 != -1, "fragment 1 should complete the order");
+
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void collectThenRepackSingleJarViaAddFragment(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        ItemStack jar = makeJar(Fluids.WATER, 1000);
+        GenericOrder.set(be.getLevel().registryAccess(), jar, 42, 0, true, 0, true, GenericOrder.empty());
+
+        int orderId = rh.addPackageFragment(jar);
+        helper.assertTrue(orderId != -1, "jar should be collected");
+
+        List<BigItemStack> result = rh.repack(orderId, RandomSource.createNewThreadLocalInstance());
+        helper.assertValueEqual(result.size(), 1, "repacked single jar should yield 1 output, got " + result.size());
+        FluidStack fluid = FluidUtil.getFluidContained(result.get(0).stack).orElse(FluidStack.EMPTY);
+        helper.assertValueEqual(fluid.getAmount(), 1000,
+                "output should contain 1000mb water, got " + fluid.getAmount());
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void collectTwoSameTypeItemsThenRepackViaAddFragment(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        ItemStack pkg1 = makePackage(Items.IRON_INGOT, 16);
+        ItemStack pkg2 = makePackage(Items.IRON_INGOT, 16);
+        GenericOrder.set(be.getLevel().registryAccess(), pkg1, 42, 0, true, 0, false, null);
+        GenericOrder.set(be.getLevel().registryAccess(), pkg2, 42, 0, true, 1, true, null);
+
+        int r1 = rh.addPackageFragment(pkg1);
+        int r2 = rh.addPackageFragment(pkg2);
+
+        helper.assertValueEqual(r1, -1, "fragment 0 alone should not complete order");
+        helper.assertTrue(r2 != -1, "fragment 1 should complete the order");
+
+        List<BigItemStack> result = rh.repack(r2, RandomSource.createNewThreadLocalInstance());
+        helper.assertValueEqual(itemCount(result), 32,
+                "two 16-iron packages should merge to 32 items via addPackageFragment, got "
+                        + itemCount(result) + " across " + result.size() + " boxes");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void addPackageFragmentRejectsVanillaCreatePackage(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        // vanilla Create package: items set via PackageItem.containing, no Fragment tag
+        ItemStack pkg = makePackage(Items.IRON_INGOT, 8);
+
+        helper.assertFalse(rh.isFragmented(pkg),
+                "vanilla Create package without Fragment tag should not be fragmented");
+        helper.assertValueEqual(rh.addPackageFragment(pkg), -1,
+                "vanilla Create package should be rejected by addPackageFragment");
+        helper.succeed();
+    }
 
     private static RepackagerBlockEntity placeRepackager(GameTestHelper helper) {
         BlockPos pos = new BlockPos(0, 1, 0);
