@@ -32,7 +32,7 @@ public class FluidKeySerializer implements GenericKeySerializer<FluidKey> {
 
     @Override
     public void write(FluidKey key, HolderLookup.Provider registries, CompoundTag tag) {
-        @Nullable ResourceKey<Fluid> resourceKey = key.fluid().getKey();
+        @Nullable ResourceKey<Fluid> resourceKey = key.holder().getKey();
         tag.putString("id", resourceKey == null ? "minecraft:air" : resourceKey.location().toString());
         CatnipCodecUtils.encode(DataComponentPatch.CODEC, key.nbt().asPatch())
                 .ifPresent(t -> tag.put("Tag", t));
@@ -48,7 +48,7 @@ public class FluidKeySerializer implements GenericKeySerializer<FluidKey> {
 
     @Override
     public void write(FluidKey key, RegistryFriendlyByteBuf buf) {
-        buf.writeResourceKey(key.fluid().getKey());
+        buf.writeResourceKey(key.holder().getKey());
         DataComponentPatch.STREAM_CODEC.encode(buf, key.nbt().asPatch());
     }
 }

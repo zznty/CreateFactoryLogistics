@@ -77,7 +77,7 @@ public class FluidGenericExtension implements GenericKeyProviderExtension<FluidK
 
     @Override
     public Optional<ResourceKey<Fluid>> resourceKey(FluidKey key) {
-        return Optional.ofNullable(key.fluid().getKey());
+        return Optional.ofNullable(key.holder().getKey());
     }
 
     @Override
@@ -92,9 +92,9 @@ public class FluidGenericExtension implements GenericKeyProviderExtension<FluidK
 
     @Override
     public int compare(FluidKey a, FluidKey b) {
-        @Nullable ResourceKey<Fluid> akey = a.fluid().getKey();
+        @Nullable ResourceKey<Fluid> akey = a.holder().getKey();
         if (akey == null) return -1;
-        @Nullable ResourceKey<Fluid> bKey = b.fluid().getKey();
+        @Nullable ResourceKey<Fluid> bKey = b.holder().getKey();
         if (bKey == null) return 1;
         return akey.compareTo(bKey);
     }

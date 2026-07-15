@@ -21,7 +21,7 @@ public class FluidNoNbtGenericAttribute extends FluidGenericAttribute {
     public boolean appliesTo(GenericStack stack, Level world) {
         if (fluid == null) return false;
         if (!(stack.key() instanceof FluidKey fluidKey)) return false;
-        return fluid.fluid().equals(fluidKey.fluid());
+        return fluid.holder().equals(fluidKey.holder());
     }
 
     @Override
@@ -38,7 +38,7 @@ public class FluidNoNbtGenericAttribute extends FluidGenericAttribute {
         List<FluidKey> fluids = extractFluids(stack, level);
         return fluids.stream()
                 .filter(f -> !f.nbt().isEmpty())
-                .map(f -> new FluidKey(f.fluid(), new PatchedDataComponentMap(DataComponentMap.EMPTY)))
+                .map(f -> new FluidKey(f.holder(), new PatchedDataComponentMap(DataComponentMap.EMPTY)))
                 .distinct()
                 .toList();
     }

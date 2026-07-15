@@ -57,7 +57,7 @@ public class FluidGenericAttribute implements GenericAttribute {
         GenericKeySerializer<FluidKey> serializer = GenericContentExtender.REGISTRATIONS.get(
                 FluidKey.class).serializer();
         fluid = serializer.read(registries, nbt);
-        if (fluid.fluid() == Fluids.EMPTY) fluid = null;
+        if (fluid.holder().value() == Fluids.EMPTY) fluid = null;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class FluidGenericAttribute implements GenericAttribute {
     public Object[] getTranslationParameters() {
         String parameter = "";
         if (fluid != null) {
-            FluidType fluidType = fluid.fluid().value().getFluidType();
+            FluidType fluidType = fluid.holder().value().getFluidType();
             if (fluid.nbt().isEmpty())
                 parameter = fluidType.getDescription().getString();
             else

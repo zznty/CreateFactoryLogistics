@@ -4,10 +4,16 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
-import ru.zznty.create_factory_abstractions.api.generic.key.GenericKey;
+import org.jetbrains.annotations.Nullable;
+import ru.zznty.create_factory_abstractions.api.generic.key.ConcreteGenericKey;
 
-public record FluidKey(Holder<Fluid> fluid, PatchedDataComponentMap nbt) implements GenericKey {
+public final class FluidKey extends ConcreteGenericKey<Fluid> {
+
+    public FluidKey(Holder<Fluid> fluid, @Nullable PatchedDataComponentMap nbt) {
+        super(fluid, nbt);
+    }
+
     public FluidStack stack() {
-        return new FluidStack(fluid, 1, nbt.asPatch());
+        return new FluidStack(holder, 1, nbt.asPatch());
     }
 }
