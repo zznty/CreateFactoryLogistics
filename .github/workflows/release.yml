@@ -43,32 +43,20 @@ jobs:
           S3_KEY_ID: ${{ secrets.S3_KEY_ID }}
           S3_KEY: ${{ secrets.S3_KEY }}
 
-      - name: Get previous tag
-        id: previous-tag
-        run: |
-          name=$(git --no-pager tag --sort=creatordate --merged ${{ github.ref_name }} | tail -1)
-          echo "previousTag: $name"
-          echo "tag=$name" >> $env:GITHUB_OUTPUT
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --tag-pattern '${{ steps.tag-prefix.outputs.prefix }}-*' --latest
+        env:
+          OUTPUT: forge/CHANGELOG.md
 
       - name: Push new tag
-        run: git config user.email "you@example.com" && git config user.name "Your Name" && git tag -a ${{ steps.version.outputs.version_tag }} -m ${{ steps.version.outputs.version_tag }} && git push --follow-tags
-
-#      - name: Create Changelog
-#        id: changelog
-#        uses: requarks/changelog-action@v1
-#        with:
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          fromTag: ${{ steps.previous-tag.outputs.tag }}
-#          toTag: ${{ github.ref_name }}
-#          writeToFile: false
-#          useGitmojis: false
-#
-#      - name: Write Changelog
-#        uses: DamianReeves/write-file-action@master
-#        with:
-#          contents: ${{ steps.changelog.outputs.changes }}
-#          path: CHANGELOG.md
-#          write-mode: 'overwrite'
+        run: |
+          git config user.email "you@example.com"
+          git config user.name "Your Name"
+          git tag -a ${{ steps.version.outputs.version_tag }} -m ${{ steps.version.outputs.version_tag }}
+          git push --follow-tags
 
       - name: Publish Mods with Gradle
         run: ./gradlew -Pversion=${{ steps.version.outputs.version }} :create_factory_logistics-1.21.1:publishMods

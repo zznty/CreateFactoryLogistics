@@ -88,8 +88,8 @@ tasks.named('processResources', ProcessResources).configure {
 
 publishMods {
     file = tasks.named('jarJar').flatMap { it.archiveFile }
-//    changelog = rootProject.layout.projectDirectory.file('CHANGELOG.md').asFile.text
-    changelog = ''
+    changelog = rootProject.layout.projectDirectory.file('forge/CHANGELOG.md').asFile.exists() ?
+            rootProject.layout.projectDirectory.file('forge/CHANGELOG.md').asFile.text : ''
     type = BETA
     displayName = "$mod_name $project.version"
     modLoaders.add(forge_flavour)

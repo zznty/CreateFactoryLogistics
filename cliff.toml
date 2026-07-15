@@ -1,0 +1,22 @@
+[changelog]
+header = ""
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}
+**{{ group }}**
+{% for commit in commits %}
+- {{ commit.message }}
+{%- endfor %}
+
+{% endfor %}"""
+footer = ""
+trim = true
+
+[git]
+conventional_commits = true
+filter_commits = true
+
+commit_parsers = [
+    { message = "^feat", group = "Features" },
+    { message = "^fix", group = "Bug Fixes" },
+    { message = "^(chore|refactor|docs|style|perf|test|ci)", group = "Changes" },
+]
