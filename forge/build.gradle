@@ -40,6 +40,9 @@ dependencies {
         transitive = false
     }
 
+    compileOnly "org.appliedenergistics:appliedenergistics2:${ae2_version}"
+    implementation "org.appliedenergistics:appliedenergistics2:${ae2_version}"
+
     compileOnly "mekanism:Mekanism:${mekanism_version}:api"
     implementation "mekanism:Mekanism:${mekanism_version}"
 

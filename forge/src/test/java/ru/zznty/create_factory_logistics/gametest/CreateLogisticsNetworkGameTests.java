@@ -1,7 +1,6 @@
 package ru.zznty.create_factory_logistics.gametest;
 
 import com.google.common.collect.Multimap;
-import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.gametest.framework.GameTest;
@@ -15,6 +14,7 @@ import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
 import ru.zznty.create_factory_abstractions.generic.support.GenericLogisticsManager;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
+import ru.zznty.create_factory_abstractions.generic.support.GenericPackageTarget;
 import ru.zznty.create_factory_abstractions.generic.support.GenericPackagerLinkBlockEntity;
 import ru.zznty.create_factory_abstractions.generic.support.GenericRequest;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
@@ -55,11 +55,12 @@ public final class CreateLogisticsNetworkGameTests {
 
         helper.runAfterDelay(3, () -> {
             MutableBoolean finalLink = new MutableBoolean(false);
-            Pair<PackagerBlockEntity, GenericRequest> pair =
+            Pair<GenericPackageTarget, GenericRequest> pair =
                     ((GenericPackagerLinkBlockEntity) network.link()).processRequest(
                             requested, "warehouse", 2, finalLink, 12345, order, null);
             helper.assertTrue(pair != null, "link did not create a request");
-            helper.assertTrue(pair.getFirst() == network.packager(), "wrong packager selected");
+            helper.assertTrue(pair.getFirst().equals(GenericPackageTarget.ofPackager(network.packager())),
+                    "wrong packager selected");
             helper.assertValueEqual(pair.getSecond().getCount(), 5, "bounded request count");
             helper.assertValueEqual(pair.getSecond().address(), "warehouse", "request address");
             helper.assertValueEqual(pair.getSecond().context(), order, "request context");
@@ -74,7 +75,7 @@ public final class CreateLogisticsNetworkGameTests {
         LogisticsTestFixture.placeItemNetwork(helper, frequency, new ItemStack(Items.DIAMOND, 5));
 
         helper.runAfterDelay(3, () -> {
-            Multimap<PackagerBlockEntity, GenericRequest> requests =
+            Multimap<GenericPackageTarget, GenericRequest> requests =
                     GenericLogisticsManager.findPackagersForRequest(frequency,
                             GenericOrder.order(List.of(diamonds)), null, "warehouse");
             helper.assertValueEqual(requests.size(), 1, "planned request count");

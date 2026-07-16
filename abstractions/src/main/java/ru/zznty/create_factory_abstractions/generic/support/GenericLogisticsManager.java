@@ -3,7 +3,6 @@ package ru.zznty.create_factory_abstractions.generic.support;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
-import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import net.createmod.catnip.data.Pair;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -21,15 +20,15 @@ public final class GenericLogisticsManager {
         if (order.isEmpty())
             return false;
 
-        Multimap<PackagerBlockEntity, GenericRequest> requests =
+        Multimap<GenericPackageTarget, GenericRequest> requests =
                 findPackagersForRequest(freqId, order, ignoredHandler, address);
 
         if (requests.isEmpty())
             return false;
 
-        // Check if packagers have accumulated too many packages already
-        for (PackagerBlockEntity packager : requests.keySet())
-            if (packager.isTooBusyFor(type))
+        // Check if targets have accumulated too many packages already
+        for (GenericPackageTarget target : requests.keySet())
+            if (target.isTooBusyFor(type))
                 return false;
 
         // Actually perform package creation
@@ -37,13 +36,13 @@ public final class GenericLogisticsManager {
         return true;
     }
 
-    public static Multimap<PackagerBlockEntity, GenericRequest> findPackagersForRequest(UUID freqId,
-                                                                                        GenericOrder order,
-                                                                                        @Nullable IdentifiedInventory ignoredHandler,
-                                                                                        String address) {
+    public static Multimap<GenericPackageTarget, GenericRequest> findPackagersForRequest(UUID freqId,
+                                                                                         GenericOrder order,
+                                                                                         @Nullable IdentifiedInventory ignoredHandler,
+                                                                                         String address) {
         List<GenericStack> stacks = order.stacks();
 
-        Multimap<PackagerBlockEntity, GenericRequest> requests = ArrayListMultimap.create();
+        Multimap<GenericPackageTarget, GenericRequest> requests = ArrayListMultimap.create();
 
         // Packages need to track their index and successors for successful defrag
         Iterable<LogisticallyLinkedBehaviour> availableLinks = LogisticallyLinkedBehaviour.getAllPresent(freqId, true);
@@ -70,7 +69,7 @@ public final class GenericLogisticsManager {
 
                 LogisticallyLinkedGenericBehaviour ingredientLink = LogisticallyLinkedGenericBehaviour.from(link);
 
-                Pair<PackagerBlockEntity, GenericRequest> request = ingredientLink.processRequest(
+                Pair<GenericPackageTarget, GenericRequest> request = ingredientLink.processRequest(
                         stack.withAmount(remainingCount),
                         address, linkIndex, isFinalLink, orderId, contextToSend, ignoredHandler);
                 if (request == null)
@@ -97,24 +96,9 @@ public final class GenericLogisticsManager {
         return requests;
     }
 
-    public static void performPackageRequests(Multimap<PackagerBlockEntity, GenericRequest> requests) {
-        for (Map.Entry<PackagerBlockEntity, Collection<GenericRequest>> entry : requests.asMap().entrySet().stream().toList()) {
-            Collection<GenericRequest> queuedRequests = entry.getValue();
-            PackagerBlockEntity packager = entry.getKey();
-
-            if (!queuedRequests.isEmpty())
-                packager.flashLink();
-            for (int i = 0; i < 100; i++) {
-                if (queuedRequests.isEmpty())
-                    break;
-
-                GenericPackagerBlockEntity genericPackager = GenericPackagerBlockEntity.from(packager);
-
-                genericPackager.attemptToSendGeneric(queuedRequests);
-            }
-
-            packager.triggerStockCheck();
-            packager.notifyUpdate();
+    public static void performPackageRequests(Multimap<GenericPackageTarget, GenericRequest> requests) {
+        for (Map.Entry<GenericPackageTarget, Collection<GenericRequest>> entry : requests.asMap().entrySet().stream().toList()) {
+            entry.getKey().dispatch(entry.getValue());
         }
     }
 

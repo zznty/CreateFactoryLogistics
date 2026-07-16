@@ -12,11 +12,11 @@ import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
 
 public interface LogisticallyLinkedGenericBehaviour {
-    @Nullable Pair<PackagerBlockEntity, GenericRequest> processRequest(GenericStack stack, String address,
-                                                                       int linkIndex, MutableBoolean finalLink,
-                                                                       int orderId,
-                                                                       @Nullable GenericOrder orderContext,
-                                                                       @Nullable IdentifiedInventory ignoredHandler);
+    @Nullable Pair<GenericPackageTarget, GenericRequest> processRequest(GenericStack stack, String address,
+                                                                        int linkIndex, MutableBoolean finalLink,
+                                                                        int orderId,
+                                                                        @Nullable GenericOrder orderContext,
+                                                                        @Nullable IdentifiedInventory ignoredHandler);
 
     static LogisticallyLinkedGenericBehaviour from(LogisticallyLinkedBehaviour link) {
         if (CreateFactoryAbstractions.EXTENSIBILITY_AVAILABLE)
@@ -26,11 +26,11 @@ public interface LogisticallyLinkedGenericBehaviour {
             private final LogisticallyLinkedBehaviour behaviour = link;
 
             @Override
-            public Pair<PackagerBlockEntity, GenericRequest> processRequest(GenericStack stack, String address,
-                                                                            int linkIndex, MutableBoolean finalLink,
-                                                                            int orderId,
-                                                                            @Nullable GenericOrder orderContext,
-                                                                            @Nullable IdentifiedInventory ignoredHandler) {
+            public Pair<GenericPackageTarget, GenericRequest> processRequest(GenericStack stack, String address,
+                                                                             int linkIndex, MutableBoolean finalLink,
+                                                                             int orderId,
+                                                                             @Nullable GenericOrder orderContext,
+                                                                             @Nullable IdentifiedInventory ignoredHandler) {
                 if (stack.key() instanceof ItemKey key) {
                     @Nullable Pair<PackagerBlockEntity, PackagingRequest> pair = behaviour.processRequest(
                             key.stack(), stack.amount(), address, linkIndex, finalLink, orderId,
@@ -39,7 +39,7 @@ public interface LogisticallyLinkedGenericBehaviour {
                     if (pair == null) return null;
 
                     PackagingRequest request = pair.getSecond();
-                    return Pair.of(pair.getFirst(), GenericRequest.from(request));
+                    return Pair.of(GenericPackageTarget.ofPackager(pair.getFirst()), GenericRequest.from(request));
                 }
                 return null;
             }

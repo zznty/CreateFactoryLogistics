@@ -12,6 +12,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
 import ru.zznty.create_factory_logistics.compat.mekanism.MekanismIntegration;
+import ru.zznty.create_factory_logistics.compat.ae2.AE2Integration;
 import ru.zznty.create_factory_logistics.config.ClientConfig;
 import ru.zznty.create_factory_logistics.config.WorldConfig;
 import ru.zznty.create_factory_abstractions.compat.computercraft.AbstractionsComputerCraftCompat;
@@ -22,6 +23,7 @@ import ru.zznty.create_factory_logistics.data.FactoryDataGen;
 public class CreateFactoryLogistics {
     public static final String MODID = "create_factory_logistics";
     public static final String MEKANISM_ID = "mekanism";
+    public static final String AE2_ID = "ae2";
 
     public static final Logger LOGGER = LogUtils.getLogger();
 
@@ -54,6 +56,9 @@ public class CreateFactoryLogistics {
 
         if (ModList.get().isLoaded(MEKANISM_ID))
             MekanismIntegration.register(modEventBus);
+
+        if (ModList.get().isLoaded(AE2_ID))
+            AE2Integration.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, WorldConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);

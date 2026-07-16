@@ -1,7 +1,6 @@
 package ru.zznty.create_factory_logistics.gametest;
 
 import com.google.common.collect.Multimap;
-import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -12,6 +11,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericLogisticsManager;
 import ru.zznty.create_factory_abstractions.generic.support.GenericOrder;
+import ru.zznty.create_factory_abstractions.generic.support.GenericPackageTarget;
 import ru.zznty.create_factory_abstractions.generic.support.GenericRequest;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 
@@ -33,7 +33,7 @@ public final class GenericLogisticsManagerGameTests {
     public static void plannerFindsNoPackagersWithoutLinks(GameTestHelper helper) {
         GenericOrder order = GenericOrder.order(List.of(
                 GenericStack.wrap(new ItemStack(Items.DIAMOND, 4))));
-        Multimap<PackagerBlockEntity, GenericRequest> requests =
+        Multimap<GenericPackageTarget, GenericRequest> requests =
                 GenericLogisticsManager.findPackagersForRequest(UUID.randomUUID(), order, null, "destination");
         helper.assertTrue(requests.isEmpty(), "planner found a nonexistent packager");
         helper.succeed();
