@@ -40,6 +40,7 @@ import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import ru.zznty.create_factory_logistics.CreateFactoryLogistics;
 import ru.zznty.create_factory_logistics.FactoryItems;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericTooltipHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -96,6 +97,8 @@ public class CompositePackageItem extends PackageItem {
         for (ItemStack child : getChildren(tooltipContext.registries(), stack)) {
             child.getItem().appendHoverText(child, tooltipContext, tooltipComponents, tooltipFlag);
         }
+
+        GenericTooltipHelper.fireForItem(stack, tooltipComponents, tooltipContext.registries());
     }
 
     @Override

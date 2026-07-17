@@ -9,10 +9,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventory;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericTooltipHelper;
-import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.logistics.box.AbstractPackageItem;
+import ru.zznty.create_factory_logistics.logistics.composite.CompositePackageItem;
 
 import java.util.List;
 
@@ -23,11 +22,9 @@ public class PackageItemMixin {
     private void createFactoryLogistics$fireTooltipEvent(ItemStack stack, Item.TooltipContext tooltipContext,
                                                          List<Component> tooltipComponents, TooltipFlag tooltipFlag,
                                                          CallbackInfo ci) {
-        if ((Object) this instanceof AbstractPackageItem)
+        if ((Object) this instanceof AbstractPackageItem || (Object) this instanceof CompositePackageItem)
             return;
 
-        List<GenericStack> stacks = GenericInventory.collectStacks(stack, tooltipContext.registries());
-        if (!stacks.isEmpty())
-            GenericTooltipHelper.fireTooltip(stacks, tooltipComponents);
+        GenericTooltipHelper.fireForItem(stack, tooltipComponents, tooltipContext.registries());
     }
 }

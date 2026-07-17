@@ -214,13 +214,15 @@ public class JarPackageItem extends AbstractPackageItem {
 
         FluidStack contained = FluidUtil.getFluidContained(pStack).orElse(FluidStack.EMPTY);
 
-        if (contained.isEmpty()) return;
+        if (!contained.isEmpty()) {
+            pTooltipComponents.add(contained.getHoverName()
+                                           .copy()
+                                           .append(" ")
+                                           .append(FactoryFluidPanelBehaviour.formatLevel(
+                                                   contained.getAmount()).component())
+                                           .withStyle(ChatFormatting.GRAY));
+        }
 
-        pTooltipComponents.add(contained.getHoverName()
-                                       .copy()
-                                       .append(" ")
-                                       .append(FactoryFluidPanelBehaviour.formatLevel(
-                                               contained.getAmount()).component())
-                                       .withStyle(ChatFormatting.GRAY));
+        fireGenericTooltip(pStack, pTooltipComponents, tooltipContext);
     }
 }

@@ -29,9 +29,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
-import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventory;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericTooltipHelper;
-import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -54,9 +52,10 @@ public abstract class AbstractPackageItem extends PackageItem {
     public void appendHoverText(ItemStack pStack, TooltipContext tooltipContext, List<Component> pTooltipComponents,
                                 TooltipFlag pIsAdvanced) {
         super.appendHoverText(pStack, tooltipContext, pTooltipComponents, pIsAdvanced);
-        List<GenericStack> stacks = GenericInventory.collectStacks(pStack, tooltipContext.registries());
-        if (!stacks.isEmpty())
-            GenericTooltipHelper.fireTooltip(stacks, pTooltipComponents);
+    }
+
+    protected final void fireGenericTooltip(ItemStack stack, List<Component> tooltipComponents, TooltipContext tooltipContext) {
+        GenericTooltipHelper.fireForItem(stack, tooltipComponents, tooltipContext.registries());
     }
 
     protected abstract String getIdSuffix();

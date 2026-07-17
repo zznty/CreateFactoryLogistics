@@ -73,13 +73,15 @@ public class BarrelPackageItem extends AbstractPackageItem {
 
         ChemicalStack contained = FactoryChemicalPanelBehaviour.getChemicalStack(pStack);
 
-        if (contained.isEmpty()) return;
+        if (!contained.isEmpty()) {
+            pTooltipComponents.add(contained.getTextComponent()
+                                           .copy()
+                                           .append(" ")
+                                           .append(FactoryFluidPanelBehaviour.formatLevel(
+                                                   (int) contained.getAmount()).component())
+                                           .withStyle(ChatFormatting.GRAY));
+        }
 
-        pTooltipComponents.add(contained.getTextComponent()
-                                       .copy()
-                                       .append(" ")
-                                       .append(FactoryFluidPanelBehaviour.formatLevel(
-                                               (int) contained.getAmount()).component())
-                                       .withStyle(ChatFormatting.GRAY));
+        fireGenericTooltip(pStack, pTooltipComponents, tooltipContext);
     }
 }

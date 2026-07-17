@@ -1,7 +1,10 @@
 package ru.zznty.create_factory_abstractions.api.generic.key;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.NeoForge;
+import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventory;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 
@@ -11,6 +14,12 @@ import java.util.List;
 public final class GenericTooltipHelper {
 
     private GenericTooltipHelper() {
+    }
+
+    public static void fireForItem(ItemStack stack, List<Component> tooltip, HolderLookup.Provider registries) {
+        List<GenericStack> stacks = GenericInventory.collectStacks(stack, registries);
+        if (!stacks.isEmpty())
+            fireTooltip(stacks, tooltip);
     }
 
     public static List<Component> buildTooltip(GenericStack stack, int mouseX, int mouseY) {
