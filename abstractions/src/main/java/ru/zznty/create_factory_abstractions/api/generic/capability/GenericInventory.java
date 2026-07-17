@@ -3,15 +3,21 @@ package ru.zznty.create_factory_abstractions.api.generic.capability;
 import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import ru.zznty.create_factory_abstractions.api.generic.AbstractionsCapabilities;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericCapabilityWrapperProvider;
 import ru.zznty.create_factory_abstractions.api.generic.key.GenericKeyRegistration;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemInventorySummaryProvider;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
+import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public interface GenericInventory {
     @Nullable GenericInventorySummaryProvider get(GenericKeyRegistration registration);
@@ -47,5 +53,16 @@ public interface GenericInventory {
             if (cap == null) return null;
             return provider.unwrap(cap);
         };
+    }
+
+    static List<GenericStack> collectStacks(ItemStack stack, HolderLookup.Provider registries) {
+        GenericInventory inventory = of(stack);
+        GenericInventorySummary summary = GenericInventorySummary.empty();
+        for (GenericKeyRegistration registration : GenericContentExtender.REGISTRATIONS.values()) {
+            GenericInventorySummaryProvider provider = inventory.get(registration);
+            if (provider != null)
+                provider.apply(summary, registries);
+        }
+        return summary.get();
     }
 }

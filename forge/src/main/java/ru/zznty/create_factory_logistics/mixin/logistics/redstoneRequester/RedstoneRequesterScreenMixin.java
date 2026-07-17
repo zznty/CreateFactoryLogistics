@@ -38,6 +38,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericTooltipHelper;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.key.item.ItemKey;
@@ -191,17 +192,19 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
                                                                         stack.key(),
                                                                         amounts.get(this.hoveredSlot.getSlotIndex())));
 
-                List<Component> components = List.of(name
-                                                             .color(ScrollInput.HEADER_RGB)
-                                                             .component(),
-                                                     CreateLang.translate("gui.factory_panel.scroll_to_change_amount")
-                                                             .style(ChatFormatting.DARK_GRAY)
-                                                             .style(ChatFormatting.ITALIC)
-                                                             .component(),
-                                                     CreateLang.translate("gui.scrollInput.shiftScrollsFaster")
-                                                             .style(ChatFormatting.DARK_GRAY)
-                                                             .style(ChatFormatting.ITALIC)
-                                                             .component());
+                List<Component> components = GenericTooltipHelper.buildTooltip(
+                        List.of(name
+                                        .color(ScrollInput.HEADER_RGB)
+                                        .component(),
+                                CreateLang.translate("gui.factory_panel.scroll_to_change_amount")
+                                        .style(ChatFormatting.DARK_GRAY)
+                                        .style(ChatFormatting.ITALIC)
+                                        .component(),
+                                CreateLang.translate("gui.scrollInput.shiftScrollsFaster")
+                                        .style(ChatFormatting.DARK_GRAY)
+                                        .style(ChatFormatting.ITALIC)
+                                        .component()),
+                        stack.withAmount(amounts.get(this.hoveredSlot.getSlotIndex())), x, y);
 
                 graphics.renderTooltip(this.font, components, Optional.empty(), x, y);
                 return;

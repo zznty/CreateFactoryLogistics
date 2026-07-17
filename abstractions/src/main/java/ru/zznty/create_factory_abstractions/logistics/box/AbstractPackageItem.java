@@ -8,6 +8,7 @@ import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -27,8 +29,12 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import ru.zznty.create_factory_abstractions.CreateFactoryAbstractions;
+import ru.zznty.create_factory_abstractions.api.generic.capability.GenericInventory;
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericTooltipHelper;
+import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 public abstract class AbstractPackageItem extends PackageItem {
     public AbstractPackageItem(Item.Properties properties, PackageStyles.PackageStyle style) {
@@ -42,6 +48,15 @@ public abstract class AbstractPackageItem extends PackageItem {
     @Override
     public String getDescriptionId() {
         return "item." + CreateFactoryAbstractions.CFL_MODID + (style.rare() ? ".rare_" : ".") + getIdSuffix();
+    }
+
+    @Override
+    public void appendHoverText(ItemStack pStack, TooltipContext tooltipContext, List<Component> pTooltipComponents,
+                                TooltipFlag pIsAdvanced) {
+        super.appendHoverText(pStack, tooltipContext, pTooltipComponents, pIsAdvanced);
+        List<GenericStack> stacks = GenericInventory.collectStacks(pStack, tooltipContext.registries());
+        if (!stacks.isEmpty())
+            GenericTooltipHelper.fireTooltip(stacks, pTooltipComponents);
     }
 
     protected abstract String getIdSuffix();

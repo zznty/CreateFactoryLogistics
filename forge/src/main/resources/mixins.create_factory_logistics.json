@@ -13,6 +13,7 @@
     "bugfixes.ArmBlockEntityMixin",
     "logistics.composite.CompositePackageSawingMixin",
     "logistics.composite.CompositePackageStyleMixin",
+    "logistics.box.PackageItemMixin",
     "logistics.filter.GenericAttributeFilterItemStackMixin",
     "logistics.filter.GenericFilterItemStackMixin",
     "logistics.jar.ChainConveyorDropMixin",

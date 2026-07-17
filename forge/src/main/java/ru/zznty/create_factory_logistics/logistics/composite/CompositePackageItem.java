@@ -91,7 +91,7 @@ public class CompositePackageItem extends PackageItem {
 
         if (skippedNames > 0)
             tooltipComponents.add(Component.translatable("container.shulkerBox.more", skippedNames)
-                                          .withStyle(ChatFormatting.ITALIC));
+                                           .withStyle(ChatFormatting.ITALIC));
 
         for (ItemStack child : getChildren(tooltipContext.registries(), stack)) {
             child.getItem().appendHoverText(child, tooltipContext, tooltipComponents, tooltipFlag);

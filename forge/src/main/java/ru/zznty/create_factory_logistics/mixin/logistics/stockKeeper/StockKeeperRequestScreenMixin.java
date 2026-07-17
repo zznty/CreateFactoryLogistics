@@ -44,6 +44,8 @@ import ru.zznty.create_factory_logistics.logistics.ingredient.ClickableIngredien
 import ru.zznty.create_factory_logistics.mixin.accessor.CategoryEntryAccessor;
 import ru.zznty.create_factory_logistics.mixin.accessor.StockTickerBlockEntityAccessor;
 
+import ru.zznty.create_factory_abstractions.api.generic.key.GenericTooltipHelper;
+
 import java.util.*;
 import java.util.function.Function;
 
@@ -300,9 +302,9 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
             customCount = Math.max(0, customCount);
         }
 
-        instance.renderComponentTooltip(p_282308_, GenericContentExtender.registrationOf(
-                                                stack.get().key()).clientProvider().guiHandler().tooltipBuilder(stack.get().key(), customCount),
-                                        p_282687_, p_282292_);
+        instance.renderComponentTooltip(p_282308_,
+                GenericTooltipHelper.buildTooltip(stack.get().withAmount(customCount), p_282687_, p_282292_),
+                p_282687_, p_282292_);
     }
 
     @Redirect(
@@ -315,9 +317,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     private List<Component> getCraftableTooltip(ItemStack instance, Item.TooltipContext i, Player list,
                                                 TooltipFlag tooltipFlag, @Local BigItemStack itemStack) {
         BigGenericStack stack = BigGenericStack.of(itemStack);
-        return GenericContentExtender.registrationOf(
-                stack.get().key()).clientProvider().guiHandler().tooltipBuilder(stack.get().key(),
-                                                                                stack.get().amount());
+        return GenericTooltipHelper.buildTooltip(stack.get());
     }
 
     @Overwrite
