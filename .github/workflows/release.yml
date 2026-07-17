@@ -47,7 +47,7 @@ jobs:
         uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
-          args: --tag-pattern '${{ steps.tag-prefix.outputs.prefix }}-*' --latest
+          args: --tag-pattern ${{ steps.tag-prefix.outputs.prefix }}-* --latest
         env:
           OUTPUT: forge/CHANGELOG.md
 

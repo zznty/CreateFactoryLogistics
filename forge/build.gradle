@@ -106,6 +106,7 @@ publishMods {
         minecraftVersions.add(minecraft_version)
         clientRequired = true
         serverRequired = true
+        changelogType = "markdown"
     }
 
     modrinth {
