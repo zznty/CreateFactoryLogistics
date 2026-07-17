@@ -104,6 +104,8 @@ publishMods {
         projectId = "1218807"
         projectSlug = "create-factory-logistics"
         minecraftVersions.add(minecraft_version)
+        clientRequired = true
+        serverRequired = true
     }
 
     modrinth {
