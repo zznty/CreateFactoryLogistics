@@ -135,20 +135,36 @@ public class InventorySummaryMixin implements GenericInventorySummary {
 
         createFactoryLogistics$invalidate();
 
-        if (totalCount < BigItemStack.INF)
-            totalCount += stack.amount();
-
         Collection<BigGenericStack> stacks = createFactoryLogistics$stacks.get(
                 GenericContentExtender.registrationOf(stack.key()).provider().wrapGeneric(stack.key()));
 
-        for (BigGenericStack bigStack : stacks) {
-            if (bigStack.get().canStack(stack)) {
-                if (bigStack.get().amount() != BigItemStack.INF)
-                    bigStack.setAmount(bigStack.get().amount() + stack.amount());
-                return;
+        for (Iterator<BigGenericStack> iterator = stacks.iterator(); iterator.hasNext(); ) {
+            BigGenericStack bigStack = iterator.next();
+            if (!bigStack.get().canStack(stack))
+                continue;
+
+            if (bigStack.get().amount() != BigItemStack.INF) {
+                int next = bigStack.get().amount() + stack.amount();
+                if (next <= 0) {
+                    if (totalCount < BigItemStack.INF)
+                        totalCount -= bigStack.get().amount();
+                    // iterator.remove avoids HashSet lookup after amount/hashCode mutation
+                    iterator.remove();
+                } else {
+                    if (totalCount < BigItemStack.INF)
+                        totalCount += stack.amount();
+                    bigStack.setAmount(next);
+                }
             }
+            return;
         }
 
+        // Never insert a non-matching negative delta (would hang the repack leftover loop, #241)
+        if (stack.amount() < 0)
+            return;
+
+        if (totalCount < BigItemStack.INF)
+            totalCount += stack.amount();
         stacks.add(BigGenericStack.of(stack));
     }
 

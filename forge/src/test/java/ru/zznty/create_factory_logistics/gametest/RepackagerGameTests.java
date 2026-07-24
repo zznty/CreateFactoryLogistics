@@ -228,6 +228,50 @@ public final class RepackagerGameTests {
         helper.succeed();
     }
 
+    // --- #241 server hang: duplicate craft ingredients leave negative summary amounts ---
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void recipeWithDuplicateIngredientsDoesNotHang(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        // Pattern uses iron twice; only 1 iron present. Two-pass validation used to treat this
+        // as craftable, subtract past zero, then spin forever in the leftover repack loop.
+        ItemStack pkg = makePackage(Items.IRON_INGOT, 1);
+        setOrderWithRecipe(be, pkg, 1, recipe(iron(1), iron(1)));
+        PackageItem.addAddress(pkg, "test");
+        putPackages(rh, 1, List.of(pkg));
+
+        List<BigItemStack> result = rh.repack(1, RandomSource.createNewThreadLocalInstance());
+        helper.assertValueEqual(itemCount(result), 1,
+                "duplicate-ingredient craft with insufficient items must preserve the iron, got "
+                        + itemCount(result));
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)
+    public static void recipeWithDuplicateIngredientsAndExactCountDoesNotHang(GameTestHelper helper) {
+        RepackagerBlockEntity be = placeRepackager(helper);
+        CompositeRepackagerHelper rh = helper(be);
+        clearPackages(rh);
+
+        // 3 iron for pattern [iron, iron] with craft count 2: second craft would drive amount negative
+        // under the broken two-pass check (saw count twice without reserving).
+        ItemStack pkg = makePackage(Items.IRON_INGOT, 3);
+        PackageOrderWithCrafts order = new PackageOrderWithCrafts(PackageOrder.empty(),
+                List.of(new CraftingEntry(new PackageOrder(recipe(iron(1), iron(1))), 2)));
+        setOrder(be, pkg, 1, GenericOrder.of(order));
+        PackageItem.addAddress(pkg, "test");
+        putPackages(rh, 1, List.of(pkg));
+
+        List<BigItemStack> result = rh.repack(1, RandomSource.createNewThreadLocalInstance());
+        helper.assertValueEqual(itemCount(result), 3,
+                "2 crafts of 2 iron need 4; with 3 iron only 1 craft + 1 leftover = 3 items, got "
+                        + itemCount(result));
+        helper.succeed();
+    }
+
     // --- jar / fluid repackager tests (#159 / #156) ---
 
     @GameTest(template = "empty", batch = "repackager", timeoutTicks = 80)

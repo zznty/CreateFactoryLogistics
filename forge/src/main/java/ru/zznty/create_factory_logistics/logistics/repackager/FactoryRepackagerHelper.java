@@ -142,11 +142,17 @@ public class FactoryRepackagerHelper extends PackageRepackageHelper {
             int packagesToCreate = 0;
             Crafts:
             for (int i = 0; i < craftingEntry.count(); i++) {
+                // Two-pass with a local reservation map so duplicate pattern slots
+                // (e.g. iron+iron) correctly require 2 available, without leaving the
+                // summary half-mutated if a later slot fails (#241).
+                InventorySummary reserved = new InventorySummary();
                 for (BigItemStack required : craftingEntry.pattern().stacks()) {
                     if (required.stack.isEmpty())
                         continue;
-                    if (summary.getCountOf(required.stack) <= 0)
+                    int available = summary.getCountOf(required.stack) - reserved.getCountOf(required.stack);
+                    if (available <= 0)
                         break Crafts;
+                    reserved.add(required.stack, 1);
                 }
                 for (BigItemStack required : craftingEntry.pattern().stacks()) {
                     if (required.stack.isEmpty())

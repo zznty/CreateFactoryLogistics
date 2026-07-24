@@ -71,6 +71,7 @@ public class CompositeRepackagerHelper extends FactoryRepackagerHelper {
 
         Repack:
         while (true) {
+            allStacks.removeIf(e -> e.amount() <= 0 || e.isEmpty());
             if (allStacks.isEmpty())
                 break;
 
@@ -81,12 +82,12 @@ public class CompositeRepackagerHelper extends FactoryRepackagerHelper {
             for (int i = 0; i < allStacks.size(); i++) {
                 GenericStack entry = allStacks.get(i);
                 int remaining = entry.amount();
-                if (remaining == 0)
+                if (remaining <= 0)
                     continue;
                 int targetAmount = remaining;
                 if (targetedEntry != null) {
                     targetAmount = targetedEntry.amount();
-                    if (!entry.canStack(targetedEntry))
+                    if (targetAmount <= 0 || !entry.canStack(targetedEntry))
                         continue;
                 }
 
@@ -106,7 +107,7 @@ public class CompositeRepackagerHelper extends FactoryRepackagerHelper {
                 }
 
                 allStacks.set(i, entry.withAmount(remaining));
-                if (allStacks.get(i).isEmpty())
+                if (allStacks.get(i).amount() <= 0 || allStacks.get(i).isEmpty())
                     allStacks.remove(i);
 
                 continue Repack;
