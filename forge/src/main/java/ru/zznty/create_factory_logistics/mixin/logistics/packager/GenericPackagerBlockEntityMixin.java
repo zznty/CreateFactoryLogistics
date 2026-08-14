@@ -3,6 +3,7 @@ package ru.zznty.create_factory_logistics.mixin.logistics.packager;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.simibubi.create.AllBlocks;
@@ -445,9 +446,10 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
     )
     private List<BigItemStack> readQueuedExitingPackages(ListTag listNBT,
                                                          Function<CompoundTag, BigItemStack> deserializer,
-                                                         Operation<List<BigItemStack>> original) {
+                                                         Operation<List<BigItemStack>> original,
+                                                         @Local(argsOnly = true) HolderLookup.Provider registries) {
         return NBTHelper.readCompoundList(listNBT, t ->
-                BigGenericStack.of(GenericStackSerializer.read(level.registryAccess(), t)).asStack());
+                BigGenericStack.of(GenericStackSerializer.read(registries, t)).asStack());
     }
 
     @WrapOperation(
@@ -459,10 +461,11 @@ public abstract class GenericPackagerBlockEntityMixin extends SmartBlockEntity i
     )
     private ListTag writeQueuedExitingPackages(Iterable<BigItemStack> list,
                                                Function<BigItemStack, CompoundTag> serializer,
-                                               Operation<ListTag> original) {
+                                               Operation<ListTag> original,
+                                               @Local(argsOnly = true) HolderLookup.Provider registries) {
         return NBTHelper.writeCompoundList(list, t -> {
             CompoundTag tag = new CompoundTag();
-            GenericStackSerializer.write(level.registryAccess(), BigGenericStack.of(t).get(), tag);
+            GenericStackSerializer.write(registries, BigGenericStack.of(t).get(), tag);
             return tag;
         });
     }
