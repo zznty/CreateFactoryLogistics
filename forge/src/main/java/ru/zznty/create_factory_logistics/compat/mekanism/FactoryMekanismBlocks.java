@@ -50,7 +50,7 @@ public class FactoryMekanismBlocks {
                                             .pattern("C")
                                             .define('s', AllBlocks.STOCK_LINK)
                                             .define('c', TagKey.create(BuiltInRegistries.ITEM.key(),
-                                                                       ResourceLocation.fromNamespaceAndPath("forge",
+                                                                       ResourceLocation.fromNamespaceAndPath("c",
                                                                                                              "circuits/advanced")))
                                             .define('C', BuiltInRegistries.ITEM.getOptional(
                                                     ResourceLocation.fromNamespaceAndPath(
