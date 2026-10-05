@@ -35,7 +35,7 @@ public final class FluidIdentityGameTests {
         if (custom == null || custom.isEmpty() || !custom.contains("mixed_potion"))
             return key;
 
-        custom.update(FluidIdentityGameTests::stripTransientNbt);
+        custom = custom.update(FluidIdentityGameTests::stripTransientNbt);
 
         PatchedDataComponentMap newNbt = key.nbt().copy();
         newNbt.set(DataComponents.CUSTOM_DATA, custom);

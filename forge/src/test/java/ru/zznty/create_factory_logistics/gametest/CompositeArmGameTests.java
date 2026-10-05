@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -40,7 +41,8 @@ import java.util.List;
 public final class CompositeArmGameTests {
     private static final BlockPos DEPOT = new BlockPos(3, 1, 1);
     private static final BlockPos ARM = new BlockPos(3, 1, 3);
-    private static final BlockPos MOTOR = new BlockPos(3, 0, 3);
+    private static final BlockPos COGWHEEL = new BlockPos(3, 1, 2);
+    private static final BlockPos MOTOR = new BlockPos(3, 0, 2);
     private static final BlockPos ITEM_PACKAGER = new BlockPos(1, 1, 3);
     private static final BlockPos ITEM_STORAGE = new BlockPos(1, 1, 4);
     private static final BlockPos JAR_PACKAGER = new BlockPos(5, 1, 3);
@@ -94,6 +96,8 @@ public final class CompositeArmGameTests {
         helper.setBlock(DEPOT, AllBlocks.DEPOT.getDefaultState());
         helper.setBlock(MOTOR, AllBlocks.CREATIVE_MOTOR.getDefaultState()
                 .setValue(DirectionalBlock.FACING, Direction.UP));
+        helper.setBlock(COGWHEEL, AllBlocks.COGWHEEL.getDefaultState()
+                .setValue(BlockStateProperties.AXIS, Direction.Axis.Y));
         helper.setBlock(ARM, AllBlocks.MECHANICAL_ARM.getDefaultState()
                 .setValue(ArmBlock.CEILING, false));
         helper.setBlock(ITEM_PACKAGER, AllBlocks.PACKAGER.getDefaultState()

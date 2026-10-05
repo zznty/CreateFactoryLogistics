@@ -181,7 +181,7 @@ public class CompositePackageItem extends PackageItem {
                 children.addAll(getChildren(lookupProvider, child));
                 CustomData.update(DataComponents.CUSTOM_DATA, child, childTag -> childTag.remove(CHILDREN_TAG));
                 // merge items with parent box
-                ItemStackHandler childContents = PackageItem.getContents(child);
+                ItemStackHandler childContents = getContents(lookupProvider, child);
                 boolean emptied = true;
                 for (int slot = 0; slot < childContents.getSlots(); slot++) {
                     ItemStack reminder = ItemHandlerHelper.insertItemStacked(contents,

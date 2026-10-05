@@ -8,9 +8,13 @@ import com.simibubi.create.content.logistics.packager.PackagerBlock;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlock;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlockEntity;
+import mekanism.api.RelativeSide;
 import mekanism.api.chemical.ChemicalStack;
+import mekanism.common.lib.transmitter.TransmissionType;
 import mekanism.common.registries.MekanismBlocks;
 import mekanism.common.tile.TileEntityChemicalTank;
+import mekanism.common.tile.component.config.DataType;
+import mekanism.common.tile.interfaces.ISideConfiguration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -84,8 +88,10 @@ final class FactoryPanelRecipeFixture {
         TileEntityChemicalTank tank = helper.getBlockEntity(tankPos);
         tank.getChemicalTank().setStack(contents.copy());
         tank.setChanged();
+        tank.getConfig().getConfig(TransmissionType.CHEMICAL)
+                .setDataType(DataType.INPUT_OUTPUT,
+                             RelativeSide.fromDirections(((ISideConfiguration) tank).getDirection(), Direction.SOUTH));
         BarrelPackagerBlockEntity packager = helper.getBlockEntity(packagerPos);
-        packager.drainInventory.bypassSidedness();
         packager.drainInventory.findNewCapability();
         PackagerLinkBlockEntity link = helper.getBlockEntity(linkPos);
         link.behaviour.freqId = frequency;

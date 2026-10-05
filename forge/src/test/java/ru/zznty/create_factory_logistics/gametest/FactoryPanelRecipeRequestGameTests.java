@@ -138,7 +138,6 @@ public final class FactoryPanelRecipeRequestGameTests {
         helper.runAfterDelay(3, () -> {
             assertRegistered(helper, hydrogenFrequency, hydrogen.link());
             assertRegistered(helper, oxygenFrequency, outputNetwork.link());
-            hydrogen.packager().drainInventory.bypassSidedness();
             hydrogen.packager().drainInventory.findNewCapability();
             FactoryPanelRecipeFixture.connect(hydrogenPanel.behaviour(), oxygenPanel.behaviour(), 1000);
             FactoryPanelRecipeFixture.activateRecipe(oxygenPanel.behaviour(), "chemical_conversion", 500);

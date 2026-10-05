@@ -51,7 +51,14 @@ public class NetworkChemicalHandler implements IChemicalHandler {
 
     @Override
     public ChemicalStack extractChemical(int tank, long amount, Action action) {
-        return ChemicalStack.EMPTY;
+        if (action.execute() || amount <= 0 || tank < 0 || tank >= stacks.size())
+            return ChemicalStack.EMPTY;
+
+        ChemicalStack stored = getChemicalInTank(tank);
+        if (stored.isEmpty())
+            return ChemicalStack.EMPTY;
+
+        return stored.copyWithAmount(Math.min(stored.getAmount(), amount));
     }
 
     private static ChemicalStack asChemical(GenericStack stack) {

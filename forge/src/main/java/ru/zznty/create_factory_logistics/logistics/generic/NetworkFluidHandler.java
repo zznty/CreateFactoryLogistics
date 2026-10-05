@@ -32,7 +32,8 @@ final class NetworkFluidHandler implements IFluidHandler {
 
     @Override
     public int getTankCapacity(int tank) {
-        return Integer.MAX_VALUE - 1 / getTanks();
+        int tanks = getTanks();
+        return tanks == 0 ? 0 : (Integer.MAX_VALUE - 1) / tanks;
     }
 
     @Override

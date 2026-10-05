@@ -3,11 +3,13 @@ package ru.zznty.create_factory_abstractions.api.generic.key;
 import com.simibubi.create.api.registry.SimpleRegistry;
 import net.minecraft.resources.ResourceKey;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 public final class GenericKeyCanonicalizer {
     private static final SimpleRegistry<Class<?>, UnaryOperator<GenericKey>> BY_TYPE = SimpleRegistry.create();
-    private static final SimpleRegistry<HolderPair, UnaryOperator<GenericKey>> BY_HOLDER = SimpleRegistry.create();
+    private static final Map<HolderPair, UnaryOperator<GenericKey>> BY_HOLDER = new HashMap<>();
 
     public static <K extends GenericKey> void register(Class<K> keyType, UnaryOperator<K> canonicalizer) {
         @SuppressWarnings("unchecked")
@@ -19,7 +21,9 @@ public final class GenericKeyCanonicalizer {
                                                         UnaryOperator<K> canonicalizer) {
         @SuppressWarnings("unchecked")
         UnaryOperator<GenericKey> cast = (UnaryOperator<GenericKey>) (UnaryOperator<?>) canonicalizer;
-        BY_HOLDER.register(new HolderPair(keyType, holderKey), cast);
+        if (BY_HOLDER.putIfAbsent(new HolderPair(keyType, holderKey), cast) != null)
+            throw new IllegalArgumentException(
+                    String.format("Tried to register duplicate canonicalizer for %s (%s)", holderKey, keyType));
     }
 
     @SuppressWarnings("unchecked")
