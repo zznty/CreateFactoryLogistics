@@ -249,7 +249,7 @@ public final class RecipeRequestHelper {
                 List<GenericStack> resolvedList = resolvedIngredients.get(ingredient);
                 for (int j = 0; j < list.size(); j++) {
                     GenericStack stack = list.get(j);
-                    if (stack.amount() <= 0)
+                    if (stack.amount() < ingredient.amount())
                         continue;
 
                     list.set(j, stack.withAmount(stack.amount() - ingredient.amount()));
@@ -257,7 +257,7 @@ public final class RecipeRequestHelper {
 
                     for (int k = 0; k < resolvedList.size(); k++) {
                         GenericStack resolvedItemStack = resolvedList.get(k);
-                        if (resolvedItemStack == stack) {
+                        if (resolvedItemStack.key() == stack.key()) {
                             resolvedList.set(k, resolvedItemStack.withAmount(
                                     resolvedItemStack.amount() + ingredient.amount()));
                             continue Ingredients;
