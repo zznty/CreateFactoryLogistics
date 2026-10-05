@@ -19,6 +19,8 @@ public final class CreateFactoryAbstractions {
     public CreateFactoryAbstractions(IEventBus modEventBus, ModContainer modContainer) {
         TypeRegistries.register(modEventBus);
         GenericContentExtender.register(modEventBus);
+
+        modEventBus.addListener(CreateFactoryAbstractions::init);
     }
 
     public static void init(final FMLCommonSetupEvent event) {
